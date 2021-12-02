@@ -5,10 +5,11 @@ import com.remal.portfolio.model.Currency;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
-import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LocaleDateTimes;
 import com.remal.portfolio.util.Strings;
+import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -32,41 +33,48 @@ import java.util.Optional;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class LedgerWriter {
 
     /**
      * Default language.
      */
     @Setter
+    @Getter
     private String language = "en";
 
     /**
      * Markdown table separator character.
      */
     @Setter
+    @Getter
     private String tableSeparator = "|";
 
     /**
      * If it set to true then the header of the table will print.
      */
     @Setter
+    @Getter
     private boolean printHeader = true;
 
     /**
      * Controls how the decimal numbers will be shown in the reports.
      */
     @Setter
+    @Getter
     private String decimalFormat = "%8.4f";
 
     /**
      * Date pattern that is used to show timestamps in the reports.
      */
+    @Getter
     @Setter
     private String dateTimePattern = "yyyy.MM.dd HH:mm:ss";
 
     /**
      * Timezone that is used when timestamp is rendered.
      */
+    @Getter
     @Setter
     private String zoneIdAsString = "Europe/London";
 
@@ -74,6 +82,7 @@ public class LedgerWriter {
      * List of the columns that will be displayed in the report.
      */
     @Setter
+    @Getter
     private List<Header> columnsToPrint = Arrays.asList(Header.TYPE, Header.TICKER, Header.CREATED, Header.VOLUME,
             Header.PRICE, Header.FEE, Header.CURRENCY);
 
@@ -92,11 +101,12 @@ public class LedgerWriter {
     }
 
     /**
-     * Generates a ledger report in Markdown format.
+     * Generates a ledger.
      *
      * @return the report as a Markdown string
      */
     public String printAsMarkdown() {
+        log.debug("building the Ledger Markdown report...");
         var widths = calculateColumnWidth();
         var zoneId = ZoneId.of(zoneIdAsString);
         var sb = new StringBuilder();
@@ -134,18 +144,37 @@ public class LedgerWriter {
     }
 
     /**
-     * Writes the report to file.
+     * Generates a ledger report.
      *
-     * @param writeMode controls how to open the file
-     * @param pathToFile the path of the file to be created
+     * @return the report as a CSV content
      */
-    public void writeToFile(FileWriter.WriteMode writeMode, String pathToFile) {
-        String report = printAsMarkdown();
-        FileWriter.write(
-                writeMode,
-                pathToFile.contains("'") ? pathToFile : "'" + pathToFile + "'",
-                zoneIdAsString,
-                report);
+    public String printAsCsv() {
+        log.debug("building the Ledger CSV report...");
+        var zoneId = ZoneId.of(zoneIdAsString);
+        var csvSeparator = ",";
+        var sb = new StringBuilder();
+
+        if (printHeader) {
+            // header
+            columnsToPrint
+                    .forEach(column -> sb.append(column.getValue(language)).append(csvSeparator));
+            sb.setLength(sb.length() - 1);
+            sb.append(System.lineSeparator());
+        }
+
+        // data
+        transactions
+                .stream()
+                .sorted(Comparator.comparing(Transaction::getCreated))
+                .forEach(transaction -> {
+                    columnsToPrint
+                            .forEach(header -> sb
+                                    .append(callGetter(header, transaction, zoneId).trim())
+                                    .append(csvSeparator));
+                    sb.setLength(sb.length() - 1);
+                    sb.append(System.lineSeparator());
+                });
+        return sb.toString();
     }
 
     /**
@@ -191,7 +220,7 @@ public class LedgerWriter {
                 Class<?> returnType = getter.getReturnType();
 
                 if (String.class.equals(returnType)) {
-                    value = (String) getter.invoke(transaction);
+                    value = (String) Optional.ofNullable(getter.invoke(transaction)).orElse("");
 
                 } else if (TransactionType.class.equals(returnType)) {
                     var x = (TransactionType) getter.invoke(transaction);

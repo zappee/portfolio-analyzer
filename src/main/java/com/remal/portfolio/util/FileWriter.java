@@ -1,5 +1,7 @@
 package com.remal.portfolio.util;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -10,13 +12,14 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 /**
- * This is a tool that writes content to file..
+ * This is a tool that writes content to file.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class FileWriter {
 
     /**
@@ -66,7 +69,7 @@ public class FileWriter {
 
                 case APPEND:
                     if ((new File(filename)).createNewFile()) {
-                        System.out.println("file has been created successfully");
+                        log.debug("The '{}' file has been created successfully.", filename);
                     }
                     if (isEmptyOrEndsWithNewline(filename)) {
                         Files.write(path, content.getBytes(), StandardOpenOption.APPEND);
@@ -107,6 +110,5 @@ public class FileWriter {
      * Utility classes should not have public constructors.
      */
     private FileWriter() {
-        // do nothing
     }
 }

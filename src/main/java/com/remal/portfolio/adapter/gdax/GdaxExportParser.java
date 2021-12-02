@@ -9,6 +9,7 @@ import com.remal.portfolio.util.Strings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class GdaxExportParser {
 
     /**
@@ -78,6 +80,7 @@ public class GdaxExportParser {
      * Collects the transaction list.
      */
     public void parse() {
+        log.debug("generating transaction list...");
         transactions.clear();
         accounts.forEach(account -> {
             Fill fill = fills.getOrDefault(account.getTradeId(), Fill.builder().build());
@@ -137,6 +140,7 @@ public class GdaxExportParser {
      * @throws java.io.IOException throws in case of error
      */
     private void parseAccountCsv(String accountCsvFile) throws IOException {
+        log.debug("reading '{}' file...", accountCsvFile);
         int skipLeadingElements = hasHeader ? 1 : 0;
         try (Stream<String> stream = Files.lines(Paths.get(accountCsvFile))) {
             stream.skip(skipLeadingElements).forEach(line -> {
@@ -165,6 +169,7 @@ public class GdaxExportParser {
      * @throws IOException throws in case of error
      */
     private void parseFillsCsv(String fillsCsvFile) throws IOException {
+        log.debug("reading '{}' file...", fillsCsvFile);
         int skipLeadingElements = hasHeader ? 1 : 0;
         try (Stream<String> stream = Files.lines(Paths.get(fillsCsvFile))) {
             stream.skip(skipLeadingElements).forEach(line -> {

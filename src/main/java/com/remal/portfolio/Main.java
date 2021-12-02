@@ -2,7 +2,9 @@ package com.remal.portfolio;
 
 import com.remal.portfolio.adapter.gdax.GdaxExportParser;
 import com.remal.portfolio.util.FileWriter;
+import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.LedgerWriter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 
@@ -14,6 +16,7 @@ import java.io.IOException;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class Main {
 
     /**
@@ -23,15 +26,21 @@ public class Main {
      * @throws java.io.IOException throws in case of error
      */
     public static void main(String[] args) throws IOException {
-        var accountFile = "path/to/account.csv";
-        var fillsFile = "path/tp/fills.csv";
+        var accountFile = "src/main/resources/gdax/account.csv";
+        var fillsFile = "src/main/resources/gdax/fills.csv";
 
         var parser = new GdaxExportParser(accountFile, fillsFile);
         parser.parse();
 
-        var pathToFile = "path/to/ledger.md";
+        // path format for wri
         var writer = new LedgerWriter(parser.getTransactions());
-        System.out.println(writer.printAsMarkdown());
-        writer.writeToFile(FileWriter.WriteMode.OVERWRITE, pathToFile);
+        var report = writer.printAsMarkdown();
+        FileWriter.write(
+                FileWriter.WriteMode.OVERWRITE,
+                "'src/main/resources/generated/ledger.md'",
+                writer.getZoneIdAsString(), report);
+
+        LogLevel.off();
+        log.debug("done");
     }
 }
