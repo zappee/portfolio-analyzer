@@ -51,6 +51,5 @@ public class Strings {
      * Utility classes should not have public constructors.
      */
     private Strings() {
-        // do nothing
     }
 }

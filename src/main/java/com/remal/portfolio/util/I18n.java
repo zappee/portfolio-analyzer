@@ -31,6 +31,5 @@ public class I18n {
      * Utility classes should not have public constructors.
      */
     private I18n() {
-        // do nothing
     }
 }

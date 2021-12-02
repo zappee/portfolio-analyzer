@@ -32,6 +32,5 @@ public class BigDecimals {
      * Utility classes should not have public constructors.
      */
     private BigDecimals() {
-        // do nothing
     }
 }

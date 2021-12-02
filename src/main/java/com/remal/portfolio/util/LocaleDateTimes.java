@@ -37,6 +37,5 @@ public class LocaleDateTimes {
      * Utility classes should not have public constructors.
      */
     private LocaleDateTimes() {
-        // do nothing
     }
 }
