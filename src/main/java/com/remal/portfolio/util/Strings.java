@@ -48,6 +48,20 @@ public class Strings {
     }
 
     /**
+     * Converts ISO formatted timestamp string to a LocalDateTime.
+     *
+     * @param dateTimePattern the date-time format for parsing dates from the Excel
+     * @param zoneId time zone info
+     * @param timeAsString the timestamp as a string
+     * @return LocalDateTime converted object
+     */
+    public static LocalDateTime toLocalDateTime(String dateTimePattern, ZoneId zoneId, String timeAsString) {
+        var formatter = DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId);
+        var dateInstant = Instant.from(formatter.parse(timeAsString));
+        return LocalDateTime.ofInstant(dateInstant, ZoneId.of(ZoneOffset.UTC.getId()));
+    }
+
+    /**
      * Utility classes should not have public constructors.
      */
     private Strings() {

@@ -21,6 +21,11 @@ public enum TransactionType {
     DEPOSIT,
 
     /**
+     * Fee of the transaction.
+     */
+    FEE,
+
+    /**
      *Sell trade.
      */
     SELL,

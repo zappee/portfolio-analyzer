@@ -62,7 +62,7 @@ public class LedgerWriter {
      */
     @Setter
     @Getter
-    private String decimalFormat = "%8.4f";
+    private String decimalFormat = "%16.8f";
 
     /**
      * Date pattern that is used to show timestamps in the reports.

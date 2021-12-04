@@ -1,7 +1,7 @@
-package com.remal.portfolio.adapter.gdax;
+package com.remal.portfolio.parser.gdax;
 
-import com.remal.portfolio.adapter.gdax.model.Account;
-import com.remal.portfolio.adapter.gdax.model.Fill;
+import com.remal.portfolio.parser.gdax.model.Account;
+import com.remal.portfolio.parser.gdax.model.Fill;
 import com.remal.portfolio.model.Currency;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
@@ -16,9 +16,8 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -48,21 +47,21 @@ public class GdaxExportParser {
     private boolean hasHeader = true;
 
     /**
-     * The parsed account.csv file.
-     */
-    private final List<Account> accounts = new ArrayList<>();
-
-    /**
-     * The parsed fills.csv file.
-     */
-    private final Map<String, Fill> fills = new HashMap<>();
-
-    /**
      * The complete list of the transactions that the user has made
      * and was filled.
      */
     @Getter
     private final List<Transaction> transactions = new ArrayList<>();
+
+    /**
+     * The parsed account.csv file.
+     */
+    private final ArrayList<Account> accounts = new ArrayList<>();
+
+    /**
+     * The parsed fills.csv file.
+     */
+    private final ArrayList<Fill> fills = new ArrayList<>();
 
     /**
      * Constructor.
@@ -77,40 +76,82 @@ public class GdaxExportParser {
     }
 
     /**
-     * Collects the transaction list.
+     * Builds the transaction list.
      */
     public void parse() {
         log.debug("generating transaction list...");
         transactions.clear();
-        accounts.forEach(account -> {
-            Fill fill = fills.getOrDefault(account.getTradeId(), Fill.builder().build());
+        // add transactions
+        fills
+                .forEach(fill -> {
+                    Account a = getBelongingTransaction(fill.getTradeId(), fill.getProduct()).orElseThrow();
+                    Transaction t = Transaction
+                            .builder()
+                            .portfolio(a.getPortfolio())
+                            .type(toType(a.getType(), fill.getSide()))
+                            .created(a.getTime())
+                            .volume(fill.getSize())
+                            .price(fill.getPrice())
+                            .fee(fill.getFee())
+                            .currency(Currency.getEnum(fill.getUnit()))
+                            .ticker(fill.getProduct())
+                            .transferId(a.getTransferId())
+                            .tradeId(a.getTradeId())
+                            .orderId(a.getOrderId())
+                            .build();
+                    transactions.add(t);
+                });
 
-            // correction in case of DEPOSIT/WITHDRAWAL in EUR (or USD)
-            TransactionType type = toType(account.getType(), fill.getSide());
-            Currency currency = Currency.getEnum(fill.getUnit());
-            String ticker = account.getUnit();
-            if ((TransactionType.DEPOSIT == type || TransactionType.WITHDRAWAL == type)
-                    && Currency.UNKNOWN_CURRENCY != Currency.getEnum(ticker)) {
-                currency = Currency.getEnum(ticker);
-                ticker = null;
-            }
+        // add deposit and withdrawal
+        transactions.addAll(getDepositsAndWithdrawals());
+    }
 
-            Transaction t = Transaction
-                    .builder()
-                    .portfolio(account.getPortfolio())
-                    .type(type)
-                    .created(account.getTime())
-                    .volume(account.getAmount())
-                    .price(fill.getPrice())
-                    .fee(fill.getFee())
-                    .currency(currency)
-                    .ticker(ticker)
-                    .transferId(account.getTransferId())
-                    .tradeId(account.getTradeId())
-                    .orderId(account.getOrderId())
-                    .build();
-            transactions.add(t);
-        });
+    /**
+     * Returns with the list of deposits and withdrawals.
+     *
+     * @return the list of the transactions
+     */
+    private List<Transaction> getDepositsAndWithdrawals() {
+        List<Transaction> t = new ArrayList<>();
+        accounts
+                .stream()
+                .filter(a ->
+                        a.getType().toUpperCase().equals(TransactionType.DEPOSIT.name())
+                                || a.getType().toUpperCase().equals(TransactionType.WITHDRAWAL.name()))
+                .filter(a -> a.getTradeId().isEmpty())
+                .forEach(a -> t.add(Transaction
+                        .builder()
+                        .portfolio(a.getPortfolio())
+                        .type(toType(a.getType(), null))
+                        .created(a.getTime())
+                        .volume(a.getAmount())
+                        .price(BigDecimal.ONE)
+                        .fee(BigDecimal.ZERO)
+                        .currency(Currency.getEnum(a.getUnit()))
+                        .transferId(a.getTransferId())
+                        .tradeId(a.getTradeId())
+                        .orderId(a.getOrderId())
+                        .build()));
+
+        return t;
+    }
+
+    /**
+     * Search for the transaction in the account.csv file that belongs
+     * to the given trade.
+     *
+     * @param tradeId trade id
+     * @param product product name, e.g. ETH-EUR
+     * @return the transaction
+     */
+    private Optional<Account> getBelongingTransaction(String tradeId, String product) {
+        return accounts
+                .stream()
+                .filter(t -> {
+                    var unit = product.split("-")[0];
+                    return t.getTradeId().equals(tradeId) && t.getUnit().equals(unit);
+                })
+                .findFirst();
     }
 
     /**
@@ -124,6 +165,7 @@ public class GdaxExportParser {
         switch (type) {
             case "deposit":
             case "withdrawal":
+            case "fee":
                 return TransactionType.valueOf(type.toUpperCase());
 
             // fee, match
@@ -150,13 +192,12 @@ public class GdaxExportParser {
                         .type(fields[1])
                         .time(Strings.toLocalDateTime(fields[2]))
                         .amount(new BigDecimal(fields[3]))
-                        .balance(new BigDecimal(fields[4]))
+                        .balance(fields[4].isEmpty() ? null : new BigDecimal(fields[4]))
                         .unit(fields[5])
                         .transferId(fields[6])
                         .tradeId(fields[7])
                         .orderId(fields[8])
                         .build();
-
                 accounts.add(a);
             });
         }
@@ -187,8 +228,7 @@ public class GdaxExportParser {
                         .total(new BigDecimal(fields[9]))
                         .unit(fields[10])
                         .build();
-
-                fills.put(fill.getTradeId(), fill);
+                fills.add(fill);
             });
         }
     }

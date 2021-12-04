@@ -1,4 +1,4 @@
-package com.remal.portfolio.adapter.gdax.model;
+package com.remal.portfolio.parser.gdax.model;
 
 import lombok.Builder;
 import lombok.Getter;
