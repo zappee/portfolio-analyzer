@@ -30,7 +30,10 @@ public class BigDecimals {
 
     /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private BigDecimals() {
+        throw new UnsupportedOperationException();
     }
 }

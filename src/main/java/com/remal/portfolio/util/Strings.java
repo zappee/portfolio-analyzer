@@ -1,10 +1,14 @@
 package com.remal.portfolio.util;
 
+import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 /**
  * Tool that converts and formats String objects.
@@ -14,6 +18,7 @@ import java.time.format.DateTimeFormatter;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class Strings {
 
     /**
@@ -37,6 +42,7 @@ public class Strings {
 
     /**
      * Converts ISO formatted timestamp string to a LocalDateTime.
+     * Pattern: 2021-12-31T22.00.00.000[00]
      *
      * @param timeAsString the timestamp as a string
      * @return LocalDateTime converted object
@@ -56,14 +62,23 @@ public class Strings {
      * @return LocalDateTime converted object
      */
     public static LocalDateTime toLocalDateTime(String dateTimePattern, ZoneId zoneId, String timeAsString) {
-        var formatter = DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId);
-        var dateInstant = Instant.from(formatter.parse(timeAsString));
-        return LocalDateTime.ofInstant(dateInstant, ZoneId.of(ZoneOffset.UTC.getId()));
+        try {
+            var formatter = DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId);
+            var dateInstant = Instant.from(formatter.parse(timeAsString));
+            return LocalDateTime.ofInstant(dateInstant, ZoneId.of(ZoneOffset.UTC.getId()));
+        } catch (DateTimeParseException e) {
+            log.error("Error while parsing the '{}' string to datetime, pattern: '{}'.", timeAsString, dateTimePattern);
+            System.exit(CommandLine.ExitCode.SOFTWARE);
+        }
+        return null;
     }
 
     /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private Strings() {
+        throw new UnsupportedOperationException();
     }
 }

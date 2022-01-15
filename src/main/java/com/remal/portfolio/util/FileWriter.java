@@ -1,6 +1,7 @@
 package com.remal.portfolio.util;
 
 import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 /**
- * This is a tool that writes content to file.
+ * This is a tool that writes string to file.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -23,7 +24,13 @@ import java.time.ZoneId;
 public class FileWriter {
 
     /**
-     * The wat to persist data to file.
+     * Default time zone that is used while converting date-time patterns
+     * in the filename.
+     */
+    public static final String DEFAULT_TIME_ZONE = "Europe/London";
+
+    /**
+     * The mode how to persist data to file.
      */
     public enum WriteMode {
 
@@ -48,7 +55,18 @@ public class FileWriter {
     }
 
     /**
-     *  Writes content  to file.
+     * Writes content to file.
+     *
+     * @param writeMode controls how to open the file
+     * @param outputFile the path of the file to be created, e.g. "''yyyy-MM-dd'_portfolio-summary.md'"
+     * @param content the content that wil be written to the file
+     */
+    public static void write(FileWriter.WriteMode writeMode, String outputFile, String content) {
+        write(writeMode, outputFile, DEFAULT_TIME_ZONE, content);
+    }
+
+    /**
+     * Writes content to file.
      *
      * @param writeMode controls how to open the file
      * @param pathToFile the path of the file to be created, e.g. "''yyyy-MM-dd'_portfolio-summary.md'"
@@ -56,11 +74,16 @@ public class FileWriter {
      * @param content the content that wil be written to the file
      */
     public static void write(FileWriter.WriteMode writeMode, String pathToFile, String zoneIdAsString, String content) {
-
         try {
+            // Within date and time pattern strings, unquoted letters from 'A' to 'Z' and from 'a' to 'z' are
+            // interpreted as pattern letters representing the components of a date or time string. Text can be
+            // quoted using single quotes (') to avoid interpretation.
+            var escapedFilename = pathToFile.contains("'") ? pathToFile : "'" + pathToFile + "'";
+
             var zoneId = ZoneId.of(zoneIdAsString);
-            var filename = LocaleDateTimes.toString(zoneId, pathToFile, LocalDateTime.now());
+            var filename = LocaleDateTimes.toString(zoneId, escapedFilename, LocalDateTime.now());
             var path = Paths.get(filename);
+            log.debug("writing report to '{}', write-mode: {}", filename, writeMode);
 
             switch (writeMode) {
                 case OVERWRITE:
@@ -78,16 +101,18 @@ public class FileWriter {
                     }
                     break;
 
+                case STOP_IF_EXIST:
                 default:
                     Files.write(path, content.getBytes(), StandardOpenOption.CREATE_NEW);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("An unexpected error has occurred while writing to '{}'. Error: {}", pathToFile, e.toString());
+            System.exit(CommandLine.ExitCode.SOFTWARE);
         }
     }
 
     /**
-     *  Checks whether the file ends with a new line character or not.
+     * Checks whether the file ends with a new line character or not.
      *
      * @param pathToFile path to the file
      * @return true if the file ends with a new line character
@@ -108,7 +133,10 @@ public class FileWriter {
 
     /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private FileWriter() {
+        throw new UnsupportedOperationException();
     }
 }

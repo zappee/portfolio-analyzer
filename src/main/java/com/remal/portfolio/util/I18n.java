@@ -4,8 +4,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
- * This is a property file reader that reads translations for labels
- * used in the reports.
+ * This is a property file reader that reads human-readable labels used in
+ * the reports.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -29,7 +29,10 @@ public class I18n {
 
     /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private I18n() {
+        throw new UnsupportedOperationException();
     }
 }

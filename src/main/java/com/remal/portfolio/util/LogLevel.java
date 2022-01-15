@@ -15,24 +15,40 @@ import org.slf4j.LoggerFactory;
 public class LogLevel {
 
     /**
-     * Turn off quiet mode.
+     * Turn on or off the logger.
+     *
+     * @param quietMode if it is true then the logger will be turned off
      */
-    public static void off() {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-        loggerContext.getLogger("ROOT").setLevel(Level.OFF);
+    public static void configureLogger(boolean quietMode) {
+        if (quietMode) {
+            LogLevel.off();
+        } else {
+            LogLevel.on();
+        }
     }
 
     /**
-     * Turn on the logging.
+     * Turn on the logger.
      */
-    public static void on() {
+    private static void on() {
         LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getLogger("ROOT").setLevel(Level.DEBUG);
     }
 
     /**
+     * Turn off the logger.
+     */
+    private static void off() {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        loggerContext.getLogger("ROOT").setLevel(Level.ERROR);
+    }
+
+    /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private LogLevel() {
+        throw new UnsupportedOperationException();
     }
 }

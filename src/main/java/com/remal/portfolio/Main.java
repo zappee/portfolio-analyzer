@@ -1,49 +1,66 @@
 package com.remal.portfolio;
 
-import com.remal.portfolio.parser.gdax.GdaxExportParser;
-import com.remal.portfolio.constant.Header;
-import com.remal.portfolio.util.FileWriter;
-import com.remal.portfolio.util.LogLevel;
-import com.remal.portfolio.writer.LedgerWriter;
-import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.Arrays;
+import com.remal.portfolio.picocli.command.CommandCoinbaseDownloader;
+import com.remal.portfolio.picocli.command.CommandCombine;
+import com.remal.portfolio.picocli.provider.ManifestVersionProvider;
+import com.remal.portfolio.picocli.renderer.CustomOptionRenderer;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.status.StatusLogger;
+import picocli.CommandLine;
 
 /**
- * Entry point of the command-line-interface.
+ * Portfolio analyzer command line tool.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-@Slf4j
+@CommandLine.Command(
+        subcommands = {CommandCoinbaseDownloader.class, CommandCombine.class},
+        synopsisSubcommandLabel = "(ledger | summary)",
+        name = "Remal Portfolio-Analyzer",
+        description = "This is a command-line tool that helps you to track your portfolio in one place and "
+                + "generates regular investment reports.%n",
+        usageHelpAutoWidth = true,
+        mixinStandardHelpOptions = true,
+        versionProvider = ManifestVersionProvider.class,
+        commandListHeading = "%nCommands:%n",
+        exitCodeListHeading = "%nExit codes:%n",
+        exitCodeList = {
+            CommandLine.ExitCode.OK + ": Successful execution.",
+            CommandLine.ExitCode.SOFTWARE + ": An unexpected error appeared while executing this application."},
+        footer = Main.FOOTER,
+        footerHeading = Main.FOOTER_HEADING
+)
 public class Main {
 
     /**
-     * Starts the application.
-     *
-     * @param args command line arguments
-     * @throws java.io.IOException throws in case of error
+     * CommandCommon line interface footer.
      */
-    public static void main(String[] args) throws IOException {
-        var accountFile = "src/main/resources/adapter/gdax/account.csv";
-        var fillsFile = "src/main/resources/adapter/gdax/fills.csv";
-        var parser = new GdaxExportParser(accountFile, fillsFile);
-        parser.parse();
+    public static final String FOOTER = "%nDocumentation, source code: https://github.com/zappee/portfolio-analyzer%n";
 
-        var writer = new LedgerWriter(parser.getTransactions());
-        writer.setColumnsToPrint(Arrays.asList(Header.PORTFOLIO, Header.TICKER, Header.TYPE,Header.CREATED,
-                Header.VOLUME, Header.PRICE, Header.FEE, Header.CURRENCY, Header.ORDER_ID, Header.TRADE_ID,
-                Header.TRANSFER_ID));
-        var report = writer.printAsCsv();
-        FileWriter.write(
-                FileWriter.WriteMode.OVERWRITE,
-                "'src/main/resources/report/ledger-1.csv'",
-                writer.getZoneIdAsString(), report);
+    /**
+     * CommandCommon line interface footer heading.
+     */
+    public static final String FOOTER_HEADING = "%nPlease report issues at arnold.somogyi@gmail.com.";
 
-        LogLevel.off();
-        log.debug("done");
+    /**
+     * Entry point of the application.
+     *
+     * @param args program arguments
+     */
+    public static void main(String[] args) {
+        // Apache POI tries to initialize log4j, but this project does not use it.
+        // So org.apache.logging.log4j.status.StatusLogger must be disabled, otherwise
+        // the following error message appears:
+        //
+        // StatusLogger Log4j2 could not find a logging implementation. Please add
+        // log4j-core to the classpath. Using SimpleLogger to log to the console...
+        StatusLogger.getLogger().setLevel(Level.OFF);
+
+        CommandLine cmd = new CommandLine(new Main());
+        cmd.setHelpFactory(new CustomOptionRenderer());
+        System.exit(cmd.execute(args));
     }
 }

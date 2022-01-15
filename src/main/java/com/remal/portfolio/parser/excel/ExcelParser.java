@@ -3,6 +3,8 @@ package com.remal.portfolio.parser.excel;
 import com.remal.portfolio.model.Currency;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,14 +16,16 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import picocli.CommandLine;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 /**
- * Parses Excel file to list of transactions.
+ * Transform an Excel file to list of transactions.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -29,7 +33,7 @@ import java.util.stream.IntStream;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class ExcelParser {
+public class ExcelParser implements Parser {
 
     /**
      * Set it to true if the CSV file that will be parsed has a header at the first row.
@@ -40,13 +44,6 @@ public class ExcelParser {
     private boolean hasHeader = true;
 
     /**
-     * Date pattern that is used to show timestamps in the reports.
-     */
-    @Getter
-    @Setter
-    private String dateTimePattern = "yyyy.MM.dd HH:mm:ss";
-
-    /**
      * Timezone that is used when timestamp is rendered.
      */
     @Getter
@@ -54,69 +51,80 @@ public class ExcelParser {
     private String zoneIdAsString = "Europe/London";
 
     /**
-     * The complete list of the transactions that the user has made
-     * and was filled.
+     * Date pattern that is used to show timestamps in the reports.
      */
-    @Getter
-    private final List<Transaction> transactions = new ArrayList<>();
+    private final String dateTimePattern;
 
-    private final String pathToExcelFile;
     private final DataFormatter formatter = new DataFormatter();
+    private final String file;
 
     /**
      * Constructor.
      *
-     * @param pathToExcelFile path to the Excel file
+     * @param file excel file to parse
+     * @param dateTimePattern pattern used for converting string to LocalDateTime
      */
-    public ExcelParser(String pathToExcelFile) {
-        this.pathToExcelFile = pathToExcelFile;
+    public ExcelParser(String file, String dateTimePattern) {
+        this.file = file;
+        this.dateTimePattern = dateTimePattern;
         formatter.addFormat("General", new java.text.DecimalFormat("#.###############"));
     }
 
-    /**
-     * Builds the transaction list.
-     */
-    public void parse() {
+    @Override
+    public List<Transaction> parse() {
+        log.debug("reading transactions from {}...", file);
         var zoneId = ZoneId.of(zoneIdAsString);
-        transactions.clear();
+        List<Transaction> transactions = new ArrayList<>();
 
-        try (var xlsFile = new FileInputStream(pathToExcelFile)) {
+        try (var xlsFile = new FileInputStream(file)) {
             var workbook = new XSSFWorkbook(xlsFile);
             var sheet = workbook.getSheetAt(0);
             var lastRowIndex = sheet.getLastRowNum() + 1;
-
             var startRow = hasHeader ? 1 : 0;
+            log.debug("size of the excel spreadsheet(0)= {}:{}", startRow, lastRowIndex);
+
             IntStream.range(startRow, lastRowIndex).forEach(rowIndex -> {
                 var row = sheet.getRow(rowIndex);
                 var t = Transaction.builder().build();
-                var colIndex = 0;
-                t.setPortfolio(getCellValueAsString(row, colIndex));
-                colIndex++;
-                t.setTicker(getCellValueAsString(row, colIndex));
-                colIndex++;
-                t.setType(TransactionType.valueOf(getCellValueAsString(row, colIndex)));
-                colIndex++;
-                t.setCreated(Strings.toLocalDateTime(dateTimePattern, zoneId, getCellValueAsString(row, colIndex)));
-                colIndex++;
-                t.setVolume(getCellValueAsBigDecimal(row, colIndex));
-                colIndex++;
-                t.setPrice(getCellValueAsBigDecimal(row, colIndex));
-                colIndex++;
-                t.setFee(getCellValueAsBigDecimal(row, colIndex));
-                colIndex++;
-                t.setCurrency(Currency.getEnum(getCellValueAsString(row, colIndex)));
-                colIndex++;
-                t.setOrderId(getCellValueAsString(row, colIndex));
-                colIndex++;
-                t.setTradeId(getCellValueAsString(row, colIndex));
-                colIndex++;
-                t.setTransferId(getCellValueAsString(row, colIndex));
+                var currency = Currency.getEnum(getCellValueAsString(row, 7));
+
+                t.setPortfolio(getCellValueAsString(row, 0));
+                t.setTicker(getTicker(getCellValueAsString(row, 1),currency));
+                t.setType(TransactionType.valueOf(getCellValueAsString(row, 2)));
+                t.setCreated(Strings.toLocalDateTime(dateTimePattern, zoneId, getCellValueAsString(row, 3)));
+                t.setVolume(Objects.requireNonNull(getCellValueAsBigDecimal(row, 4)).abs());
+                t.setPrice(getCellValueAsBigDecimal(row, 5));
+                t.setFee(getCellValueAsBigDecimal(row, 6));
+                t.setCurrency(currency);
+                t.setOrderId(getCellValueAsString(row, 8));
+                t.setTradeId(getCellValueAsString(row, 9));
+                t.setTransferId(getCellValueAsString(row, 10));
                 transactions.add(t);
             });
-        } catch (Exception e) {
-            var message = "An unexpected error appeared while parsing the '{}' file. Error: {}";
-            log.error(message, pathToExcelFile, e.getMessage());
+            log.debug("found {} transactions in {}.", transactions.size(), file);
+        } catch (IOException e) {
+            log.error("Excel file parsing error: {}", e.toString());
             System.exit(CommandLine.ExitCode.SOFTWARE);
+        }
+
+        Sorter.sort(transactions);
+        return transactions;
+    }
+
+    /**
+     * Calculates the ticker. When the ticker is empty then the
+     * currency wil be used as a ticker. That may happen in case of
+     * deposits and withdrawals.
+     *
+     * @param ticker abbreviation used to uniquely identify the traded shares
+     * @param currency the unit of the price and fee
+     * @return the ticker
+     */
+    private String getTicker(String ticker, Currency currency) {
+        if (Objects.isNull(ticker) || ticker.isEmpty()) {
+            return currency.name();
+        } else {
+            return ticker;
         }
     }
 

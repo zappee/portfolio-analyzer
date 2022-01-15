@@ -16,9 +16,19 @@ public enum TransactionType {
     BUY,
 
     /**
+     *Sell trade.
+     */
+    SELL,
+
+    /**
      * Money deposit.
      */
     DEPOSIT,
+
+    /**
+     * Money withdrawal.
+     */
+    WITHDRAWAL,
 
     /**
      * Fee of the transaction.
@@ -26,14 +36,14 @@ public enum TransactionType {
     FEE,
 
     /**
-     *Sell trade.
+     * Distribution of corporate profits to eligible shareholders.
      */
-    SELL,
+    DIVIDEND,
 
     /**
-     * Money withdrawal.
+     * Used when the type is undefined.
      */
-    WITHDRAWAL;
+    UNKNOWN;
 
     /**
      * A null safe valueOf method.
@@ -43,9 +53,10 @@ public enum TransactionType {
      */
     public static TransactionType getEnum(String value) {
         try {
-            return TransactionType.valueOf(value.toUpperCase());
+            var correctedValue = value.equals("withdraw") ? "withdrawal" : value;
+            return TransactionType.valueOf(correctedValue.toUpperCase());
         } catch (NullPointerException e) {
-            return null;
+            return TransactionType.UNKNOWN;
         }
     }
 }

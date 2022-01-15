@@ -1,8 +1,9 @@
-package com.remal.portfolio.constant;
+package com.remal.portfolio.i18n;
 
 import com.remal.portfolio.util.I18n;
 import lombok.AllArgsConstructor;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -17,19 +18,27 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public enum Header {
 
-    CREATED("header.created"),
-    CURRENCY("header.currency"),
-    FEE("header.fee"),
-    ORDER_ID("header.order-id"),
     PORTFOLIO("header.portfolio"),
-    PRICE("header.price"),
     TICKER("header.ticker"),
-    TRADE_ID("header.trade-id"),
-    TRANSFER_ID("header.transfer-id"),
     TYPE("header.type"),
-    VOLUME("header.volume");
+    CREATED("header.created"),
+    VOLUME("header.volume"),
+    PRICE("header.price"),
+    FEE("header.fee"),
+    CURRENCY("header.currency"),
+    ORDER_ID("header.order-id"),
+    TRADE_ID("header.trade-id"),
+    TRANSFER_ID("header.transfer-id");
 
-    private static final String DEFAULT_LANGUAGE = "en";
+    /**
+     * List of the supported headers.
+     */
+    public static final List<Header> ALL = List.of(
+            PORTFOLIO, TICKER, TYPE, CREATED, VOLUME, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID);
+
+    /**
+     * Default language of the reports.
+     */
     private String i18nKey;
 
     /**
@@ -49,15 +58,5 @@ public enum Header {
      */
     public String getValue(String language) {
         return I18n.get(language, i18nKey);
-    }
-
-    /**
-     * Reads the default translation from the internationalization
-     * properties file.
-     *
-     * @return the translated value
-     */
-    public String getValue() {
-        return I18n.get(DEFAULT_LANGUAGE, i18nKey);
     }
 }

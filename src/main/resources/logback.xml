@@ -1,10 +1,21 @@
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="STDOUT_LOG" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>[%-5level] %msg%n</pattern>
         </encoder>
     </appender>
+
+    <appender name="STDOUT_DATA" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.remal.portfolio.writer.StdoutWriter" level="debug" additivity = "false">
+        <appender-ref ref="STDOUT_DATA" />
+    </logger>
+
     <root level="debug">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT_LOG" />
     </root>
 </configuration>

@@ -1,5 +1,8 @@
 package com.remal.portfolio.util;
 
+import lombok.extern.slf4j.Slf4j;
+import picocli.CommandLine;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -12,6 +15,7 @@ import java.time.format.DateTimeFormatter;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public class LocaleDateTimes {
 
     /**
@@ -26,16 +30,26 @@ public class LocaleDateTimes {
         if (dateTime == null) {
             return "";
         } else {
-            var zonedUtc = dateTime.atZone(ZoneId.of("UTC")); // setting UTC as the timezone
-            var zoned = zonedUtc.withZoneSameInstant(zoneId); // converting to the selected zone
-            var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
-            return zoned.format(formatter);
+            try {
+                var zonedUtc = dateTime.atZone(ZoneId.of("UTC")); // setting UTC as the timezone
+                var zoned = zonedUtc.withZoneSameInstant(zoneId); // converting to the selected zone
+                var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
+                return zoned.format(formatter);
+            } catch (IllegalArgumentException e) {
+                log.error("An error has occurred while converting '{}' date-time pattern to string. Error: {}",
+                        dateTimePattern, e.toString());
+                System.exit(CommandLine.ExitCode.SOFTWARE);
+                return null;
+            }
         }
     }
 
     /**
      * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
     private LocaleDateTimes() {
+        throw new UnsupportedOperationException();
     }
 }

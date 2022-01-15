@@ -10,21 +10,14 @@ package com.remal.portfolio.model;
  */
 public enum Currency {
 
-    /**
-     * Currency code for Euro.
-     */
-    EUR,
-
-    /**
-     * Currency code for United States Dollar.
-     */
-    USD,
-
-    /**
-     * It is used to indicate that the provided value is not a
-     * valid currency.
-     */
-    UNKNOWN_CURRENCY;
+    AED, ALL, ARS, AUD, BAM, BGN, BHD, BOB, BRL, BYR,
+    CAD, CHF, CLP, CNY, COP, CRC, CSD, CZK, DKK, DOP,
+    DZD, EEK, EGP, EUR, GBP, GTQ, HKD, HNL, HRK, HUF,
+    IDR, ILS, INR, IQD, ISK, JOD, JPY, KRW, KWD, LBP,
+    LTL, LVL, LYD, MAD, MKD, MXN, MYR, NIO, NOK, NZD,
+    OMR, PAB, PEN, PHP, PLN, PYG, QAR, RON, RSD, RUB,
+    SAR, SDG, SEK, SGD, SKK, SVC, SYP, THB, TND, TRY,
+    TWD, UAH, USD, UYU, VEF, VND, YER, ZAR, UNKNOWN;
 
     /**
      * A null safe valueOf method.
@@ -36,8 +29,7 @@ public enum Currency {
         try {
             return Currency.valueOf(value.toUpperCase());
         } catch (NullPointerException | IllegalArgumentException e) {
-            return Currency.UNKNOWN_CURRENCY;
+            return Currency.UNKNOWN;
         }
     }
-
 }
