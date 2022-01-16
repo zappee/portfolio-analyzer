@@ -1,7 +1,6 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.i18n.Header;
-import com.remal.portfolio.model.Language;
 import com.remal.portfolio.picocli.converter.HeaderConverter;
 import com.remal.portfolio.util.FileWriter;
 import picocli.CommandLine;
@@ -34,7 +33,7 @@ public abstract class CommandCommon {
     @CommandLine.Option(
             names = {"-r", "--replace"},
             description = "Replace portfolio name.%n"
-                    + "  E.g.: 'default:coinbase, manual:interactive-brokers'",
+                    + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
             split = ",")
     final List<String> replaces = new ArrayList<>();
 
@@ -89,11 +88,11 @@ public abstract class CommandCommon {
          */
         @CommandLine.Option(
                 names = {"-l", "--language"},
-                description = "Language of the report (ISO 639-1)."
-                        + "%n  Candidates: ${COMPLETION-CANDIDATES}"
+                description = "Language of the report, ISO 639-1 code."
+                        + "%n  Candidates: EN, HU, etc."
                         + "%n  Default: ${DEFAULT-VALUE}",
                 defaultValue = "EN")
-        public Language language;
+        public String language;
 
         /**
          * CLI definition: set the list of the columns that won't be displayed

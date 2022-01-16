@@ -23,6 +23,7 @@ public class I18n {
      */
     public static String get(String language, String key) {
         var locale = new Locale(language);
+        Locale.setDefault(Locale.ENGLISH);
         var messages = ResourceBundle.getBundle("messages", locale);
         return messages.getString(key);
     }

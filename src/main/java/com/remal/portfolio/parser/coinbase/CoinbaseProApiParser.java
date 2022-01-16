@@ -64,6 +64,7 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
     public CoinbaseProApiParser(String publicKey, String passphrase, String secret, String baseCurrency) {
         super(publicKey, passphrase, secret);
         this.baseCurrency = baseCurrency;
+        log.debug("initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {
             initializeProfiles();

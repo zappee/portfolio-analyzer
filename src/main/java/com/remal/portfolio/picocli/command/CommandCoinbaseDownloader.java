@@ -2,14 +2,16 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.OutputProducer;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.coinbase.CoinbaseProApiParser;
 import com.remal.portfolio.util.LogLevel;
+import com.remal.portfolio.writer.StdoutWriter;
+import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
@@ -92,7 +94,8 @@ public class CommandCoinbaseDownloader extends CommandCommon implements Callable
          */
         @CommandLine.Option(
                 names = {"-b", "--base-currency"},
-                description = "Used for determine the products you are allowed to trade.")
+                description = "Used for determine the products you are allowed to trade."
+                        + "%n  Candidates: EUR, USD, GBP, etc.")
         String baseCurrency;
     }
 
@@ -104,19 +107,28 @@ public class CommandCoinbaseDownloader extends CommandCommon implements Callable
     @Override
     public Integer call() {
         LogLevel.configureLogger(quietMode);
+
+        var baseCurrency = Optional
+                .ofNullable(dataSourceGroup.coinbaseApiDataSourceOption.baseCurrency)
+                .map(String::toUpperCase)
+                .orElse(null);
+
         Parser parser = new CoinbaseProApiParser(
                 dataSourceGroup.coinbaseApiDataSourceOption.key,
                 dataSourceGroup.coinbaseApiDataSourceOption.passphrase,
                 dataSourceGroup.coinbaseApiDataSourceOption.secret,
-                dataSourceGroup.coinbaseApiDataSourceOption.baseCurrency);
+                baseCurrency);
         List<Transaction> transactions = parser.parse();
         log.debug("{} transactions has been downloaded", transactions.size());
 
-        // rename portfolio name
-        OutputProducer.renamePortfolioNames(replaces, transactions);
-
         // print to output
-        OutputProducer.writeTransactions(transactions, quietMode, outputGroup);
+        var writer = TransactionWriter.build(transactions, outputGroup, replaces);
+        if (outputGroup.outputFile == null) {
+            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
+        } else {
+            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
+        }
+
         return CommandLine.ExitCode.OK;
     }
 }

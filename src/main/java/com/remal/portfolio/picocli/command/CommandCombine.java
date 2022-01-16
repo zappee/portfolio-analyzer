@@ -2,7 +2,6 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.OutputProducer;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.csv.CsvParser;
 import com.remal.portfolio.parser.excel.ExcelParser;
@@ -10,6 +9,8 @@ import com.remal.portfolio.parser.markdown.MarkdownParser;
 import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.util.Sorter;
+import com.remal.portfolio.writer.StdoutWriter;
+import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -99,12 +100,15 @@ public class CommandCombine extends CommandCommon implements Callable<Integer> {
         List<Transaction> transactions = new ArrayList<>();
         sourcesGroup.filesToCombine.forEach(x -> combine(readTransactionsFromFile(x.trim()), transactions, overwrite));
 
-        // rename portfolio name
-        OutputProducer.renamePortfolioNames(replaces, transactions);
-
         // print to output
         Sorter.sort(transactions);
-        OutputProducer.writeTransactions(transactions, quietMode, outputGroup);
+        var writer = TransactionWriter.build(transactions, outputGroup, replaces);
+        if (outputGroup.outputFile == null) {
+            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
+        } else {
+            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
+        }
+
         return CommandLine.ExitCode.OK;
     }
 

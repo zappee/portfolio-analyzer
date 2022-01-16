@@ -2,10 +2,12 @@ package com.remal.portfolio.writer;
 
 import com.remal.portfolio.i18n.Header;
 import com.remal.portfolio.model.Currency;
-import com.remal.portfolio.model.Language;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.picocli.command.CommandCommon;
 import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.FileWriter;
+import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.LocaleDateTimes;
 import com.remal.portfolio.util.Strings;
 import lombok.Getter;
@@ -23,6 +25,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,7 +47,7 @@ public class TransactionWriter {
      */
     @Setter
     @Getter
-    private String language = Language.EN.name();
+    private String language;
 
     /**
      * Markdown table separator character.
@@ -94,16 +97,68 @@ public class TransactionWriter {
     private final List<Transaction> transactions;
 
     /**
-     * Constructor.
+     * Writes the list of the transactions to output.
      *
-     * @param transactions the list of the transactions that the user has made and was filled
+     * @param transactions list of transactions
+     * @param outputCliGroup command line interface options
+     * @param replaces list of the portfolio names that will be overridden
+     * @return an initialized TransactionWriter instance
+     * @throws java.lang.UnsupportedOperationException in case of usage of Excel file
      */
-    public TransactionWriter(List<Transaction> transactions) {
-        this.transactions = transactions;
+    public static TransactionWriter build(List<Transaction> transactions,
+                                          CommandCommon.OutputGroup outputCliGroup,
+                                          List<String> replaces) {
+
+        log.debug("initializing report writer with '{}' language...", outputCliGroup.language);
+
+        var writer = new TransactionWriter(transactions, replaces);
+        writer.setPrintHeader(Boolean.parseBoolean(outputCliGroup.printHeader));
+        writer.setLanguage(outputCliGroup.language);
+        writer.setColumnsToHide(outputCliGroup.columnsToHide);
+        writer.setDateTimePattern(outputCliGroup.dateTimePattern);
+        return writer;
     }
 
     /**
-     * Generates a ledger.
+     * Constructor.
+     *
+     * @param transactions the list of the transactions that the user has made and was filled
+     * @param replaces list of the portfolio names that will be overridden
+     */
+    public TransactionWriter(List<Transaction> transactions, List<String> replaces) {
+        this.transactions = transactions;
+        renamePortfolioNames(replaces);
+    }
+
+    /**
+     * Writes the report to file.
+     *
+     * @param writeMode controls how to open the file
+     * @param file report file
+     * @throws java.lang.UnsupportedOperationException throws if EXCEL file type is used
+     */
+    public void writeToFile(FileWriter.WriteMode writeMode, String file) {
+        var filetype = Files.getFileType(file);
+        switch (filetype) {
+            case TEXT:
+                FileWriter.write(writeMode, file, printAsMarkdown());
+                break;
+
+            case EXCEL:
+                throw new UnsupportedOperationException();
+
+            case CSV:
+                FileWriter.write(writeMode, file, printAsCsv());
+                break;
+
+            default:
+                log.error("Unsupported output file type: '{}'", file);
+                System.exit(CommandLine.ExitCode.SOFTWARE);
+        }
+    }
+
+    /**
+     * Generates the transaction report.
      *
      * @return the report as a Markdown string
      */
@@ -149,11 +204,11 @@ public class TransactionWriter {
     }
 
     /**
-     * Generates a ledger report.
+     * Generates the transaction report.
      *
      * @return the report as a CSV content
      */
-    public String printAsCsv() {
+    private String printAsCsv() {
         log.debug("building the Ledger CSV report...");
         var zoneId = ZoneId.of(zoneIdAsString);
         var csvSeparator = ",";
@@ -181,6 +236,32 @@ public class TransactionWriter {
                     sb.append(System.lineSeparator());
                 });
         return sb.toString();
+    }
+
+    /**
+     * Initialize the list of the portfolio names that will be overridden
+     * during the parse.
+     *
+     * @param replaces user defined values from the command line interface
+     */
+    private void renamePortfolioNames(List<String> replaces) {
+        Map<String, String> portfolioNameToRename = new HashMap<>();
+        try {
+            replaces.forEach(x -> {
+                var from = x.split(":")[0];
+                var to = x.split(":")[1];
+                log.debug("portfolio name overwriting: '{}' -> '{}'", from, to);
+                portfolioNameToRename.put(from, to);
+            });
+
+            portfolioNameToRename.forEach((k, v) -> transactions
+                    .stream()
+                    .filter(x -> x.getPortfolio().equals(k)).forEach(x -> x.setPortfolio(v)));
+
+        } catch (ArrayIndexOutOfBoundsException e) {
+            log.error("Invalid value provided for '-map' option.");
+            System.exit(CommandLine.ExitCode.SOFTWARE);
+        }
     }
 
     /**

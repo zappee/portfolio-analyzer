@@ -19,13 +19,13 @@ public class StdoutWriter {
      * This is a replacement of the System.out.println() command and logs
      * content to the standard output with slf4j logger.
      *
-     * @param s to content to be printed to STDOUT
      * @param quietMode turn on or off the logger after printing out the content
+     * @param content to content to be printed to STDOUT
      */
-    public static void debug(String s, boolean quietMode) {
+    public static void debug(boolean quietMode, String content) {
         LogLevel.configureLogger(false);
         log.debug("");
-        log.debug(s);
+        log.debug(content);
         LogLevel.configureLogger(quietMode);
     }
 
