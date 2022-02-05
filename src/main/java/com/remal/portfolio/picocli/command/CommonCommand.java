@@ -1,6 +1,5 @@
 package com.remal.portfolio.picocli.command;
 
-import com.remal.portfolio.i18n.Header;
 import com.remal.portfolio.picocli.converter.HeaderConverter;
 import com.remal.portfolio.util.FileWriter;
 import picocli.CommandLine;
@@ -11,13 +10,14 @@ import java.util.List;
 
 /**
  * Template command-line interface that contains common CLI parameters.
+ * Contains: --quiet, --replace and the output group
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public abstract class CommandCommon {
+public abstract class CommonCommand {
 
     /**
      * In this mode the log file won't be written to the standard output.
@@ -37,7 +37,6 @@ public abstract class CommandCommon {
             split = ",")
     final List<String> replaces = new ArrayList<>();
 
-
     /**
      * An argument group definition for the output.
      */
@@ -56,7 +55,7 @@ public abstract class CommandCommon {
          */
         @CommandLine.Option(
                 names = {"-o", "--output-filename"},
-                description = "Output file, e.g : \"'coinbase-pro_'yyyy-MM-dd'.md'\".%n"
+                description = "Output file, e.g : \"'report_'yyyy-MM-dd'.md'\".%n"
                         + "Accepted extensions: .txt, .md and .xls")
         public String outputFile;
 
@@ -65,7 +64,8 @@ public abstract class CommandCommon {
          */
         @CommandLine.Option(
                 names = {"-w", "--write-mode"},
-                description = "Determines what constitutes a conflict and what the overwrite strategy is."
+                description = "Used only in case of file output mode. It determines %n"
+                        + "what constitutes a conflict and what the overwrite strategy is."
                         + "%n  Candidates: ${COMPLETION-CANDIDATES}"
                         + "%n  Default: ${DEFAULT-VALUE}",
                 defaultValue = "STOP_IF_EXIST")
@@ -96,14 +96,15 @@ public abstract class CommandCommon {
 
         /**
          * CLI definition: set the list of the columns that won't be displayed
-         * in the reports. The column names comes from the Header class.
+         * in the reports. The column names comes from the TransactionColumns class.
          */
         @CommandLine.Option(
                 names = {"-d", "--columns-to-hide"},
                 description = "Comma separated list of column names that won't be displayed in the report"
-                        + "%n  Candidates: ${COMPLETION-CANDIDATES}",
+                        + "%n  Candidates: PORTFOLIO, TICKER, TYPE, TRADE_DATE, QUANTITY, PRICE, FEE, %n"
+                        + "              CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
                 converter = HeaderConverter.class)
-        public final List<Header> columnsToHide = new ArrayList<>();
+        public final List<String> columnsToHide = new ArrayList<>();
 
         /**
          * CLI definition: set the timestamp that used in the reports.

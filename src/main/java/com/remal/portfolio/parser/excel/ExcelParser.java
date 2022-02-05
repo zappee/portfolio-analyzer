@@ -91,8 +91,8 @@ public class ExcelParser implements Parser {
                 t.setPortfolio(getCellValueAsString(row, 0));
                 t.setTicker(getTicker(getCellValueAsString(row, 1),currency));
                 t.setType(TransactionType.valueOf(getCellValueAsString(row, 2)));
-                t.setCreated(Strings.toLocalDateTime(dateTimePattern, zoneId, getCellValueAsString(row, 3)));
-                t.setVolume(Objects.requireNonNull(getCellValueAsBigDecimal(row, 4)).abs());
+                t.setTradeDate(Strings.toLocalDateTime(dateTimePattern, zoneId, getCellValueAsString(row, 3)));
+                t.setQuantity(Objects.requireNonNull(getCellValueAsBigDecimal(row, 4)).abs());
                 t.setPrice(getCellValueAsBigDecimal(row, 5));
                 t.setFee(getCellValueAsBigDecimal(row, 6));
                 t.setCurrency(currency);

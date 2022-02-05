@@ -32,7 +32,7 @@ import java.util.concurrent.Callable;
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class CommandCoinbaseDownloader extends CommandCommon implements Callable<Integer> {
+public class CoinbaseDownloaderCommand extends CommonCommand implements Callable<Integer> {
 
     /**
      * An argument group definition for writing the report to file.

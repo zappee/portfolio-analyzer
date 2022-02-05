@@ -17,7 +17,7 @@ public class I18n {
     /**
      * Reads translation from the internationalization properties file.
      *
-     * @param language an ISO 639 alpha-2 or alpha-3 language code
+     * @param language an ISO 639 alpha-2 or alpha-3 language code, e.g. 'en'
      * @param key key in the i18n properties file
      * @return the translation
      */

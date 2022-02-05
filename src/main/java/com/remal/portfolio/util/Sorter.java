@@ -24,7 +24,7 @@ public class Sorter {
     public static void sort(List<Transaction> transactions) {
         var sorted = transactions
                 .stream()
-                .sorted(Comparator.comparing(Transaction::getCreated))
+                .sorted(Comparator.comparing(Transaction::getTradeDate))
                 .collect(Collectors.toList());
 
         transactions.clear();

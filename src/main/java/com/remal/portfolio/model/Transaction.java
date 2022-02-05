@@ -35,13 +35,13 @@ public class Transaction {
     /**
      * When the transaction was filled.
      */
-    private LocalDateTime created;
+    private LocalDateTime tradeDate;
 
     /**
      * The volume is commonly reported as the number of shares that changed
      * hands.
      */
-    private BigDecimal volume;
+    private BigDecimal quantity;
 
     /**
      * The price for one unit.

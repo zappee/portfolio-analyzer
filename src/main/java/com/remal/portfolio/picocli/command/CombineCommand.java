@@ -2,13 +2,10 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.Parser;
-import com.remal.portfolio.parser.csv.CsvParser;
-import com.remal.portfolio.parser.excel.ExcelParser;
-import com.remal.portfolio.parser.markdown.MarkdownParser;
-import com.remal.portfolio.util.Files;
+import com.remal.portfolio.parser.Parse;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.util.Sorter;
+import com.remal.portfolio.util.Strings;
 import com.remal.portfolio.writer.StdoutWriter;
 import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +36,17 @@ import java.util.concurrent.Callable;
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class CommandCombine extends CommandCommon implements Callable<Integer> {
+public class CombineCommand extends CommonCommand implements Callable<Integer> {
+
+    /**
+     * CLI definition: set the timestamp that used in the reports.
+     */
+    @CommandLine.Option(
+            names = {"-z", "--zone-id"},
+            description = "Timezone id used to convert dates and times."
+                    + "%n  Default: \"${DEFAULT-VALUE}\"",
+            defaultValue = "Europe/London")
+    String zoneIdAsString = "Europe/London";
 
     /**
      * An argument group definition for the input files.
@@ -98,11 +105,18 @@ public class CommandCombine extends CommandCommon implements Callable<Integer> {
         // combine transactions from the source with data from another sources
         var overwrite = Boolean.parseBoolean(sourcesGroup.overwrite);
         List<Transaction> transactions = new ArrayList<>();
-        sourcesGroup.filesToCombine.forEach(x -> combine(readTransactionsFromFile(x.trim()), transactions, overwrite));
+        sourcesGroup.filesToCombine.forEach(x -> combine(
+                Parse.file(
+                        Strings.patternToString(x.trim(), zoneIdAsString),
+                        sourcesGroup.dateTimePattern),
+                transactions,
+                overwrite)
+        );
 
         // print to output
         Sorter.sort(transactions);
         var writer = TransactionWriter.build(transactions, outputGroup, replaces);
+        writer.setZoneIdAsString(zoneIdAsString);
         if (outputGroup.outputFile == null) {
             StdoutWriter.debug(quietMode, writer.printAsMarkdown());
         } else {
@@ -110,36 +124,6 @@ public class CommandCombine extends CommandCommon implements Callable<Integer> {
         }
 
         return CommandLine.ExitCode.OK;
-    }
-
-    /**
-     * Extracts the transactions from the given file.
-     *
-     * @param sourceFile path to the file
-     * @return list of the transactions
-     */
-    private List<Transaction> readTransactionsFromFile(String sourceFile) {
-        var filetype = Files.getFileType(sourceFile);
-        Parser parser;
-
-        switch (filetype) {
-            case TEXT:
-                parser = new MarkdownParser(sourceFile, sourcesGroup.dateTimePattern);
-                return parser.parse();
-
-            case CSV:
-                parser = new CsvParser(sourceFile, sourcesGroup.dateTimePattern);
-                return parser.parse();
-
-            case EXCEL:
-                parser = new ExcelParser(sourceFile, sourcesGroup.dateTimePattern);
-                return parser.parse();
-
-            default:
-                log.error("Unsupported input file type: '{}'", sourceFile);
-                System.exit(CommandLine.ExitCode.SOFTWARE);
-                return Collections.emptyList();
-        }
     }
 
     /**
@@ -161,8 +145,8 @@ public class CommandCombine extends CommandCommon implements Callable<Integer> {
                 var tr = targetTr.get();
                 tr.setPortfolio(sourceTr.getPortfolio());
                 tr.setType(sourceTr.getType());
-                tr.setCreated(sourceTr.getCreated());
-                tr.setVolume(sourceTr.getVolume());
+                tr.setTradeDate(sourceTr.getTradeDate());
+                tr.setQuantity(sourceTr.getQuantity());
                 tr.setPrice(sourceTr.getPrice());
                 tr.setFee(sourceTr.getFee());
                 tr.setCurrency(sourceTr.getCurrency());

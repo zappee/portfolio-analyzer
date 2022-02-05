@@ -9,8 +9,6 @@ import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 /**
  * This is a tool that writes string to file.
@@ -75,13 +73,7 @@ public class FileWriter {
      */
     public static void write(FileWriter.WriteMode writeMode, String pathToFile, String zoneIdAsString, String content) {
         try {
-            // Within date and time pattern strings, unquoted letters from 'A' to 'Z' and from 'a' to 'z' are
-            // interpreted as pattern letters representing the components of a date or time string. Text can be
-            // quoted using single quotes (') to avoid interpretation.
-            var escapedFilename = pathToFile.contains("'") ? pathToFile : "'" + pathToFile + "'";
-
-            var zoneId = ZoneId.of(zoneIdAsString);
-            var filename = LocaleDateTimes.toString(zoneId, escapedFilename, LocalDateTime.now());
+            var filename = Strings.patternToString(pathToFile, zoneIdAsString);
             var path = Paths.get(filename);
             log.debug("writing report to '{}', write-mode: {}", filename, writeMode);
 
