@@ -1,6 +1,8 @@
 package com.remal.portfolio.util;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Objects;
 
 /**
@@ -16,15 +18,20 @@ public class BigDecimals {
     /**
      * Converts decimal number to String based on the provided format.
      *
-     * @param decimalFormat decimal format, e.g. '%14.8f'
+     * @param decimalFormat decimal format, e.g. '###,###.###'
+     * @param decimalGroupingSeparator the character used for thousands separator
      * @param number the number to format
      * @return the number as a string
      */
-    public static String toString(String decimalFormat, BigDecimal number) {
+    public static String toString(String decimalFormat, char decimalGroupingSeparator, BigDecimal number) {
         if (Objects.isNull(number)) {
             return "";
         } else {
-            return String.format(decimalFormat, number).replaceFirst("\\.?0*$", "");
+            DecimalFormatSymbols decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+            decimalFormatSymbols.setGroupingSeparator(decimalGroupingSeparator);
+
+            DecimalFormat formatter = new DecimalFormat(decimalFormat, decimalFormatSymbols);
+            return formatter.format(number);
         }
     }
 

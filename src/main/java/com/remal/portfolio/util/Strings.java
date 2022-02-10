@@ -33,11 +33,24 @@ public class Strings {
             return " ".repeat(size);
         }
 
-        int pads = size - str.length();
-        if (pads <= 0) {
-            return str;
+        var pattern = "%-" + size + "s";
+        return String.format(pattern, str);
+    }
+
+    /**
+     * Right pad a String with a specified String.
+     *
+     * @param str the String to pad out, may be null
+     * @param size the size to pad to
+     * @return right padded String or original String if no padding is necessary
+     */
+    public static String rightPad(final String str, final int size) {
+        if (str == null) {
+            return " ".repeat(size);
         }
-        return str.concat(" ".repeat(pads));
+
+        var pattern = "%" + size + "s";
+        return String.format(pattern, str);
     }
 
     /**

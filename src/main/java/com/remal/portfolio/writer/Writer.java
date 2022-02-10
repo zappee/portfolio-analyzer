@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -71,11 +73,18 @@ public abstract class Writer {
     protected String dateTimePattern = "yyyy.MM.dd HH:mm:ss";
 
     /**
-     * Controls how the decimal numbers will be shown in the reports.
+     * Controls how the decimal numbers will be converted to String.
      */
     @Setter
     @Getter
-    protected String decimalFormat = "%16.8f";
+    protected String decimalFormat = "###,###,###,###,###,###.########";
+
+    /**
+     * The character used for thousands separator.
+     */
+    @Setter
+    @Getter
+    protected char decimalGroupingSeparator = ' ';
 
     /**
      * List of the columns that will be displayed in the report.
@@ -93,11 +102,42 @@ public abstract class Writer {
      * @param value cell value
      */
     protected void updateWidth(Map<String, Integer> widths, Label label, final Object value) {
-        Optional<String> stringValue = getStringValue(value);
-        var actualDataWidth = stringValue.orElse("").length();
-        var labelWidth = label.getLabel(language).length();
-        var previousLength = widths.getOrDefault(label.getId(), 0);
-        widths.put(label.getId(), Math.max(previousLength, Math.max(labelWidth, actualDataWidth)));
+        if (value instanceof BigDecimal) {
+            // BigDecimal needs a special alignment:
+            //    |label   |
+            //    |  1     |
+            //    | 12     |
+            //    |  1.2   |
+            //    | 12.3   |
+            //    | 12.34  |
+            //    |123.4567|
+            var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
+            var previousFractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
+            var bigDecimalParts = partsOfBigDecimal((BigDecimal) value);
+
+            var currentWidth = calculateBigDecimalWidth(bigDecimalParts[0].length(), bigDecimalParts[1].length());
+            var previousWidth = calculateBigDecimalWidth(previousWholeWidth, previousFractionalWidth);
+
+            var fractalWidth = Math.max(previousFractionalWidth, bigDecimalParts[1].length());
+            var labelWidth = label.getLabel(language).length();
+            var width = Math.max(currentWidth, previousWidth);
+            if (labelWidth > width) {
+                var remainder = fractalWidth == 0 ? labelWidth : labelWidth - fractalWidth - 1;
+                widths.put(getWholeWidthKey(label), remainder);
+            } else {
+                widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, bigDecimalParts[0].length()));
+            }
+
+            widths.put(getFractionalWidthKey(label), fractalWidth);
+            widths.put(label.getId(), Math.max(labelWidth, Math.max(currentWidth, previousWidth)));
+
+        } else {
+            Optional<String> stringValue = getStringValue(value);
+            var actualDataWidth = stringValue.orElse("").length();
+            var labelWidth = label.getLabel(language).length();
+            var previousLength = widths.getOrDefault(label.getId(), 0);
+            widths.put(label.getId(), Math.max(previousLength, Math.max(labelWidth, actualDataWidth)));
+        }
     }
 
     /**
@@ -120,10 +160,16 @@ public abstract class Writer {
 
         } else if (value instanceof LocalDateTime) {
             var zoneId = ZoneId.of(zoneIdAsString);
-            stringValue = Optional.ofNullable(LocaleDateTimes.toString(zoneId, dateTimePattern, (LocalDateTime) value));
+            stringValue = Optional.ofNullable(LocaleDateTimes.toString(
+                    zoneId,
+                    dateTimePattern,
+                    (LocalDateTime) value));
 
         } else if (value instanceof BigDecimal) {
-            stringValue = Optional.of(BigDecimals.toString(decimalFormat, (BigDecimal) value).trim());
+            stringValue = Optional.of(BigDecimals.toString(
+                    decimalFormat,
+                    decimalGroupingSeparator,
+                    (BigDecimal) value).trim());
 
         } else if (value instanceof Currency) {
             stringValue = Optional.of(((Currency) value).name());
@@ -144,13 +190,27 @@ public abstract class Writer {
      * @return the cell value or an empty string if the column is hidded
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
-        return columnsToHide.contains(label.getId())
-                ? ""
-                : tableSeparator + Strings.leftPad(getStringValue(value).orElse(""), widths.get(label.getId()));
+        if (columnsToHide.contains(label.getId())) {
+            return "";
+        }
+
+        var wholeWidth = widths.get(getWholeWidthKey(label));
+        var fractionalWidth = widths.get(getFractionalWidthKey(label));
+
+        if (value instanceof BigDecimal) {
+            var parts = partsOfBigDecimal((BigDecimal) value);
+            var valueAsFormattedString = parts[1].isEmpty()
+                    ? Strings.rightPad(parts[0], wholeWidth) + " ".repeat(fractionalWidth + 1)
+                    : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);
+            return tableSeparator + valueAsFormattedString;
+        } else {
+            var width = widths.get(label.getId());
+            return tableSeparator + Strings.rightPad(getStringValue(value).orElse(""), width);
+        }
     }
 
     /**
-     * Generates the left allignet cell value for the column title.
+     * Returns the header label or with an empty string if the collumn is hidded.
      *
      * @param label column title
      * @param value cell value
@@ -163,7 +223,7 @@ public abstract class Writer {
     }
 
     /**
-     * Builds the report header.
+     * Builds the report header with title and timestamp.
      *
      * @param title report title
      * @return the report header
@@ -182,5 +242,79 @@ public abstract class Writer {
                 .append(newLine);
 
         return sb;
+    }
+
+    /**
+     * Generated the key that is used in Map for BigDecimal types.
+     *
+     * @param label the column label
+     * @return id of the label for the whole part of the BigDecimal type
+     */
+    private String getWholeWidthKey(Label label) {
+        return label.getId() + "w";
+    }
+
+    /**
+     * Generated the key that is used in Map for BigDecimal types.
+     *
+     * @param label the column label
+     * @return the id of the label for the fractional part of the BigDecimal type
+     */
+    private String getFractionalWidthKey(Label label) {
+        return label.getId() + "f";
+    }
+
+    /**
+     * Compute the full length of the decimal fields.
+     *
+     * @param wholeLength the length of the whole part of the decimal number
+     * @param fractalLength the length of the fractial part of the decimal number
+     * @return the length of the decimal number
+     */
+    private int calculateBigDecimalWidth(int wholeLength, int fractalLength) {
+        return fractalLength == 0
+                ? wholeLength
+                : wholeLength + fractalLength + 1;
+    }
+
+    /**
+     * Splits the decimal number to whole and fractal parts.
+     *
+     * @param value the decimal number
+     * @return the parts
+     */
+    private String[] partsOfBigDecimal(BigDecimal value) {
+        if (Objects.isNull(value)) {
+            return new String[] {"", ""};
+        }
+
+        var decimalFormatSymbols = DecimalFormatSymbols.getInstance();
+        decimalFormatSymbols.setGroupingSeparator(decimalGroupingSeparator);
+
+        var formatter = new DecimalFormat(decimalFormat, decimalFormatSymbols);
+        var valueAsString = formatter.format(value);
+
+        var decimalSeparator = decimalFormatSymbols.getDecimalSeparator();
+        var splittedValue = valueAsString.split(escapeDecimalSeparator(decimalSeparator));
+
+        var parts = new String[2];
+        parts[0] = splittedValue[0];
+        parts[1] = splittedValue.length == 2 ? splittedValue[1] : "";
+
+        return parts;
+    }
+
+    /**
+     * Escapes the special character in order to it can be used as a regexp expression.
+     *
+     * @param charToEscape the special character
+     * @return the escaped special character
+     */
+    private String escapeDecimalSeparator(char charToEscape) {
+        if (charToEscape == '.') {
+            return "\\" + charToEscape;
+        } else {
+            return String.valueOf(charToEscape);
+        }
     }
 }
