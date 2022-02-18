@@ -36,6 +36,22 @@ public class BigDecimals {
     }
 
     /**
+     * Converts string to BigDecimal.
+     * This method can be user to convert formatted decimals to BigDecimal like "123 456.78".
+     *
+     * @param s the string that represents the decimal value
+     * @return the BigDecimal
+     */
+    public static BigDecimal valueOf(String s) {
+        if (Objects.isNull(s)) {
+            return null;
+        } else {
+            // remove spaces
+            return new BigDecimal(s.replaceAll("\\s+",""));
+        }
+    }
+
+    /**
      * Greater than or equal zero.
      *
      * @param decimal decimal value to check
