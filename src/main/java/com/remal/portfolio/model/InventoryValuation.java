@@ -41,7 +41,7 @@ public enum InventoryValuation {
      */
     public static InventoryValuation getEnum(String value) {
         try {
-            return Objects.isNull(value) ? null : InventoryValuation.valueOf(value.toUpperCase());
+            return Objects.isNull(value) || value.isEmpty() ? null : InventoryValuation.valueOf(value.toUpperCase());
         } catch (NullPointerException e) {
             log.error("Unknown inventory evaluation type: '{}'", value);
             System.exit(CommandLine.ExitCode.SOFTWARE);

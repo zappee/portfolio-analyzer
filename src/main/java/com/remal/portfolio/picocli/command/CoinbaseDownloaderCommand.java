@@ -1,10 +1,12 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
+import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.InventoryValuation;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.coinbase.CoinbaseProApiParser;
+import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.StdoutWriter;
 import com.remal.portfolio.writer.TransactionWriter;
@@ -64,7 +66,7 @@ public class CoinbaseDownloaderCommand extends CommonCommand implements Callable
          * CLI definition: set the output file name.
          */
         @CommandLine.Option(
-                names = {"-v", "--inv-valuation"},
+                names = {"-v", "--valuation"},
                 description = "Default inventory valuation type."
                         + "%n  Candidates: ${COMPLETION-CANDIDATES}"
                         + "%n  Default: ${DEFAULT-VALUE}",
@@ -166,6 +168,12 @@ public class CoinbaseDownloaderCommand extends CommonCommand implements Callable
         if (outputGroup.outputFile == null) {
             StdoutWriter.debug(quietMode, writer.printAsMarkdown());
         } else {
+            // remove decimal format in case of CSV file
+            var fileType = Files.getFileType(outputGroup.outputFile);
+            if (fileType == FileType.CSV) {
+                writer.setDecimalFormat("##################.########");
+                writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
+            }
             writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
         }
 

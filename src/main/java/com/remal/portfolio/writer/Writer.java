@@ -65,11 +65,13 @@ public abstract class Writer {
     /**
      * Controls how the decimal numbers will be converted to String.
      */
+    @Setter
     protected String decimalFormat = "###,###,###,###,###,###.########";
 
     /**
      * The character used for thousands separator.
      */
+    @Setter
     protected char decimalGroupingSeparator = ' ';
 
     /**
