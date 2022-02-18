@@ -86,4 +86,9 @@ public class Transaction {
      */
 
     private String orderId;
+
+    /**
+     * Type of inventory valuation.
+     */
+    private InventoryValuation inventoryValuation;
 }

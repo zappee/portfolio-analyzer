@@ -36,6 +36,36 @@ public class BigDecimals {
     }
 
     /**
+     * Greater than or equal zero.
+     *
+     * @param decimal decimal value to check
+     * @return true if the decimal value is greater than or equal zero
+     */
+    public static boolean isNonNegative(BigDecimal decimal) {
+        return (decimal.compareTo(BigDecimal.ZERO) >= 0);
+    }
+
+    /**
+     * Is null or zero.
+     *
+     * @param decimal decimal value to check
+     * @return true if the decimal is null oq equals with zero
+     */
+    public static boolean isNullOrZero(BigDecimal decimal) {
+        return Objects.isNull(decimal) || (decimal.compareTo(BigDecimal.ZERO) == 0);
+    }
+
+    /**
+     * Not null and not zero.
+     *
+     * @param decimal decimal value to check
+     * @return true if the decimal is not null and not equals with zero
+     */
+    public static boolean isNotNullAndNotZero(BigDecimal decimal) {
+        return Objects.nonNull(decimal) && (decimal.compareTo(BigDecimal.ZERO) != 0);
+    }
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws java.lang.UnsupportedOperationException if this method is called

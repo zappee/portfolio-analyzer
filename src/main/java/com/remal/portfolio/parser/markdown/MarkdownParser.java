@@ -1,6 +1,7 @@
 package com.remal.portfolio.parser.markdown;
 
 import com.remal.portfolio.model.Currency;
+import com.remal.portfolio.model.InventoryValuation;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.parser.Parser;
@@ -87,14 +88,15 @@ public class MarkdownParser implements Parser {
                             .portfolio(fields[1].trim())
                             .ticker(fields[2].trim())
                             .type(TransactionType.getEnum(fields[3].trim()))
-                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[4].trim()))
-                            .quantity(new BigDecimal(fields[5].trim()))
-                            .price(new BigDecimal(fields[6].trim()))
-                            .fee(new BigDecimal(fields[7].trim()))
-                            .currency(Currency.getEnum(fields[8].trim()))
-                            .orderId(fields[9].isBlank() ? null : fields[9].trim())
-                            .tradeId(fields[10].isBlank() ? null : fields[10].trim())
-                            .transferId(fields[11].isBlank() ? null : fields[11].trim())
+                            .inventoryValuation(InventoryValuation.getEnum(fields[4].trim()))
+                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[5].trim()))
+                            .quantity(new BigDecimal(fields[6].trim()))
+                            .price(new BigDecimal(fields[7].trim()))
+                            .fee(new BigDecimal(fields[8].trim()))
+                            .currency(Currency.getEnum(fields[9].trim()))
+                            .orderId(fields[10].isBlank() ? null : fields[10].trim())
+                            .tradeId(fields[11].isBlank() ? null : fields[11].trim())
+                            .transferId(fields[12].isBlank() ? null : fields[12].trim())
                             .build();
                     transactions.add(t);
                 });

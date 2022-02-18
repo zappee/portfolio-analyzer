@@ -20,8 +20,8 @@ import picocli.CommandLine;
  */
 @CommandLine.Command(
         subcommands = {
-            ShowCommand.class,
             CoinbaseDownloaderCommand.class,
+            ShowCommand.class,
             CombineCommand.class,
             SummaryCommand.class
         },
@@ -67,14 +67,16 @@ public final class Main {
     }
 
     /**
-     * Disable starus-logger of log4j.
-     *
+     * <p>
+     * Disable status-logger of log4j.
+     * </p>
      * Apache POI tries to initialize log4j, but this project does not use log4j.
      * So org.apache.logging.log4j.status.StatusLogger must be disabled, otherwise
      * the following error message appears:
-     *
+     * <p>
      *    StatusLogger Log4j2 could not find a logging implementation. Please add
      *    log4j-core to the classpath. Using SimpleLogger to log to the console...
+     * </p>
      */
     private void configureLogger() {
         StatusLogger.getLogger().setLevel(Level.OFF);

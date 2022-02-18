@@ -27,17 +27,6 @@ public abstract class CommonCommand {
     boolean quietMode;
 
     /**
-     * CLI definition: set the list of the portfolio names that will be
-     * overridden during the parse.
-     */
-    @CommandLine.Option(
-            names = {"-r", "--replace"},
-            description = "Replace portfolio name.%n"
-                    + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
-            split = ",")
-    final List<String> replaces = new ArrayList<>();
-
-    /**
      * An argument group definition for the output.
      */
     @CommandLine.ArgGroup(
@@ -55,8 +44,8 @@ public abstract class CommonCommand {
          */
         @CommandLine.Option(
                 names = {"-o", "--output-filename"},
-                description = "Output file, e.g : \"'report_'yyyy-MM-dd'.md'\".%n"
-                        + "Accepted extensions: .txt, .md and .xls")
+                description = "Output file, e.g.: \"'report_'yyyy-MM-dd'.md'\".%n"
+                        + "Accepted extensions: .txt, .md and .csv")
         public String outputFile;
 
         /**
@@ -76,8 +65,20 @@ public abstract class CommonCommand {
          * report.
          */
         @CommandLine.Option(
-                names = {"-h", "--print-header"},
-                description = "Print header while exporting the report."
+                names = {"-f", "--print-title"},
+                description = "Print report title while exporting the report."
+                        + "%n  Candidates: true, false"
+                        + "%n  Default: true",
+                defaultValue = "true")
+        public String printTitle;
+
+        /**
+         * CLI definition: set it to true if you want to print to the header
+         * of the table.
+         */
+        @CommandLine.Option(
+                names = {"-n", "--print-header"},
+                description = "Print table header while exporting the report."
                         + "%n  Candidates: true, false"
                         + "%n  Default: true",
                 defaultValue = "true")

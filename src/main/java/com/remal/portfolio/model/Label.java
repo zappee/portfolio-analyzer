@@ -43,6 +43,14 @@ public class Label {
     /**
      * A table header.
      */
+    public static final Label INVENTORY_VALUATION = Label.builder()
+            .id("INVENTORY_VALUATION")
+            .key("header.inventory-valuation")
+            .build();
+
+    /**
+     * A table header.
+     */
     public static final Label TRADE_DATE = Label.builder()
             .id("TRADE_DATE")
             .key("header.trade-date")
@@ -129,7 +137,7 @@ public class Label {
             .build();
 
     /**
-     * A aimple label.
+     * A simple label.
      */
     public static final Label GENERATED = Label.builder()
             .id("GENERATED")
@@ -137,7 +145,7 @@ public class Label {
             .build();
 
     /**
-     * A aimple label.
+     * A simple label.
      */
     public static final Label TRANSACTION = Label.builder()
             .id("TRANSACTION")
@@ -145,7 +153,7 @@ public class Label {
             .build();
 
     /**
-     * A aimple label.
+     * A simple label.
      */
     public static final Label TRANSACTION_HISTORY = Label.builder()
             .id("TRANSACTION_HISTORY")
@@ -191,7 +199,7 @@ public class Label {
     }
 
     /**
-     * Retuens with the id.
+     * Returns with the id of the label.
      *
      * @return label id
      */

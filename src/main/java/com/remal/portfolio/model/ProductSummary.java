@@ -1,12 +1,17 @@
 package com.remal.portfolio.model;
 
+import com.remal.portfolio.util.BigDecimals;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Product summary POJO.
@@ -72,7 +77,7 @@ public class ProductSummary {
     }
 
     /**
-     * Adds a new transaction to the summay report.
+     * Adds a new transaction to the summary report.
      * @param transaction the transaction to add
      */
     public void addTransaction(Transaction transaction) {
@@ -80,16 +85,101 @@ public class ProductSummary {
         transactionHistory.add(transaction);
 
         // transactions
-        // dividend and money deposit/withdraval are not relevant transactions
+        // dividend and money deposit/withdrawal are not relevant transactions
         var currency = Currency.getEnum(transaction.getTicker());
         if (Currency.UNKNOWN == currency && TransactionType.DIVIDEND != transaction.getType()) {
             transactions.add(transaction);
         }
 
         setTotalShares(transaction.getType(), transaction.getQuantity(), transaction.getPrice());
-        if (totalShares.compareTo(BigDecimal.ZERO) == 0) {
+        if (BigDecimals.isNullOrZero(totalShares)) {
             transactions.clear();
+            averagePrice = null;
+            netCost = null;
+            marketValue = null;
+            totalShares = null;
+        } else {
+            setAveragePrice();
         }
+    }
+
+    private void setAveragePrice() {
+        Map<BigDecimal, BigDecimal> supply = new LinkedHashMap<>();
+
+        transactions.forEach(transaction -> {
+
+            if (transaction.getType() == TransactionType.BUY) {
+                var key = transaction.getPrice();
+                var quantity = supply.getOrDefault(key, BigDecimal.ZERO);
+                supply.put(key, quantity.add(transaction.getQuantity()));
+
+            } else if (transaction.getType() == TransactionType.SELL) {
+                if (transaction.getInventoryValuation() == InventoryValuation.FIFO) {
+                    updateSupplyBasedOnFifoSell(supply, transaction);
+                } else {
+                    updateSupplyBasedOnLifoSell(supply, transaction);
+                }
+                averagePrice = computeAveragePrice(supply);
+            } else {
+                log.warn("unhandled transaction type while calculating the average price");
+            }
+        });
+
+        averagePrice = computeAveragePrice(supply);
+    }
+
+    private void updateSupplyBasedOnFifoSell(Map<BigDecimal, BigDecimal> supply, Transaction transaction) {
+        var iterator = new ArrayList<>(supply.entrySet()).listIterator(supply.size());
+        var endOfLoop = false;
+        var quantityToSell = transaction.getQuantity();
+
+        // reverse loop
+        while (iterator.hasPrevious() && ! endOfLoop) {
+            var entry = iterator.previous();
+            var remainQuantity = entry.getValue().subtract(quantityToSell);
+            if (BigDecimals.isNonNegative(remainQuantity)) {
+                entry.setValue(remainQuantity);
+                endOfLoop = true;
+            } else {
+                entry.setValue(BigDecimal.ZERO);
+                quantityToSell = remainQuantity.abs();
+            }
+        }
+    }
+
+    private void updateSupplyBasedOnLifoSell(Map<BigDecimal, BigDecimal> supply, Transaction transaction) {
+        var iterator = new ArrayList<>(supply.entrySet()).listIterator();
+        var endOfLoop = false;
+        var quantityToSell = transaction.getQuantity();
+
+        // reverse loop
+        while (iterator.hasNext() && ! endOfLoop) {
+            var entry = iterator.next();
+            var remainQuantity = entry.getValue().subtract(quantityToSell);
+            if (BigDecimals.isNonNegative(remainQuantity)) {
+                entry.setValue(remainQuantity);
+                endOfLoop = true;
+            } else {
+                entry.setValue(BigDecimal.ZERO);
+                quantityToSell = remainQuantity.abs();
+            }
+        }
+    }
+
+    private BigDecimal computeAveragePrice(Map<BigDecimal, BigDecimal> supply) {
+        var totalInvestedAmount = BigDecimal.ZERO;
+        var totalNumberOfShares = BigDecimal.ZERO;
+        for (var entry : supply.entrySet()) {
+            var price = entry.getKey();
+            var quantity = entry.getValue();
+            var investedAmount = price.multiply(quantity);
+            totalInvestedAmount = totalInvestedAmount.add(investedAmount);
+            totalNumberOfShares = totalNumberOfShares.add(quantity);
+        }
+
+        return BigDecimals.isNullOrZero(totalInvestedAmount) && BigDecimals.isNullOrZero(totalNumberOfShares)
+                ? null
+                : totalInvestedAmount.divide(totalNumberOfShares, MathContext.DECIMAL64);
     }
 
     /**
@@ -103,17 +193,23 @@ public class ProductSummary {
         switch (transactionType) {
             case BUY:
             case DEPOSIT:
-                totalShares = totalShares.add(volume);
+                totalShares = Objects.isNull(totalShares)
+                        ? volume
+                        : totalShares.add(volume);
                 break;
 
             case DIVIDEND:
-                totalShares = totalShares.add(volume.multiply(price));
+                totalShares = Objects.isNull(totalShares)
+                        ? volume.multiply(price)
+                        : totalShares.add(volume.multiply(price));
                 break;
 
             case SELL:
             case WITHDRAWAL:
             case FEE:
-                totalShares = totalShares.subtract(volume);
+                totalShares = Objects.isNull(totalShares)
+                        ? volume.negate()
+                        : totalShares.subtract(volume);
                 break;
 
             default:

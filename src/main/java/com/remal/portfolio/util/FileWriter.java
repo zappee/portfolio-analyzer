@@ -22,12 +22,6 @@ import java.nio.file.StandardOpenOption;
 public class FileWriter {
 
     /**
-     * Default time zone that is used while converting date-time patterns
-     * in the filename.
-     */
-    public static final String DEFAULT_TIME_ZONE = "Europe/London";
-
-    /**
      * The mode how to persist data to file.
      */
     public enum WriteMode {
@@ -56,24 +50,12 @@ public class FileWriter {
      * Writes content to file.
      *
      * @param writeMode controls how to open the file
-     * @param outputFile the path of the file to be created, e.g. "''yyyy-MM-dd'_portfolio-summary.md'"
-     * @param content the content that wil be written to the file
-     */
-    public static void write(FileWriter.WriteMode writeMode, String outputFile, String content) {
-        write(writeMode, outputFile, DEFAULT_TIME_ZONE, content);
-    }
-
-    /**
-     * Writes content to file.
-     *
-     * @param writeMode controls how to open the file
      * @param pathToFile the path of the file to be created, e.g. "''yyyy-MM-dd'_portfolio-summary.md'"
-     * @param zoneIdAsString used to convert timestamp between timezones
      * @param content the content that wil be written to the file
      */
-    public static void write(FileWriter.WriteMode writeMode, String pathToFile, String zoneIdAsString, String content) {
+    public static void write(FileWriter.WriteMode writeMode, String pathToFile, String content) {
         try {
-            var filename = Strings.patternToString(pathToFile, zoneIdAsString);
+            var filename = Strings.patternToString(pathToFile);
             var path = Paths.get(filename);
             log.debug("writing report to '{}', write-mode: {}", filename, writeMode);
 

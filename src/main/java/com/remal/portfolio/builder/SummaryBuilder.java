@@ -76,7 +76,7 @@ public class SummaryBuilder {
      * @param report the portfolio summary
      * @param portfolio portfolio name
      * @param ticker product name
-     * @return the product summmary
+     * @return the product summary
      */
     private ProductSummary getProductSummary(Map<String, Map<String, ProductSummary>> report,
                                              String portfolio,
