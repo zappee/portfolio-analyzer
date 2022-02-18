@@ -102,8 +102,8 @@ public abstract class CommonCommand {
         @CommandLine.Option(
                 names = {"-d", "--columns-to-hide"},
                 description = "Comma separated list of column names that won't be displayed in the report"
-                        + "%n  Candidates: PORTFOLIO, TICKER, TYPE, TRADE_DATE, QUANTITY, PRICE, FEE, %n"
-                        + "              CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
+                        + "%n  Candidates: PORTFOLIO, TICKER, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE,%n"
+                        + "              FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
                 converter = HeaderConverter.class)
         public final List<String> columnsToHide = new ArrayList<>();
 

@@ -43,8 +43,8 @@ public class Label {
     /**
      * A table header.
      */
-    public static final Label INVENTORY_VALUATION = Label.builder()
-            .id("INVENTORY_VALUATION")
+    public static final Label VALUATION = Label.builder()
+            .id("VALUATION")
             .key("header.inventory-valuation")
             .build();
 
