@@ -43,7 +43,7 @@ public class SummaryCommand implements Callable<Integer> {
      * An argument group definition to configure the input.
      */
     @CommandLine.ArgGroup(
-            heading = "%nInput file:%n",
+            heading = "%nInput:%n",
             exclusive = false,
             multiplicity = "1")
     private final SourcesGroup sourcesGroup = new SourcesGroup();

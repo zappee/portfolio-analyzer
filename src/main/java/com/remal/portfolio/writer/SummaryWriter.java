@@ -5,6 +5,7 @@ import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.ProductSummary;
 import com.remal.portfolio.model.Transaction;
+import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.Strings;
@@ -12,7 +13,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +51,7 @@ public class SummaryWriter extends Writer {
      *
      * @param summary portfolio summary report content
      * @param language an ISO 639 alpha-2 or alpha-3 language code
-     * @param dateTimePattern attern used for converting string to LocalDateTime
+     * @param dateTimePattern pattern used for converting string to LocalDateTime
      * @return an initialized writer instance
      * @throws java.lang.UnsupportedOperationException in case of usage of Excel file
      */
@@ -81,7 +81,7 @@ public class SummaryWriter extends Writer {
      *
      * @param writeMode controls how to open the file
      * @param file the report file
-     * @throws java.lang.UnsupportedOperationException throws if unsupportef file format was requested
+     * @throws java.lang.UnsupportedOperationException throws if unsupported file format was requested
      */
     public void writeToFile(FileWriter.WriteMode writeMode, String file) {
         var filetype = Files.getFileType(file);
@@ -101,7 +101,7 @@ public class SummaryWriter extends Writer {
     public String printAsMarkdown() {
         log.debug("building the Markdown Summary report...");
         var widths = calculateColumnWidth();
-        return buildReportHeader(Label.SUMMARY_TITLE.getLabel(language))
+        return buildMarkdownReportHeader(Label.SUMMARY_TITLE.getLabel(language))
                 .append(buildPortfolioSummary(widths))
                 .toString();
     }
@@ -113,17 +113,14 @@ public class SummaryWriter extends Writer {
      */
     private Map<String, Integer> calculateColumnWidth() {
         Map<String, Integer> widths = new HashMap<>();
-        for (Map.Entry<String, Map<String, ProductSummary>> portfolio : summary.entrySet()) {
-            portfolio
-                    .getValue()
-                    .forEach((k, v) -> {
-                        updateWidth(widths, Label.TICKER, v.getTicker());
-                        updateWidth(widths, Label.QUANTITY, v.getTotalShares());
-                        updateWidth(widths, Label.AVG_PRICE, v.getAveragePrice());
-                        updateWidth(widths, Label.NET_COST, v.getNetCost());
-                        updateWidth(widths, Label.MARKET_VALUE, v.getMarketValue());
-                    });
-        }
+        summary.forEach((key, value) ->
+                value.forEach((k, v) -> {
+                    updateWidth(widths, Label.TICKER, v.getTicker());
+                    updateWidth(widths, Label.QUANTITY, v.getTotalShares());
+                    updateWidth(widths, Label.AVG_PRICE, v.getAveragePrice());
+                    updateWidth(widths, Label.NET_COST, v.getNetCost());
+                    updateWidth(widths, Label.MARKET_VALUE, v.getMarketValue());
+                }));
         return widths;
     }
 
@@ -162,7 +159,7 @@ public class SummaryWriter extends Writer {
      */
     private StringBuilder buildPortfolioSummary(Map<String, Integer> widths, Map<String, ProductSummary> portfolio) {
         var header = new StringBuilder();
-        var hederSeparator = new StringBuilder();
+        var headerSeparator = new StringBuilder();
 
         LabelCollection.getPortfolioSummaryTable()
                 .stream()
@@ -172,18 +169,18 @@ public class SummaryWriter extends Writer {
                     header
                             .append(tableSeparator)
                             .append(Strings.leftPad(translation, widths.get(label.getId())));
-                    hederSeparator
+                    headerSeparator
                             .append(tableSeparator)
                             .append("-".repeat(widths.get(label.getId())));
                 });
 
         header.append(tableSeparator).append(newLine);
-        hederSeparator.append(tableSeparator).append(newLine);
+        headerSeparator.append(tableSeparator).append(newLine);
 
-        var sb = new StringBuilder().append(header).append(hederSeparator);
+        var sb = new StringBuilder().append(header).append(headerSeparator);
 
         portfolio.forEach((ticker, productSummary) -> {
-            if (productSummary.getTotalShares().compareTo(BigDecimal.ZERO) != 0) {
+            if (BigDecimals.isNotNullAndNotZero(productSummary.getTotalShares())) {
                 sb
                         .append(getCell(Label.TICKER, productSummary.getTicker(), widths))
                         .append(getCell(Label.QUANTITY, productSummary.getTotalShares(), widths))
@@ -192,7 +189,6 @@ public class SummaryWriter extends Writer {
                         .append(getCell(Label.MARKET_VALUE, productSummary.getNetCost(), widths))
                         .append(tableSeparator)
                         .append(newLine);
-
             }
         });
 
@@ -242,7 +238,7 @@ public class SummaryWriter extends Writer {
      * @param labelPrefix prefix of the report title
      * @param portfolio portfolio data
      * @param ticker the ticker of the product
-     * @param transactions belongign transactions
+     * @param transactions belonging transactions
      * @return the table with the transactions
      */
     private StringBuilder buildTransactionList(String labelPrefix,

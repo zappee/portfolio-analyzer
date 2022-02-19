@@ -28,6 +28,7 @@ public class LabelCollection {
         TRANSACTION_TABLE.add(Label.PORTFOLIO);
         TRANSACTION_TABLE.add(Label.TICKER);
         TRANSACTION_TABLE.add(Label.TYPE);
+        TRANSACTION_TABLE.add(Label.VALUATION);
         TRANSACTION_TABLE.add(Label.TRADE_DATE);
         TRANSACTION_TABLE.add(Label.QUANTITY);
         TRANSACTION_TABLE.add(Label.PRICE);

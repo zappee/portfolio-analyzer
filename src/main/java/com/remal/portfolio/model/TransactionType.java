@@ -41,7 +41,7 @@ public enum TransactionType {
     DIVIDEND,
 
     /**
-     * Used when the type is undefined.
+     * Used when the type is undefined or unknown.
      */
     UNKNOWN;
 

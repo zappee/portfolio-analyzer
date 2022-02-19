@@ -39,28 +39,18 @@ import java.util.concurrent.Callable;
 public class CombineCommand extends CommonCommand implements Callable<Integer> {
 
     /**
-     * CLI definition: set the timestamp that used in the reports.
-     */
-    @CommandLine.Option(
-            names = {"-z", "--zone-id"},
-            description = "Timezone id used to convert dates and times."
-                    + "%n  Default: \"${DEFAULT-VALUE}\"",
-            defaultValue = "Europe/London")
-    String zoneIdAsString = "Europe/London";
-
-    /**
      * An argument group definition for the input files.
      */
     @CommandLine.ArgGroup(
-            heading = "%nInput file(s):%n",
+            heading = "%nInput:%n",
             exclusive = false,
             multiplicity = "1")
-    private final SourcesGroup sourcesGroup = new SourcesGroup();
+    private final SourceGroup sourceGroup = new SourceGroup();
 
     /**
      * Option list definition for data sources.
      */
-    private static class SourcesGroup {
+    private static class SourceGroup {
 
         /**
          * CLI definition: set the source files.
@@ -91,6 +81,18 @@ public class CombineCommand extends CommonCommand implements Callable<Integer> {
                         + "%n  Default: false",
                 defaultValue = "false")
         String overwrite;
+
+        /**
+         * CLI definition: set the list of the portfolio names that will be
+         * overridden during the parse.
+         */
+        @CommandLine.Option(
+                names = {"-r", "--replace"},
+                description = "Replace portfolio name.%n"
+                        + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
+                split = ",")
+        final List<String> replaces = new ArrayList<>();
+
     }
 
     /**
@@ -103,20 +105,17 @@ public class CombineCommand extends CommonCommand implements Callable<Integer> {
         LogLevel.configureLogger(quietMode);
 
         // combine transactions from the source with data from another sources
-        var overwrite = Boolean.parseBoolean(sourcesGroup.overwrite);
+        var overwrite = Boolean.parseBoolean(sourceGroup.overwrite);
         List<Transaction> transactions = new ArrayList<>();
-        sourcesGroup.filesToCombine.forEach(x -> combine(
-                Parse.file(
-                        Strings.patternToString(x.trim(), zoneIdAsString),
-                        sourcesGroup.dateTimePattern),
+        sourceGroup.filesToCombine.forEach(x -> combine(
+                Parse.file(Strings.patternToString(x.trim()), sourceGroup.dateTimePattern),
                 transactions,
                 overwrite)
         );
 
         // print to output
         Sorter.sort(transactions);
-        var writer = TransactionWriter.build(transactions, outputGroup, replaces);
-        writer.setZoneIdAsString(zoneIdAsString);
+        var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);
         if (outputGroup.outputFile == null) {
             StdoutWriter.debug(quietMode, writer.printAsMarkdown());
         } else {

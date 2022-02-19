@@ -53,6 +53,7 @@ public class TransactionWriter extends Writer {
         log.debug("initializing transaction report writer with '{}' language...", outputCliGroup.language);
 
         var writer = new TransactionWriter(transactions, replaces);
+        writer.setShowReportTitle(Boolean.parseBoolean(outputCliGroup.printTitle));
         writer.setShowHeader(Boolean.parseBoolean(outputCliGroup.printHeader));
         writer.setLanguage(outputCliGroup.language);
         writer.setColumnsToHide(outputCliGroup.columnsToHide);
@@ -87,7 +88,7 @@ public class TransactionWriter extends Writer {
      *
      * @param writeMode controls how to open the file
      * @param file the report file
-     * @throws java.lang.UnsupportedOperationException throws if unsupportef file format was requested
+     * @throws java.lang.UnsupportedOperationException throws if unsupported file format was requested
      */
     public void writeToFile(FileWriter.WriteMode writeMode, String file) {
         var filetype = Files.getFileType(file);
@@ -124,26 +125,27 @@ public class TransactionWriter extends Writer {
             return sb.toString();
         }
 
+        // report title
         if (showReportTitle) {
-            sb.append(buildReportHeader(Label.TRANSACTIONS_TITLE.getLabel(language)));
+            sb.append(buildMarkdownReportHeader(Label.TRANSACTIONS_TITLE.getLabel(language)));
         }
 
         // table header
         if (showHeader) {
             var header = new StringBuilder();
-            var hederSeparator = new StringBuilder();
+            var headerSeparator = new StringBuilder();
 
             LabelCollection.getTransactionTable()
                     .stream().filter(label -> !columnsToHide.contains(label.getId()))
                     .forEach(label -> {
                         var translation = label.getLabel(language);
                         header.append(tableSeparator).append(Strings.leftPad(translation, widths.get(label.getId())));
-                        hederSeparator.append(tableSeparator).append("-".repeat(widths.get(label.getId())));
+                        headerSeparator.append(tableSeparator).append("-".repeat(widths.get(label.getId())));
                     });
 
             header.append(tableSeparator).append(newLine);
-            hederSeparator.append(tableSeparator).append(newLine);
-            sb.append(header).append(hederSeparator);
+            headerSeparator.append(tableSeparator).append(newLine);
+            sb.append(header).append(headerSeparator);
         }
 
         // data
@@ -152,6 +154,7 @@ public class TransactionWriter extends Writer {
                     sb.append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), widths));
                     sb.append(getCell(Label.TICKER, transaction.getTicker(), widths));
                     sb.append(getCell(Label.TYPE, transaction.getType(), widths));
+                    sb.append(getCell(Label.VALUATION, transaction.getInventoryValuation(), widths));
                     sb.append(getCell(Label.TRADE_DATE, transaction.getTradeDate(), widths));
                     sb.append(getCell(Label.QUANTITY, transaction.getQuantity(), widths));
                     sb.append(getCell(Label.PRICE, transaction.getPrice(), widths));
@@ -175,8 +178,13 @@ public class TransactionWriter extends Writer {
         var csvSeparator = ",";
         var sb = new StringBuilder();
 
+        // report title
+        if (showReportTitle) {
+            sb.append(buildCsvReportHeader());
+        }
+
+        // table header
         if (showHeader) {
-            // header
             LabelCollection.getTransactionTable()
                     .stream()
                     .filter(label -> !columnsToHide.contains(label.getId()))
@@ -191,6 +199,7 @@ public class TransactionWriter extends Writer {
                     sb.append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator);
                     sb.append(getCell(Label.TICKER, transaction.getTicker())).append(csvSeparator);
                     sb.append(getCell(Label.TYPE, transaction.getType())).append(csvSeparator);
+                    sb.append(getCell(Label.VALUATION, transaction.getInventoryValuation())).append(csvSeparator);
                     sb.append(getCell(Label.TRADE_DATE, transaction.getTradeDate())).append(csvSeparator);
                     sb.append(getCell(Label.QUANTITY, transaction.getQuantity())).append(csvSeparator);
                     sb.append(getCell(Label.PRICE, transaction.getPrice())).append(csvSeparator);
@@ -198,8 +207,7 @@ public class TransactionWriter extends Writer {
                     sb.append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator);
                     sb.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
                     sb.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
-                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId()));
-                    sb.append(newLine);
+                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(newLine);
                 });
         return sb.toString();
     }
@@ -240,6 +248,7 @@ public class TransactionWriter extends Writer {
         transactions.forEach(transaction -> {
             updateWidth(widths, Label.PORTFOLIO, transaction.getPortfolio());
             updateWidth(widths, Label.TYPE, transaction.getType());
+            updateWidth(widths, Label.VALUATION, transaction.getInventoryValuation());
             updateWidth(widths, Label.TRADE_DATE, transaction.getTradeDate());
             updateWidth(widths, Label.QUANTITY, transaction.getQuantity());
             updateWidth(widths, Label.PRICE, transaction.getPrice());

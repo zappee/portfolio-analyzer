@@ -19,22 +19,26 @@ import java.time.format.DateTimeFormatter;
 public class LocaleDateTimes {
 
     /**
+     * Default time zone info from the operating system.
+     */
+    private static final ZoneId DEFAULT_TIME_ZONE = ZoneId.systemDefault();
+
+    /**
      * It makes a timezone transformation and then converts the date-time to string.
      *
      * @param dateTime date/time with no timezone information
-     * @param zoneId time zone that is used to show dates and times in reports
      * @param dateTimePattern the timestamp pattern for GDAX export CSV file
      * @return the timestamp as a string
      */
-    public static String toString(ZoneId zoneId, String dateTimePattern, LocalDateTime dateTime) {
+    public static String toString(String dateTimePattern, LocalDateTime dateTime) {
         if (dateTime == null) {
             return "";
         } else {
             try {
-                var zonedUtc = dateTime.atZone(ZoneId.of("UTC")); // setting UTC as the timezone
-                var zoned = zonedUtc.withZoneSameInstant(zoneId); // converting to the selected zone
+                var zonedUtc = dateTime.atZone(ZoneId.of("UTC"));
+                var localZone = zonedUtc.withZoneSameInstant(DEFAULT_TIME_ZONE);
                 var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
-                return zoned.format(formatter);
+                return localZone.format(formatter);
             } catch (IllegalArgumentException e) {
                 log.error("An error has occurred while converting '{}' date-time pattern to string. Error: {}",
                         dateTimePattern, e.toString());

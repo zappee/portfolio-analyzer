@@ -1,6 +1,7 @@
 package com.remal.portfolio.parser.coinbase;
 
 import com.remal.portfolio.model.Currency;
+import com.remal.portfolio.model.InventoryValuation;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.parser.Parser;
@@ -51,7 +52,16 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
      * Currencies that are supported by Coinbase.
      */
     private final List<String> currencies = new ArrayList<>();
+
+    /**
+     * Base currency of the CoinbasePro account.
+     */
     private final String baseCurrency;
+
+    /**
+     * Default inventory valuation.
+     */
+    private final InventoryValuation defaultInventoryValuation;
 
     /**
      * Constructor.
@@ -59,11 +69,18 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
      * @param publicKey Coinbase Pro API key as a string
      * @param passphrase Coinbase Pro passphrase
      * @param secret Coinbase Pro secret for the API key
+     * @param defaultInventoryValuation default inventory valuation
      * @param baseCurrency the ISO 4217 currency code that Coinbase registered for you
      */
-    public CoinbaseProApiParser(String publicKey, String passphrase, String secret, String baseCurrency) {
+    public CoinbaseProApiParser(
+            String publicKey,
+            String passphrase,
+            String secret,
+            String baseCurrency,
+            InventoryValuation defaultInventoryValuation) {
         super(publicKey, passphrase, secret);
         this.baseCurrency = baseCurrency;
+        this.defaultInventoryValuation = defaultInventoryValuation;
         log.debug("initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {
@@ -153,10 +170,16 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
                     IntStream.range(0, x.size()).forEach(index -> {
                         var jsonItem = x.get(index);
                         var fillJson = (JSONObject) jsonItem;
+                        var transactionType = TransactionType.getEnum(fillJson.get("side").toString());
+                        var inventoryValuation = transactionType == TransactionType.SELL
+                                ? defaultInventoryValuation
+                                : null;
+
                         Transaction transaction = Transaction
                                 .builder()
                                 .portfolio(profiles.get(fillJson.get("profile_id").toString()))
-                                .type(TransactionType.getEnum(fillJson.get("side").toString()))
+                                .type(transactionType)
+                                .inventoryValuation(inventoryValuation)
                                 .tradeDate(Strings.toLocalDateTime(fillJson.get("created_at").toString()))
                                 .quantity(new BigDecimal(fillJson.get("size").toString()))
                                 .price(new BigDecimal(fillJson.get("price").toString()))

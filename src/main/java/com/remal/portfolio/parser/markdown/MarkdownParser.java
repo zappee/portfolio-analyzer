@@ -1,9 +1,11 @@
 package com.remal.portfolio.parser.markdown;
 
 import com.remal.portfolio.model.Currency;
+import com.remal.portfolio.model.InventoryValuation;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Strings;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +14,6 @@ import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.ZoneOffset;
@@ -78,7 +79,8 @@ public class MarkdownParser implements Parser {
         List<Transaction> transactions = new ArrayList<>();
 
         try {
-            int skipLeadingElements = hasHeader ? 2 : 0;
+            var firstDataRow = 6;
+            var skipLeadingElements = hasHeader ? firstDataRow : 0;
             try (Stream<String> stream = Files.lines(Paths.get(file))) {
                 stream.skip(skipLeadingElements).forEach(line -> {
                     var fields = line.split(separator, -1);
@@ -87,14 +89,15 @@ public class MarkdownParser implements Parser {
                             .portfolio(fields[1].trim())
                             .ticker(fields[2].trim())
                             .type(TransactionType.getEnum(fields[3].trim()))
-                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[4].trim()))
-                            .quantity(new BigDecimal(fields[5].trim()))
-                            .price(new BigDecimal(fields[6].trim()))
-                            .fee(new BigDecimal(fields[7].trim()))
-                            .currency(Currency.getEnum(fields[8].trim()))
-                            .orderId(fields[9].isBlank() ? null : fields[9].trim())
-                            .tradeId(fields[10].isBlank() ? null : fields[10].trim())
-                            .transferId(fields[11].isBlank() ? null : fields[11].trim())
+                            .inventoryValuation(InventoryValuation.getEnum(fields[4].trim()))
+                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[5].trim()))
+                            .quantity(BigDecimals.valueOf(fields[6]))
+                            .price(BigDecimals.valueOf(fields[7]))
+                            .fee(BigDecimals.valueOf(fields[8]))
+                            .currency(Currency.getEnum(fields[9].trim()))
+                            .orderId(fields[10].isBlank() ? null : fields[10].trim())
+                            .tradeId(fields[11].isBlank() ? null : fields[11].trim())
+                            .transferId(fields[12].isBlank() ? null : fields[12].trim())
                             .build();
                     transactions.add(t);
                 });

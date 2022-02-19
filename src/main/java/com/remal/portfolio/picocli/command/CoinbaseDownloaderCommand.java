@@ -1,15 +1,19 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
+import com.remal.portfolio.model.FileType;
+import com.remal.portfolio.model.InventoryValuation;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.coinbase.CoinbaseProApiParser;
+import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.StdoutWriter;
 import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -33,6 +37,43 @@ import java.util.concurrent.Callable;
         footer = Main.FOOTER)
 @Slf4j
 public class CoinbaseDownloaderCommand extends CommonCommand implements Callable<Integer> {
+
+    /**
+     * An argument group definition for the input options.
+     */
+    @CommandLine.ArgGroup(
+            heading = "%nInput:%n",
+            exclusive = false)
+    final SourceGroup sourceGroup = new SourceGroup();
+
+    /**
+     * Option list definition for input.
+     */
+    public static class SourceGroup {
+
+        /**
+         * CLI definition: set the list of the portfolio names that will be
+         * overridden during the parse.
+         */
+        @CommandLine.Option(
+                names = {"-r", "--replace"},
+                description = "Replace portfolio name.%n"
+                        + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
+                split = ",")
+        final List<String> replaces = new ArrayList<>();
+
+        /**
+         * CLI definition: set the output file name.
+         */
+        @CommandLine.Option(
+                names = {"-v", "--valuation"},
+                description = "Default inventory valuation type."
+                        + "%n  Candidates: ${COMPLETION-CANDIDATES}"
+                        + "%n  Default: ${DEFAULT-VALUE}",
+                defaultValue = "FIFO")
+
+        private InventoryValuation inventoryValuation;
+    }
 
     /**
      * An argument group definition for writing the report to file.
@@ -117,15 +158,22 @@ public class CoinbaseDownloaderCommand extends CommonCommand implements Callable
                 dataSourceGroup.coinbaseApiDataSourceOption.key,
                 dataSourceGroup.coinbaseApiDataSourceOption.passphrase,
                 dataSourceGroup.coinbaseApiDataSourceOption.secret,
-                baseCurrency);
+                baseCurrency,
+                sourceGroup.inventoryValuation);
         List<Transaction> transactions = parser.parse();
         log.debug("{} transactions has been downloaded", transactions.size());
 
         // print to output
-        var writer = TransactionWriter.build(transactions, outputGroup, replaces);
+        var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);
         if (outputGroup.outputFile == null) {
             StdoutWriter.debug(quietMode, writer.printAsMarkdown());
         } else {
+            // remove decimal format in case of CSV file
+            var fileType = Files.getFileType(outputGroup.outputFile);
+            if (fileType == FileType.CSV) {
+                writer.setDecimalFormat("##################.########");
+                writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
+            }
             writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
         }
 
