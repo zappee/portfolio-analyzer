@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,12 +71,12 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
      * @param defaultInventoryValuation default inventory valuation
      * @param baseCurrency the ISO 4217 currency code that Coinbase registered for you
      */
-    public CoinbaseProApiParser(
-            String publicKey,
-            String passphrase,
-            String secret,
-            String baseCurrency,
-            InventoryValuation defaultInventoryValuation) {
+    public CoinbaseProApiParser(String publicKey,
+                                String passphrase,
+                                String secret,
+                                String baseCurrency,
+                                InventoryValuation defaultInventoryValuation) {
+
         super(publicKey, passphrase, secret);
         this.baseCurrency = baseCurrency;
         this.defaultInventoryValuation = defaultInventoryValuation;
@@ -129,7 +128,6 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
                         var fillJson = (JSONObject) jsonItem;
                         var createdAt = Strings.toLocalDateTime(
                                 coinbaseDateTimePattern,
-                                ZoneOffset.UTC,
                                 fillJson.get("created_at").toString());
                         var ticker = accounts.get(fillJson.get("account_id").toString());
                         var isCurrency = currencies.contains(ticker);

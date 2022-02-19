@@ -17,7 +17,6 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -91,7 +90,7 @@ public class CsvParser implements Parser {
                             .ticker(fields[1])
                             .type(TransactionType.getEnum(fields[2]))
                             .inventoryValuation(InventoryValuation.getEnum(fields[3].trim()))
-                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[4]))
+                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, fields[4]))
                             .quantity(BigDecimals.valueOf(fields[5]))
                             .price(BigDecimals.valueOf(fields[6]))
                             .fee(BigDecimals.valueOf(fields[7]))

@@ -70,17 +70,18 @@ public class Strings {
      * Converts ISO formatted timestamp string to a LocalDateTime.
      *
      * @param dateTimePattern the date-time format for parsing dates from the Excel
-     * @param zoneId time zone info
-     * @param timeAsString the timestamp as a string
+     * @param timestampAsString the timestamp as a string
      * @return LocalDateTime converted object
      */
-    public static LocalDateTime toLocalDateTime(String dateTimePattern, ZoneId zoneId, String timeAsString) {
+    public static LocalDateTime toLocalDateTime(String dateTimePattern, String timestampAsString) {
         try {
-            var formatter = DateTimeFormatter.ofPattern(dateTimePattern).withZone(zoneId);
-            var dateInstant = Instant.from(formatter.parse(timeAsString));
-            return LocalDateTime.ofInstant(dateInstant, ZoneId.of(ZoneOffset.UTC.getId()));
+            var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
+            return LocalDateTime.parse(timestampAsString, formatter);
         } catch (DateTimeParseException e) {
-            log.error("Error while parsing the '{}' string to datetime, pattern: '{}'.", timeAsString, dateTimePattern);
+            log.error(
+                    "Error while parsing the '{}' string to datetime, pattern: '{}'.",
+                    timestampAsString,
+                    dateTimePattern);
             System.exit(CommandLine.ExitCode.SOFTWARE);
         }
         return null;

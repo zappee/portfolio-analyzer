@@ -127,24 +127,24 @@ public class TransactionWriter extends Writer {
 
         // report title
         if (showReportTitle) {
-            sb.append(buildMarkdownReportHeader(Label.TRANSACTIONS_TITLE.getLabel(language)));
+            sb.append(buildMarkdownReportHeader(Label.LABEL_TRANSACTION_REPORT.getLabel(language)));
         }
 
         // table header
         if (showHeader) {
-            var header = new StringBuilder();
+            var header = new StringBuilder().append(NEW_LINE);
             var headerSeparator = new StringBuilder();
 
             LabelCollection.getTransactionTable()
                     .stream().filter(label -> !columnsToHide.contains(label.getId()))
                     .forEach(label -> {
                         var translation = label.getLabel(language);
-                        header.append(tableSeparator).append(Strings.leftPad(translation, widths.get(label.getId())));
-                        headerSeparator.append(tableSeparator).append("-".repeat(widths.get(label.getId())));
+                        header.append(TABLE_SEPARATOR).append(Strings.leftPad(translation, widths.get(label.getId())));
+                        headerSeparator.append(TABLE_SEPARATOR).append("-".repeat(widths.get(label.getId())));
                     });
 
-            header.append(tableSeparator).append(newLine);
-            headerSeparator.append(tableSeparator).append(newLine);
+            header.append(TABLE_SEPARATOR).append(NEW_LINE);
+            headerSeparator.append(TABLE_SEPARATOR).append(NEW_LINE);
             sb.append(header).append(headerSeparator);
         }
 
@@ -163,7 +163,7 @@ public class TransactionWriter extends Writer {
                     sb.append(getCell(Label.ORDER_ID, transaction.getOrderId(), widths));
                     sb.append(getCell(Label.TRADE_ID, transaction.getTradeId(), widths));
                     sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId(), widths));
-                    sb.append(tableSeparator).append(newLine);
+                    sb.append(TABLE_SEPARATOR).append(NEW_LINE);
                 });
         return sb.toString();
     }
@@ -190,7 +190,7 @@ public class TransactionWriter extends Writer {
                     .filter(label -> !columnsToHide.contains(label.getId()))
                     .forEach(label -> sb.append(label.getLabel(language)).append(csvSeparator));
             sb.setLength(sb.length() - 1);
-            sb.append(newLine);
+            sb.append(NEW_LINE);
         }
 
         // data
@@ -207,7 +207,7 @@ public class TransactionWriter extends Writer {
                     sb.append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator);
                     sb.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
                     sb.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
-                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(newLine);
+                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE);
                 });
         return sb.toString();
     }

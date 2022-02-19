@@ -18,7 +18,6 @@ import picocli.CommandLine;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -44,13 +43,6 @@ public class ExcelParser implements Parser {
     private boolean hasHeader = true;
 
     /**
-     * Timezone that is used when timestamp is rendered.
-     */
-    @Getter
-    @Setter
-    private String zoneIdAsString = "Europe/London";
-
-    /**
      * Date pattern that is used to show timestamps in the reports.
      */
     private final String dateTimePattern;
@@ -73,7 +65,6 @@ public class ExcelParser implements Parser {
     @Override
     public List<Transaction> parse() {
         log.debug("reading transactions from {}...", file);
-        var zoneId = ZoneId.of(zoneIdAsString);
         List<Transaction> transactions = new ArrayList<>();
 
         try (var xlsFile = new FileInputStream(file)) {
@@ -91,7 +82,7 @@ public class ExcelParser implements Parser {
                 t.setPortfolio(getCellValueAsString(row, 0));
                 t.setTicker(getTicker(getCellValueAsString(row, 1),currency));
                 t.setType(TransactionType.valueOf(getCellValueAsString(row, 2)));
-                t.setTradeDate(Strings.toLocalDateTime(dateTimePattern, zoneId, getCellValueAsString(row, 3)));
+                t.setTradeDate(Strings.toLocalDateTime(dateTimePattern, getCellValueAsString(row, 3)));
                 t.setQuantity(Objects.requireNonNull(getCellValueAsBigDecimal(row, 4)).abs());
                 t.setPrice(getCellValueAsBigDecimal(row, 5));
                 t.setFee(getCellValueAsBigDecimal(row, 6));

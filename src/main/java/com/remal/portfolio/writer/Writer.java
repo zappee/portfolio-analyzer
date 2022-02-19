@@ -32,17 +32,17 @@ public abstract class Writer {
     /**
      * Markdown table separator character.
      */
-    protected String tableSeparator = "|";
+    protected static final String TABLE_SEPARATOR = "|";
 
     /**
      * CSV separator character.
      */
-    protected char csvSeparator = ',';
+    protected static final char CSV_SEPARATOR = ',';
 
     /**
      * New line character.
      */
-    protected String newLine = System.lineSeparator();
+    protected static final String NEW_LINE = System.lineSeparator();
 
     /**
      * Default language.
@@ -98,25 +98,19 @@ public abstract class Writer {
             //    | 12.3   |
             //    | 12.34  |
             //    |123.4567|
-            var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
-            var previousFractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
             var bigDecimalParts = partsOfBigDecimal((BigDecimal) value);
 
-            var currentWidth = calculateBigDecimalWidth(bigDecimalParts[0].length(), bigDecimalParts[1].length());
-            var previousWidth = calculateBigDecimalWidth(previousWholeWidth, previousFractionalWidth);
+            var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
+            var currentWholeWidth = bigDecimalParts[0].length();
+            widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, currentWholeWidth));
 
-            var fractalWidth = Math.max(previousFractionalWidth, bigDecimalParts[1].length());
+            var previousFractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
+            var currentFractionalWidth = bigDecimalParts[1].length();
+            widths.put(getFractionalWidthKey(label), Math.max(previousFractionalWidth, currentFractionalWidth));
+
             var labelWidth = label.getLabel(language).length();
-            var width = Math.max(currentWidth, previousWidth);
-            if (labelWidth > width) {
-                var remainder = fractalWidth == 0 ? labelWidth : labelWidth - fractalWidth - 1;
-                widths.put(getWholeWidthKey(label), remainder);
-            } else {
-                widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, bigDecimalParts[0].length()));
-            }
-
-            widths.put(getFractionalWidthKey(label), fractalWidth);
-            widths.put(label.getId(), Math.max(labelWidth, Math.max(currentWidth, previousWidth)));
+            var currentFullWidth = calculateBigDecimalWidth(widths, label);
+            widths.put(label.getId(), Math.max(labelWidth, currentFullWidth));
 
         } else {
             Optional<String> stringValue = getStringValue(value);
@@ -188,10 +182,10 @@ public abstract class Writer {
             var valueAsFormattedString = parts[1].isEmpty()
                     ? Strings.rightPad(parts[0], wholeWidth) + spaces
                     : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);
-            return tableSeparator + valueAsFormattedString;
+            return TABLE_SEPARATOR + valueAsFormattedString;
         } else {
             var width = widths.get(label.getId());
-            return tableSeparator + Strings.leftPad(getStringValue(value).orElse(""), width);
+            return TABLE_SEPARATOR + Strings.leftPad(getStringValue(value).orElse(""), width);
         }
     }
 
@@ -218,14 +212,13 @@ public abstract class Writer {
         return new StringBuilder()
                 .append("# ")
                 .append(title)
-                .append(newLine)
+                .append(NEW_LINE)
                 .append("_")
-                .append(Label.GENERATED.getLabel(language))
+                .append(Label.LABEL_GENERATED.getLabel(language))
                 .append(": ")
                 .append(LocaleDateTimes.toString(dateTimePattern, LocalDateTime.now()))
                 .append("_")
-                .append(newLine)
-                .append(newLine);
+                .append(NEW_LINE);
     }
 
     /**
@@ -235,14 +228,14 @@ public abstract class Writer {
      */
     protected StringBuilder buildCsvReportHeader() {
         return new StringBuilder()
-                .append(Label.TRANSACTIONS_TITLE.getLabel(language))
-                .append(csvSeparator)
-                .append(newLine)
-                .append(Label.GENERATED.getLabel(language))
+                .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
+                .append(CSV_SEPARATOR)
+                .append(NEW_LINE)
+                .append(Label.LABEL_GENERATED.getLabel(language))
                 .append(": ")
                 .append(LocaleDateTimes.toString(dateTimePattern, LocalDateTime.now()))
-                .append(csvSeparator)
-                .append(newLine);
+                .append(CSV_SEPARATOR)
+                .append(NEW_LINE);
     }
 
     /**
@@ -268,14 +261,15 @@ public abstract class Writer {
     /**
      * Compute the full length of the decimal fields.
      *
-     * @param wholeLength the length of the whole part of the decimal number
-     * @param fractalLength the length of the fractal part of the decimal number
+     * @param widths the list that stores with of the columns
+     * @param label column title
      * @return the length of the decimal number
      */
-    private int calculateBigDecimalWidth(int wholeLength, int fractalLength) {
-        return fractalLength == 0
-                ? wholeLength
-                : wholeLength + fractalLength + 1;
+    private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
+        var wholeWidth = widths.get(getWholeWidthKey(label));
+        var fractionalWidth = widths.get(getFractionalWidthKey(label));
+        var hasDecimalPoint = fractionalWidth != 0;
+        return hasDecimalPoint ? wholeWidth + fractionalWidth + 1 : wholeWidth;
     }
 
     /**

@@ -61,7 +61,7 @@ public class ShowCommand extends CommonCommand implements Callable<Integer> {
          */
         @CommandLine.Option(
                 names = {"-a", "--in-date-pattern"},
-                description = "\"Timestamp pattern that is used to parse the input file."
+                description = "Timestamp pattern that is used to parse the input file."
                         + "%n  Default: \"${DEFAULT-VALUE}\"",
                 defaultValue = "yyyy-MM-dd HH:mm:ss")
         String dateTimePattern;

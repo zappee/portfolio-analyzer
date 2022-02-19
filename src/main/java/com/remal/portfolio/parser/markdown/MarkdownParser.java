@@ -16,7 +16,6 @@ import picocli.CommandLine;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -90,7 +89,7 @@ public class MarkdownParser implements Parser {
                             .ticker(fields[2].trim())
                             .type(TransactionType.getEnum(fields[3].trim()))
                             .inventoryValuation(InventoryValuation.getEnum(fields[4].trim()))
-                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, ZoneOffset.UTC, fields[5].trim()))
+                            .tradeDate(Strings.toLocalDateTime(dateTimePattern, fields[5].trim()))
                             .quantity(BigDecimals.valueOf(fields[6]))
                             .price(BigDecimals.valueOf(fields[7]))
                             .fee(BigDecimals.valueOf(fields[8]))

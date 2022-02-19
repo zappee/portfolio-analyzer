@@ -101,7 +101,7 @@ public class SummaryWriter extends Writer {
     public String printAsMarkdown() {
         log.debug("building the Markdown Summary report...");
         var widths = calculateColumnWidth();
-        return buildMarkdownReportHeader(Label.SUMMARY_TITLE.getLabel(language))
+        return buildMarkdownReportHeader(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
                 .append(buildPortfolioSummary(widths))
                 .toString();
     }
@@ -134,17 +134,14 @@ public class SummaryWriter extends Writer {
         var sb = new StringBuilder();
         summary.forEach((portfolioName, portfolio) -> {
             sb
-                    .append(newLine)
-                    .append("### ").append("Portfolio: ")
-                    .append(portfolioName)
-                    .append(newLine)
-                    .append(newLine);
-            sb
+                    .append(NEW_LINE)
+                    .append("### ").append(Label.LABEL_PORTFOLIO.getLabel(language)).append(": ").append(portfolioName)
+                    .append(NEW_LINE).append(NEW_LINE)
                     .append(buildPortfolioSummary(widths, portfolio))
                     .append(buildTransactionTables(portfolio));
 
             String lastLine = getLastLine(sb);
-            sb.append(newLine).append("-".repeat(lastLine.length())).append(newLine);
+            sb.append(NEW_LINE).append("-".repeat(lastLine.length())).append(NEW_LINE);
         });
 
         return sb;
@@ -167,15 +164,15 @@ public class SummaryWriter extends Writer {
                 .forEach(label -> {
                     var translation = label.getLabel(language);
                     header
-                            .append(tableSeparator)
+                            .append(TABLE_SEPARATOR)
                             .append(Strings.leftPad(translation, widths.get(label.getId())));
                     headerSeparator
-                            .append(tableSeparator)
+                            .append(TABLE_SEPARATOR)
                             .append("-".repeat(widths.get(label.getId())));
                 });
 
-        header.append(tableSeparator).append(newLine);
-        headerSeparator.append(tableSeparator).append(newLine);
+        header.append(TABLE_SEPARATOR).append(NEW_LINE);
+        headerSeparator.append(TABLE_SEPARATOR).append(NEW_LINE);
 
         var sb = new StringBuilder().append(header).append(headerSeparator);
 
@@ -187,8 +184,8 @@ public class SummaryWriter extends Writer {
                         .append(getCell(Label.AVG_PRICE, productSummary.getAveragePrice(), widths))
                         .append(getCell(Label.NET_COST, productSummary.getNetCost(), widths))
                         .append(getCell(Label.MARKET_VALUE, productSummary.getNetCost(), widths))
-                        .append(tableSeparator)
-                        .append(newLine);
+                        .append(TABLE_SEPARATOR)
+                        .append(NEW_LINE);
             }
         });
 
@@ -213,7 +210,7 @@ public class SummaryWriter extends Writer {
                     if (showTransactions) {
                         sb.append(
                                 buildTransactionList(
-                                        Label.TRANSACTION.getLabel(language),
+                                        Label.LABEL_TRANSACTION.getLabel(language),
                                         productSummary.getValue().getPortfolio(),
                                         productSummary.getValue().getTicker(),
                                         productSummary.getValue().getTransactions()));
@@ -223,7 +220,7 @@ public class SummaryWriter extends Writer {
                     if (showTransactionHistory) {
                         sb.append(
                                 buildTransactionList(
-                                        Label.TRANSACTION_HISTORY.getLabel(language),
+                                        Label.LABEL_TRANSACTION_HISTORY.getLabel(language),
                                         productSummary.getValue().getPortfolio(),
                                         productSummary.getValue().getTicker(),
                                         productSummary.getValue().getTransactionHistory()));
@@ -255,10 +252,9 @@ public class SummaryWriter extends Writer {
                 Label.TRANSFER_ID.getId()));
 
         return new StringBuilder()
-                .append(newLine)
+                .append(NEW_LINE)
                 .append("##### ").append(labelPrefix).append(": ").append(portfolio).append(", ").append(ticker)
-                .append(newLine)
-                .append(newLine)
+                .append(NEW_LINE)
                 .append(writer.printAsMarkdown());
     }
 
@@ -269,18 +265,18 @@ public class SummaryWriter extends Writer {
      * @return the last line of the report
      */
     private String getLastLine(StringBuilder sb) {
-        var lastNewLineIndex = sb.lastIndexOf(newLine);
-        var lastLineStarts = lastNewLineIndex == sb.length() - newLine.length()
-                ? sb.substring(0, lastNewLineIndex).lastIndexOf(newLine)
+        var lastNewLineIndex = sb.lastIndexOf(NEW_LINE);
+        var lastLineStarts = lastNewLineIndex == sb.length() - NEW_LINE.length()
+                ? sb.substring(0, lastNewLineIndex).lastIndexOf(NEW_LINE)
                 : lastNewLineIndex;
 
         var lastLine = sb.substring(lastLineStarts);
-        lastLine = lastLine.startsWith(newLine)
-                ? lastLine.substring(newLine.length())
+        lastLine = lastLine.startsWith(NEW_LINE)
+                ? lastLine.substring(NEW_LINE.length())
                 : lastLine;
 
-        lastLine = lastLine.endsWith(newLine)
-                ? lastLine.substring(0, lastLine.length() - newLine.length())
+        lastLine = lastLine.endsWith(NEW_LINE)
+                ? lastLine.substring(0, lastLine.length() - NEW_LINE.length())
                 : lastLine;
         return lastLine;
     }

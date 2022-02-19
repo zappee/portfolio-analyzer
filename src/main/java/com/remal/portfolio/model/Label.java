@@ -17,7 +17,7 @@ import lombok.Getter;
 public class Label {
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label PORTFOLIO = Label.builder()
             .id("PORTFOLIO")
@@ -25,7 +25,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label TICKER = Label.builder()
             .id("TICKER")
@@ -33,7 +33,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label TYPE = Label.builder()
             .id("TYPE")
@@ -41,7 +41,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label VALUATION = Label.builder()
             .id("VALUATION")
@@ -49,7 +49,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label TRADE_DATE = Label.builder()
             .id("TRADE_DATE")
@@ -57,7 +57,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label QUANTITY = Label.builder()
             .id("QUANTITY")
@@ -65,7 +65,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label PRICE = Label.builder()
             .id("PRICE")
@@ -73,7 +73,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label AVG_PRICE = Label.builder()
             .id("AVG_PRICE")
@@ -81,7 +81,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label FEE = Label.builder()
             .id("FEE")
@@ -89,7 +89,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label NET_COST = Label.builder()
             .id("NET_COST")
@@ -97,7 +97,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label MARKET_VALUE = Label.builder()
             .id("MARKET_VALUE")
@@ -105,7 +105,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label CURRENCY = Label.builder()
             .id("CURRENCY")
@@ -113,7 +113,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label ORDER_ID = Label.builder()
             .id("ORDER_ID")
@@ -121,7 +121,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label TRADE_ID = Label.builder()
             .id("TRADE_ID")
@@ -129,7 +129,7 @@ public class Label {
             .build();
 
     /**
-     * A table header.
+     * A column header.
      */
     public static final Label TRANSFER_ID = Label.builder()
             .id("TRANSFER_ID")
@@ -137,43 +137,51 @@ public class Label {
             .build();
 
     /**
-     * A simple label.
+     * A simple text.
      */
-    public static final Label GENERATED = Label.builder()
-            .id("GENERATED")
+    public static final Label LABEL_GENERATED = Label.builder()
+            .id("LABEL_GENERATED")
             .key("label.generated")
             .build();
 
     /**
-     * A simple label.
+     * A simple text.
      */
-    public static final Label TRANSACTION = Label.builder()
-            .id("TRANSACTION")
+    public static final Label LABEL_PORTFOLIO = Label.builder()
+            .id("LABEL_PORTFOLIO")
+            .key("label.portfolio")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TRANSACTION = Label.builder()
+            .id("LABEL_TRANSACTION")
             .key("label.transaction")
             .build();
 
     /**
-     * A simple label.
+     * A simple text.
      */
-    public static final Label TRANSACTION_HISTORY = Label.builder()
-            .id("TRANSACTION_HISTORY")
+    public static final Label LABEL_TRANSACTION_HISTORY = Label.builder()
+            .id("LABEL_TRANSACTION_HISTORY")
             .key("label.transaction-history")
             .build();
 
     /**
-     * A report title.
+     * A simple text.
      */
-    public static final Label SUMMARY_TITLE = Label.builder()
-            .id("SUMMARY_TITLE")
-            .key("report.summary.header.title")
+    public static final Label LABEL_PORTFOLIO_SUMMARY = Label.builder()
+            .id("LABEL_PORTFOLIO_SUMMARY")
+            .key("label.portfolio-summary")
             .build();
 
     /**
-     * A report title.
+     * A simple text.
      */
-    public static final Label TRANSACTIONS_TITLE = Label.builder()
-            .id("TRANSACTIONS_TITLE")
-            .key("report.transactions.header.title")
+    public static final Label LABEL_TRANSACTION_REPORT = Label.builder()
+            .id("LABEL_TRANSACTION_REPORT")
+            .key("label.transaction-report")
             .build();
 
     /**

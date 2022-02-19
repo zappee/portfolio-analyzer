@@ -17,16 +17,16 @@ import java.util.List;
 public class HeaderConverter implements CommandLine.ITypeConverter<List<String>> {
 
     /**
-     * Converts comma separated string to list of Headers.
+     * Converts comma separated string to list.
      *
-     * @param s user defined value from the command line interface
-     * @return the list with Headers
+     * @param values user defined value from the command line interface
+     * @return the list with trimmed values
      */
     @Override
-    public List<String> convert(String s) {
-        List<String> transactionColumns = new ArrayList<>();
-        var params = s.split(",");
-        Arrays.stream(params).forEach(x -> transactionColumns.add(x.trim().toUpperCase()));
-        return transactionColumns;
+    public List<String> convert(String values) {
+        List<String> valueList = new ArrayList<>();
+        var valuePieces = values.split(",");
+        Arrays.stream(valuePieces).forEach(x -> valueList.add(x.trim().toUpperCase()));
+        return valueList;
     }
 }

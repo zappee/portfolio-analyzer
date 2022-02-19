@@ -3,6 +3,7 @@ package com.remal.portfolio.picocli.command;
 import com.remal.portfolio.Main;
 import com.remal.portfolio.builder.SummaryBuilder;
 import com.remal.portfolio.parser.Parse;
+import com.remal.portfolio.picocli.converter.HeaderConverter;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.StdoutWriter;
@@ -10,6 +11,8 @@ import com.remal.portfolio.writer.SummaryWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -67,7 +70,7 @@ public class SummaryCommand implements Callable<Integer> {
          */
         @CommandLine.Option(
                 names = {"-a", "--in-date-pattern"},
-                description = "\"Timestamp pattern that is used to parse the input file."
+                description = "Timestamp pattern that is used to parse the input file."
                         + "%n  Default: \"${DEFAULT-VALUE}\"",
                 defaultValue = "yyyy-MM-dd HH:mm:ss")
         String dateTimePattern;
@@ -98,9 +101,10 @@ public class SummaryCommand implements Callable<Integer> {
          * CLI definition: set the product name filter.
          */
         @CommandLine.Option(
-                names = {"-t", "--ticker"},
-                description = "Product name (ticker) filter.")
-        String ticker;
+                names = {"-t", "--tickers"},
+                description = "Comma separated product name (ticker) filter.",
+                converter = HeaderConverter.class)
+        final List<String> tickers = new ArrayList<>();
     }
 
     /**
@@ -181,7 +185,7 @@ public class SummaryCommand implements Callable<Integer> {
         LogLevel.configureLogger(quietMode);
 
         var transactions = Parse.file(sourcesGroup.inputFile, sourcesGroup.dateTimePattern);
-        var builder = new SummaryBuilder(transactions, filterGroup.portfolio, filterGroup.ticker);
+        var builder = new SummaryBuilder(transactions, filterGroup.portfolio, filterGroup.tickers);
         var report = builder.build();
 
         var writer = SummaryWriter.build(report, outputGroup.language, sourcesGroup.dateTimePattern);
