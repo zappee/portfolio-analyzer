@@ -121,7 +121,7 @@ public class ProductSummary {
                 }
                 averagePrice = computeAveragePrice(supply);
             } else {
-                log.warn("unhandled transaction type while calculating the average price");
+                log.warn("unhandled transaction type while calculating the average price: {}", transaction.getType());
             }
         });
 
