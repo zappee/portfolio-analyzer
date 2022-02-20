@@ -78,8 +78,12 @@ public class MarkdownParser implements Parser {
         List<Transaction> transactions = new ArrayList<>();
 
         try {
-            var firstDataRow = 6;
+            var firstDataRow = 5;
             var skipLeadingElements = hasHeader ? firstDataRow : 0;
+            if (skipLeadingElements != 0) {
+                log.warn("skipping the first {} lines while reading the {} file...", skipLeadingElements, file);
+            }
+
             try (Stream<String> stream = Files.lines(Paths.get(file))) {
                 stream.skip(skipLeadingElements).forEach(line -> {
                     var fields = line.split(separator, -1);
