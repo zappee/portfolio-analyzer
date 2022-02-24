@@ -99,16 +99,16 @@ public abstract class Writer {
             //    | 12.34  |
             //    |123.4567|
             var bigDecimalParts = partsOfBigDecimal((BigDecimal) value);
+            var labelWidth = label.getLabel(language).length();
 
             var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
             var currentWholeWidth = bigDecimalParts[0].length();
-            widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, currentWholeWidth));
+            widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, Math.max(currentWholeWidth, labelWidth)));
 
             var previousFractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
             var currentFractionalWidth = bigDecimalParts[1].length();
             widths.put(getFractionalWidthKey(label), Math.max(previousFractionalWidth, currentFractionalWidth));
 
-            var labelWidth = label.getLabel(language).length();
             var currentFullWidth = calculateBigDecimalWidth(widths, label);
             widths.put(label.getId(), Math.max(labelWidth, currentFullWidth));
 
