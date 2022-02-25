@@ -1,6 +1,6 @@
 package com.remal.portfolio.picocli.command;
 
-import com.remal.portfolio.picocli.converter.HeaderConverter;
+import com.remal.portfolio.picocli.converter.StringToListConverter;
 import com.remal.portfolio.util.FileWriter;
 import picocli.CommandLine;
 import picocli.CommandLine.Option;
@@ -104,7 +104,7 @@ public abstract class CommonCommand {
                 description = "Comma separated list of column names that won't be displayed in the report"
                         + "%n  Candidates: PORTFOLIO, TICKER, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE,%n"
                         + "              FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
-                converter = HeaderConverter.class)
+                converter = StringToListConverter.class)
         public final List<String> columnsToHide = new ArrayList<>();
 
         /**

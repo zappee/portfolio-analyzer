@@ -65,10 +65,20 @@ public class BigDecimals {
      * Is null or zero.
      *
      * @param decimal decimal value to check
-     * @return true if the decimal is null oq equals with zero
+     * @return true if the decimal is null or equals with zero
      */
     public static boolean isNullOrZero(BigDecimal decimal) {
         return Objects.isNull(decimal) || (decimal.compareTo(BigDecimal.ZERO) == 0);
+    }
+
+    /**
+     * Is not zero.
+     *
+     * @param decimal decimal value to check
+     * @return true if the decimal is not equals with zero
+     */
+    public static boolean isNotZero(BigDecimal decimal) {
+        return ! isNullOrZero(decimal);
     }
 
     /**

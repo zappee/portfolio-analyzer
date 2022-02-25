@@ -2,8 +2,8 @@ package com.remal.portfolio.model;
 
 import com.remal.portfolio.util.BigDecimals;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -22,6 +22,7 @@ import java.util.Objects;
  * @author arnold.somogyi@gmail.comm
  */
 @Getter
+@Setter
 @Slf4j
 public class ProductSummary {
 
@@ -91,7 +92,7 @@ public class ProductSummary {
             transactions.add(transaction);
         }
 
-        setTotalShares(transaction.getType(), transaction.getQuantity(), transaction.getPrice());
+        setTotalShares(transaction.getType(), transaction.getQuantity());
         if (BigDecimals.isNullOrZero(totalShares)) {
             transactions.clear();
             averagePrice = null;
@@ -103,11 +104,12 @@ public class ProductSummary {
         }
     }
 
+    /**
+     * Compute and set the average price.
+     */
     private void setAveragePrice() {
         Map<BigDecimal, BigDecimal> supply = new LinkedHashMap<>();
-
         transactions.forEach(transaction -> {
-
             if (transaction.getType() == TransactionType.BUY) {
                 var key = transaction.getPrice();
                 var quantity = supply.getOrDefault(key, BigDecimal.ZERO);
@@ -120,14 +122,18 @@ public class ProductSummary {
                     updateSupplyBasedOnLifoSell(supply, transaction);
                 }
                 averagePrice = computeAveragePrice(supply);
-            } else {
-                log.warn("unhandled transaction type while calculating the average price: {}", transaction.getType());
             }
         });
 
         averagePrice = computeAveragePrice(supply);
     }
 
+    /**
+     * Updating the transaction list based on FIFO sell.
+     *
+     * @param supply the relevant transactions for the supply
+     * @param transaction the belonging sell transaction
+     */
     private void updateSupplyBasedOnFifoSell(Map<BigDecimal, BigDecimal> supply, Transaction transaction) {
         var iterator = new ArrayList<>(supply.entrySet()).listIterator(supply.size());
         var endOfLoop = false;
@@ -147,12 +153,17 @@ public class ProductSummary {
         }
     }
 
+    /**
+     * Updating the transaction list based on LIFO sell.
+     *
+     * @param supply the relevant transactions for the supply
+     * @param transaction the belonging sell transaction
+     */
     private void updateSupplyBasedOnLifoSell(Map<BigDecimal, BigDecimal> supply, Transaction transaction) {
         var iterator = new ArrayList<>(supply.entrySet()).listIterator();
         var endOfLoop = false;
         var quantityToSell = transaction.getQuantity();
 
-        // reverse loop
         while (iterator.hasNext() && ! endOfLoop) {
             var entry = iterator.next();
             var remainQuantity = entry.getValue().subtract(quantityToSell);
@@ -166,6 +177,12 @@ public class ProductSummary {
         }
     }
 
+    /**
+     * Computing the avarage price based on the supply.
+     *
+     * @param supply the relevant transactions for the supply
+     * @return the avarage price
+     */
     private BigDecimal computeAveragePrice(Map<BigDecimal, BigDecimal> supply) {
         var totalInvestedAmount = BigDecimal.ZERO;
         var totalNumberOfShares = BigDecimal.ZERO;
@@ -187,34 +204,22 @@ public class ProductSummary {
      *
      * @param transactionType transaction type, e.g. buy, sell
      * @param volume quantity
-     * @param price price
      */
-    private void setTotalShares(TransactionType transactionType, BigDecimal volume, BigDecimal price) {
+    private void setTotalShares(TransactionType transactionType, BigDecimal volume) {
         switch (transactionType) {
             case BUY:
-            case DEPOSIT:
                 totalShares = Objects.isNull(totalShares)
                         ? volume
                         : totalShares.add(volume);
                 break;
 
-            case DIVIDEND:
-                totalShares = Objects.isNull(totalShares)
-                        ? volume.multiply(price)
-                        : totalShares.add(volume.multiply(price));
-                break;
-
             case SELL:
-            case WITHDRAWAL:
-            case FEE:
                 totalShares = Objects.isNull(totalShares)
                         ? volume.negate()
                         : totalShares.subtract(volume);
                 break;
 
             default:
-                log.error("Unhandled transaction type: '{}'", transactionType);
-                System.exit(CommandLine.ExitCode.SOFTWARE);
         }
     }
 }

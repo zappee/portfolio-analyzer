@@ -41,6 +41,11 @@ public enum TransactionType {
     DIVIDEND,
 
     /**
+     * To exchange one currency for another.
+     */
+    EXCHANGE,
+
+    /**
      * Used when the type is undefined or unknown.
      */
     UNKNOWN;

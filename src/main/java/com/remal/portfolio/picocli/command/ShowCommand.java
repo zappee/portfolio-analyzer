@@ -2,6 +2,7 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.parser.Parse;
+import com.remal.portfolio.picocli.converter.StringToListConverter;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.StdoutWriter;
 import com.remal.portfolio.writer.TransactionWriter;
@@ -104,8 +105,9 @@ public class ShowCommand extends CommonCommand implements Callable<Integer> {
          */
         @CommandLine.Option(
                 names = {"-c", "--ticker"},
-                description = "Product name (ticker) filter.")
-        String ticker;
+                description = "Comma separated product name (ticker) filter.",
+                converter = StringToListConverter.class)
+        final List<String> tickers = new ArrayList<>();
     }
 
     /**
@@ -121,7 +123,7 @@ public class ShowCommand extends CommonCommand implements Callable<Integer> {
         transactions = transactions
                 .stream()
                 .filter(x -> filterGroup.portfolio == null || x.getPortfolio().equals(filterGroup.portfolio))
-                .filter(x -> filterGroup.ticker == null || x.getTicker().equals(filterGroup.ticker))
+                .filter(x -> filterGroup.tickers.isEmpty() || filterGroup.tickers.contains(x.getTicker().toUpperCase()))
                 .collect(Collectors.toList());
 
         var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);

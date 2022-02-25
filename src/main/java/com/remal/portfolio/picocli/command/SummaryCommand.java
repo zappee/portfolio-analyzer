@@ -3,7 +3,7 @@ package com.remal.portfolio.picocli.command;
 import com.remal.portfolio.Main;
 import com.remal.portfolio.builder.SummaryBuilder;
 import com.remal.portfolio.parser.Parse;
-import com.remal.portfolio.picocli.converter.HeaderConverter;
+import com.remal.portfolio.picocli.converter.StringToListConverter;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LogLevel;
 import com.remal.portfolio.writer.StdoutWriter;
@@ -101,9 +101,9 @@ public class SummaryCommand implements Callable<Integer> {
          * CLI definition: set the product name filter.
          */
         @CommandLine.Option(
-                names = {"-t", "--tickers"},
+                names = {"-c", "--tickers"},
                 description = "Comma separated product name (ticker) filter.",
-                converter = HeaderConverter.class)
+                converter = StringToListConverter.class)
         final List<String> tickers = new ArrayList<>();
     }
 

@@ -14,7 +14,7 @@ import java.util.List;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public class HeaderConverter implements CommandLine.ITypeConverter<List<String>> {
+public class StringToListConverter implements CommandLine.ITypeConverter<List<String>> {
 
     /**
      * Converts comma separated string to list.

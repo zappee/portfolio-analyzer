@@ -1,5 +1,6 @@
 package com.remal.portfolio.builder;
 
+import com.remal.portfolio.machine.BookkeepingTransactionGenerator;
 import com.remal.portfolio.model.ProductSummary;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
@@ -47,23 +48,39 @@ public class SummaryBuilder {
         Map<String, Map<String, ProductSummary>> report = new HashMap<>();
         transactions
                 .stream()
-                .filter(x -> portfolio == null || x.getPortfolio().equals(portfolio))
-                .filter(x -> tickers.isEmpty() || tickers.contains(x.getTicker()))
+                .filter(x -> portfolio == null || portfolio.equals(x.getPortfolio().toUpperCase()))
+                .filter(x -> tickers.isEmpty() || tickers.contains(x.getTicker().toUpperCase()))
                 .forEach(transaction -> addTransactionToReport(report, transaction));
+
+        new BookkeepingTransactionGenerator(transactions).updateBookkepingTransactions(report);
         return report;
     }
 
     /**
      * Adds a transaction to the portfolio summary.
      *
-     * @param report the portfolio summary
+     * @param report the portfolio summary report
      * @param transaction transaction to be added to the summary
      */
     private void addTransactionToReport(Map<String, Map<String, ProductSummary>> report, Transaction transaction) {
         if (TransactionType.DIVIDEND == transaction.getType()) {
-            var currency = transaction.getCurrency();
-            var productSummary = getProductSummary(report, transaction.getPortfolio(), currency.name());
+            var currency = transaction.getCurrency().name();
+            var productSummary = getProductSummary(report, transaction.getPortfolio(), currency);
             productSummary.addTransaction(transaction);
+
+        } else if (TransactionType.EXCHANGE == transaction.getType()) {
+            var sourceCurrency = transaction.getTicker();
+            var productSummary = getProductSummary(report, transaction.getPortfolio(), sourceCurrency);
+            var clonedTransaction = transaction
+                    .toBuilder()
+                    .fee(null)
+                    .build();
+            productSummary.addTransaction(clonedTransaction);
+
+            var targetCurrency = transaction.getCurrency().name();
+            productSummary = getProductSummary(report, transaction.getPortfolio(), targetCurrency);
+            productSummary.addTransaction(transaction);
+
         } else {
             var productSummary = getProductSummary(report, transaction.getPortfolio(), transaction.getTicker());
             productSummary.addTransaction(transaction);

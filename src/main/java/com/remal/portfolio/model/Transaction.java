@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-@Builder
+@Builder(toBuilder = true)
 @ToString
 @Getter
 @Setter
