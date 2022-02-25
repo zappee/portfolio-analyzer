@@ -113,13 +113,15 @@ public class SummaryWriter extends Writer {
      */
     private Map<String, Integer> calculateColumnWidth() {
         Map<String, Integer> widths = new HashMap<>();
-        summary.forEach((key, value) ->
-                value.forEach((k, v) -> {
-                    updateWidth(widths, Label.TICKER, v.getTicker());
-                    updateWidth(widths, Label.QUANTITY, v.getTotalShares());
-                    updateWidth(widths, Label.AVG_PRICE, v.getAveragePrice());
-                    updateWidth(widths, Label.NET_COST, v.getNetCost());
-                    updateWidth(widths, Label.MARKET_VALUE, v.getMarketValue());
+        summary.forEach((portfolio, portfolioSumary) ->
+                portfolioSumary.forEach((ticker, productSummary) -> {
+                    if (BigDecimals.isNotZero(productSummary.getTotalShares())) {
+                        updateWidth(widths, Label.TICKER, productSummary.getTicker());
+                        updateWidth(widths, Label.QUANTITY, productSummary.getTotalShares());
+                        updateWidth(widths, Label.AVG_PRICE, productSummary.getAveragePrice());
+                        updateWidth(widths, Label.NET_COST, productSummary.getNetCost());
+                        updateWidth(widths, Label.MARKET_VALUE, productSummary.getMarketValue());
+                    }
                 }));
         return widths;
     }

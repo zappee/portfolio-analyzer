@@ -99,17 +99,16 @@ public abstract class Writer {
             //    | 12.34  |
             //    |123.4567|
             var bigDecimalParts = partsOfBigDecimal((BigDecimal) value);
-            var labelWidth = label.getLabel(language).length();
-
             var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
             var currentWholeWidth = bigDecimalParts[0].length();
-            widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, Math.max(currentWholeWidth, labelWidth)));
+            widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, currentWholeWidth));
 
             var previousFractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
             var currentFractionalWidth = bigDecimalParts[1].length();
             widths.put(getFractionalWidthKey(label), Math.max(previousFractionalWidth, currentFractionalWidth));
 
             var currentFullWidth = calculateBigDecimalWidth(widths, label);
+            var labelWidth = label.getLabel(language).length();
             widths.put(label.getId(), Math.max(labelWidth, currentFullWidth));
 
         } else {
@@ -175,8 +174,13 @@ public abstract class Writer {
         }
 
         if (value instanceof BigDecimal) {
-            var wholeWidth = widths.get(getWholeWidthKey(label));
             var fractionalWidth = widths.get(getFractionalWidthKey(label));
+            var columnWidth = calculateBigDecimalWidth(widths, label);
+            var labelWidth = label.getLabel(language).length();
+            var wholeWidth = labelWidth > columnWidth
+                    ? widths.get(getWholeWidthKey(label)) + labelWidth - columnWidth
+                    : widths.get(getWholeWidthKey(label));
+
             var parts = partsOfBigDecimal((BigDecimal) value);
             var spaces = (fractionalWidth == 0) ? "" : " ".repeat(fractionalWidth + 1);
             var valueAsFormattedString = parts[1].isEmpty()
@@ -245,7 +249,7 @@ public abstract class Writer {
      * @return id of the label for the whole part of the BigDecimal type
      */
     private String getWholeWidthKey(Label label) {
-        return label.getId() + "-w";
+        return label.getId() + "-W";
     }
 
     /**
@@ -255,7 +259,7 @@ public abstract class Writer {
      * @return the id of the label for the fractional part of the BigDecimal type
      */
     private String getFractionalWidthKey(Label label) {
-        return label.getId() + "-f";
+        return label.getId() + "-F";
     }
 
     /**
