@@ -52,6 +52,18 @@ public class ProductSummary {
     private BigDecimal averagePrice;
 
     /**
+     * The sum of the withdrawals.
+     * This field only used for currency, othervise it is null.
+     */
+    private BigDecimal withdrawalSummary;
+
+    /**
+     * The sum of the deposits.
+     * This field only used for currency, othervise it is null.
+     */
+    private BigDecimal depositSummary;
+
+    /**
      * Net cost that was used to buy the product.
      */
     private BigDecimal netCost;
@@ -92,7 +104,7 @@ public class ProductSummary {
             transactions.add(transaction);
         }
 
-        setTotalShares(transaction.getType(), transaction.getQuantity());
+        updateTotalShares(transaction.getType(), transaction.getQuantity());
         if (BigDecimals.isNullOrZero(totalShares)) {
             transactions.clear();
             averagePrice = null;
@@ -100,14 +112,14 @@ public class ProductSummary {
             marketValue = null;
             totalShares = null;
         } else {
-            setAveragePrice();
+            updateAveragePrice();
         }
     }
 
     /**
      * Compute and set the average price.
      */
-    private void setAveragePrice() {
+    private void updateAveragePrice() {
         Map<BigDecimal, BigDecimal> supply = new LinkedHashMap<>();
         transactions.forEach(transaction -> {
             if (transaction.getType() == TransactionType.BUY) {
@@ -121,10 +133,8 @@ public class ProductSummary {
                 } else {
                     updateSupplyBasedOnLifoSell(supply, transaction);
                 }
-                averagePrice = computeAveragePrice(supply);
             }
         });
-
         averagePrice = computeAveragePrice(supply);
     }
 
@@ -205,7 +215,7 @@ public class ProductSummary {
      * @param transactionType transaction type, e.g. buy, sell
      * @param volume quantity
      */
-    private void setTotalShares(TransactionType transactionType, BigDecimal volume) {
+    private void updateTotalShares(TransactionType transactionType, BigDecimal volume) {
         switch (transactionType) {
             case BUY:
                 totalShares = Objects.isNull(totalShares)

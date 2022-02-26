@@ -80,7 +80,9 @@ public class BookkeepingTransactionGenerator {
         );
 
         generateMissingBookkeepingTransactions();
-        setAveragePrices();
+        updateAveragePrices();
+        updateWithdrawalSummary();
+        updateDepositSummary();
     }
 
     /**
@@ -123,7 +125,7 @@ public class BookkeepingTransactionGenerator {
     /**
      * Calculates and set the avarage prices.
      */
-    private void setAveragePrices() {
+    private void updateAveragePrices() {
         currencySummaries.forEach(currencySummary -> {
             Function<Transaction, BigDecimal> totalMapper = lambdaFunctionForAvaragePriceCalculation(currencySummary);
             BigDecimal sum = currencySummary
@@ -136,7 +138,42 @@ public class BookkeepingTransactionGenerator {
             currencySummary.setMarketValue(sum.setScale(2, RoundingMode.HALF_EVEN));
             currencySummary.setTotalShares(sum.setScale(2, RoundingMode.HALF_EVEN));
         });
+    }
 
+    /**
+     * Calculates and set the withdrawal summary.
+     */
+    private void updateWithdrawalSummary() {
+        currencySummaries.forEach(currencySummary -> {
+            BigDecimal sum = currencySummary
+                    .getTransactionHistory()
+                    .stream()
+                    .filter(transaction -> transaction.getType() == TransactionType.WITHDRAWAL)
+                    .map(Transaction::getQuantity)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (BigDecimals.isNotZero(sum)) {
+                currencySummary.setWithdrawalSummary(sum.setScale(2, RoundingMode.HALF_EVEN));
+            }
+        });
+    }
+
+    /**
+     * Compute and set the deposit summary.
+     */
+    private void updateDepositSummary() {
+        currencySummaries.forEach(currencySummary -> {
+            BigDecimal sum = currencySummary
+                    .getTransactionHistory()
+                    .stream()
+                    .filter(transaction -> transaction.getType() == TransactionType.DEPOSIT)
+                    .map(Transaction::getQuantity)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            if (BigDecimals.isNotZero(sum)) {
+                currencySummary.setDepositSummary(sum.setScale(2, RoundingMode.HALF_EVEN));
+            }
+        });
     }
 
     /**

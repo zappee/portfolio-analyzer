@@ -119,6 +119,8 @@ public class SummaryWriter extends Writer {
                         updateWidth(widths, Label.TICKER, productSummary.getTicker());
                         updateWidth(widths, Label.QUANTITY, productSummary.getTotalShares());
                         updateWidth(widths, Label.AVG_PRICE, productSummary.getAveragePrice());
+                        updateWidth(widths, Label.DEPOSITS, productSummary.getDepositSummary());
+                        updateWidth(widths, Label.WITHDRAWALS, productSummary.getWithdrawalSummary());
                         updateWidth(widths, Label.NET_COST, productSummary.getNetCost());
                         updateWidth(widths, Label.MARKET_VALUE, productSummary.getMarketValue());
                     }
@@ -184,6 +186,8 @@ public class SummaryWriter extends Writer {
                         .append(getCell(Label.TICKER, productSummary.getTicker(), widths))
                         .append(getCell(Label.QUANTITY, productSummary.getTotalShares(), widths))
                         .append(getCell(Label.AVG_PRICE, productSummary.getAveragePrice(), widths))
+                        .append(getCell(Label.DEPOSITS, productSummary.getDepositSummary(), widths))
+                        .append(getCell(Label.WITHDRAWALS, productSummary.getWithdrawalSummary(), widths))
                         .append(getCell(Label.NET_COST, productSummary.getNetCost(), widths))
                         .append(getCell(Label.MARKET_VALUE, productSummary.getNetCost(), widths))
                         .append(TABLE_SEPARATOR)
