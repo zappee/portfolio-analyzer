@@ -4,16 +4,26 @@ import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.picocli.command.OutputCommandGroup;
+import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.LocalDateTimes;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Strings;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.formula.eval.NotImplementedException;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Generate transaction reports.
@@ -108,7 +118,96 @@ public class TransactionWriter extends Writer<Transaction> {
      */
     @Override
     protected byte[] buildExcelReport(List<Transaction> transactions) {
-        throw new NotImplementedException(null);
+        var workbook = new XSSFWorkbook();
+        var sheet = workbook.createSheet(Label.LABEL_TRANSACTION_REPORT.getLabel(language));
+        var rowIndex = new AtomicInteger(-1);
+
+        // report title
+        if (!hideTitle) {
+            var columnIndex = 0;
+
+            // row 1
+            var row = sheet.createRow(rowIndex.incrementAndGet());
+            var cell = row.createCell(columnIndex);
+            cell.setCellValue(Label.LABEL_TRANSACTION_REPORT.getLabel(language));
+
+            // row 2
+            row = sheet.createRow(rowIndex.incrementAndGet());
+            cell = row.createCell(columnIndex);
+            cell.setCellValue(Label.LABEL_GENERATED.getLabel(language) + ": " +
+                    LocalDateTimes.toString(zoneTo, dateTimePattern, LocalDateTime.now()));
+        }
+
+        // table header
+        if (!hideHeader) {
+            var columnIndex = new AtomicInteger(-1);
+            var row = sheet.createRow(rowIndex.incrementAndGet());
+            Arrays
+                    .stream(LabelCollection.TRANSACTION_TABLE_HEADERS)
+                    .filter(label -> !columnsToHide.contains(label.getId()))
+                    .forEach(label -> {
+                        var cell = row.createCell(columnIndex.incrementAndGet());
+                        cell.setCellValue(label.getLabel(language));
+                    });
+        }
+
+        // data
+        transactions
+                .forEach(transaction -> {
+                    var row = sheet.createRow(rowIndex.incrementAndGet());
+                    var index = new AtomicInteger(-1);
+
+                    skipIfNullOrSet(row, index, transaction.getPortfolio());
+                    skipIfNullOrSet(row, index, transaction.getTicker());
+                    skipIfNullOrSet(row, index, Enums.enumToString(transaction.getType()));
+                    skipIfNullOrSet(row, index, Enums.enumToString(transaction.getInventoryValuation()));
+                    skipIfNullOrSet(row, index, transaction.getTradeDate());
+                    skipIfNullOrSet(row, index, transaction.getQuantity());
+                    skipIfNullOrSet(row, index, transaction.getPrice());
+                    skipIfNullOrSet(row, index, transaction.getFee());
+                    skipIfNullOrSet(row, index, Enums.enumToString(transaction.getCurrency()));
+                    skipIfNullOrSet(row, index, transaction.getOrderId());
+                    skipIfNullOrSet(row, index, transaction.getTradeId());
+                    skipIfNullOrSet(row, index, transaction.getTransferId());
+                });
+
+        return workbookToBytes(workbook);
+    }
+
+    /**
+     * Set the cell value if the object is not null, otherwise skip
+     * the set operation.
+     *
+     * @param row row in the Excel spreadsheet
+     * @param columnIndex column index within the row
+     * @param obj the value to be set as a cell value
+     */
+    private void skipIfNullOrSet(XSSFRow row, AtomicInteger columnIndex, Object obj) {
+        if (Objects.isNull(obj)) {
+            columnIndex.incrementAndGet();
+        } else {
+            if (obj instanceof BigDecimal x) {
+                getNextCell(row, columnIndex).setCellValue(BigDecimals.valueOf(x));
+            } else if (obj instanceof String x) {
+                getNextCell(row, columnIndex).setCellValue(x);
+            } else if (obj instanceof LocalDateTime x) {
+                getNextCell(row, columnIndex).setCellValue(x);
+            } else {
+                columnIndex.incrementAndGet();
+                log.warn("Unhandled type: {}", obj.getClass().getSimpleName());
+            }
+        }
+    }
+
+    /**
+     * Get the next cell in the row.
+     *
+     * @param row row in the Excel spreadsheet
+     * @param columnIndex column index within the row
+     * @return the next cell in the row
+     */
+    private XSSFCell getNextCell (XSSFRow row, AtomicInteger columnIndex) {
+        return row.createCell(columnIndex.incrementAndGet());
     }
 
     /**
@@ -200,5 +299,21 @@ public class TransactionWriter extends Writer<Transaction> {
             updateWidth(widths, Label.ORDER_ID, transaction.getOrderId());
         });
         return widths;
+    }
+
+    /**
+     * Write Excel spreadsheet to a byte array.
+     *
+     * @param workbook the Excel spreadsheet
+     * @return the Excel file as a byte array
+     */
+    private byte[] workbookToBytes(XSSFWorkbook workbook) {
+        try (var outputStream = new ByteArrayOutputStream()) {
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            Logger.logErrorAndExit("Error while saving the Excel file, error: {}", e.toString());
+        }
+        return new byte[0];
     }
 }

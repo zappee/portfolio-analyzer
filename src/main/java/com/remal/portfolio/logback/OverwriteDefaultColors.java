@@ -59,24 +59,13 @@ public class OverwriteDefaultColors extends ForegroundCompositeConverterBase<ILo
     protected String getForegroundColorCode(ILoggingEvent event) {
         Level level = event.getLevel();
 
-        switch (level.toInt()) {
-            case Level.ERROR_INT:
-                return LIGHT_BOLD_RED;
-
-            case Level.WARN_INT:
-                return LIGHT_RED;
-
-            case Level.INFO_INT:
-                return LIGHT_GREEN;
-
-            case Level.DEBUG_INT:
-                return LIGHT_YELLOW;
-
-            case Level.TRACE_INT:
-                return LIGHT_CYAN;
-
-            default:
-                return ANSIConstants.DEFAULT_FG;
-        }
+        return switch (level.toInt()) {
+            case Level.ERROR_INT -> LIGHT_BOLD_RED;
+            case Level.WARN_INT -> LIGHT_RED;
+            case Level.INFO_INT -> LIGHT_GREEN;
+            case Level.DEBUG_INT -> LIGHT_YELLOW;
+            case Level.TRACE_INT -> LIGHT_CYAN;
+            default -> ANSIConstants.DEFAULT_FG;
+        };
     }
 }

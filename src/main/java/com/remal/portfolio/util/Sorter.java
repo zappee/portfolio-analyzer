@@ -4,7 +4,6 @@ import com.remal.portfolio.model.Transaction;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * List sorter tool.
@@ -25,7 +24,7 @@ public class Sorter {
         var sorted = transactions
                 .stream()
                 .sorted(Comparator.comparing(Transaction::getTradeDate))
-                .collect(Collectors.toList());
+                .toList();
 
         transactions.clear();
         transactions.addAll(sorted);

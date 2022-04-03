@@ -36,7 +36,7 @@ public abstract class OutputCommandGroup {
         @CommandLine.Option(
                 names = {"-o", "--output-file"},
                 description = "Write report to file (i.e. \"'report_'yyyy-MM-dd'.md'\"). "
-                        + "Accepted extensions: .txt, .md, .csv and .xls")
+                        + "Accepted extensions: .txt, .md, .csv and .xlsx")
         public String outputFile;
 
         /**

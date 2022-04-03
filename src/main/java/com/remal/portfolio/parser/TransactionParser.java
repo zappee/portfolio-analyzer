@@ -177,7 +177,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Get an excel cell value as a String.
      *
      * @param row row in the Excel spreadsheet
-     * @param colIndex column number in the row
+     * @param colIndex column index within the row
      * @return the cell value as a String or null in the row and column indexes are invalid
      */
     private String getCellValueAsString(XSSFRow row, int colIndex) {
@@ -188,7 +188,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Get an excel cell value as a BigDecimal.
      *
      * @param row row in the Excel spreadsheet
-     * @param colIndex column number in the row
+     * @param colIndex column index within the row
      * @return the cell value as a BigDecimal or null in the row and column indexes are invalid
      */
     private BigDecimal getCellValueAsBigDecimal(XSSFRow row, int colIndex) {

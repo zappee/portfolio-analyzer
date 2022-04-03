@@ -52,6 +52,17 @@ public class BigDecimals {
     }
 
     /**
+     * Convert a BigDecimal to double.
+     *
+     * @param decimal the BigDecimal to convert
+     * @return the double value
+     */
+    public static double valueOf(BigDecimal decimal) {
+        Objects.requireNonNull(decimal, "The decimal value can not be null.");
+        return decimal.doubleValue();
+    }
+
+    /**
      * Greater than or equal zero.
      *
      * @param decimal decimal value to check

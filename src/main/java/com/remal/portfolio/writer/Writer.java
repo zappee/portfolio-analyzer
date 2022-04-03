@@ -129,35 +129,35 @@ public abstract class Writer<T> {
         var fileType = Files.getFileType(fileNameTemplate);
 
         switch (fileType) {
-            case CSV:
+            case CSV -> {
                 log.debug("generating the CSV report...");
                 reportAsBytes = buildCsvReport(items).getBytes();
                 filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                break;
+            }
+            case EXCEL -> {
+                if (writeMode == FileWriter.WriteMode.APPEND) {
+                    var message = "The {} file mode is not supported in case of Excel output file format.";
+                    Logger.logErrorAndExit(message, FileWriter.WriteMode.APPEND);
+                }
 
-            case EXCEL:
                 log.debug("generating the Excel report...");
                 reportAsBytes = buildExcelReport(items);
                 filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                break;
-
-            case MARKDOWN:
+            }
+            case MARKDOWN -> {
                 log.debug("generating the Markdown report...");
                 reportAsBytes = buildMarkdownReport(items).getBytes();
                 filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                break;
-
-            case NOT_DEFINED:
+            }
+            case NOT_DEFINED -> {
                 var reportAsString = buildMarkdownReport(items);
                 log.debug("{} items have been processed", items.size());
                 StdoutWriter.write(reportAsString);
-                break;
-
-            default:
-                Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
+            }
+            default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
         }
     }
 
@@ -170,7 +170,7 @@ public abstract class Writer<T> {
      * @param value cell value
      */
     protected void updateWidth(Map<String, Integer> widths, Label label, final Object value) {
-        if (value instanceof BigDecimal) {
+        if (value instanceof BigDecimal x) {
             // BigDecimal needs a special alignment:
             //    |label   |
             //    |  1     |
@@ -179,7 +179,7 @@ public abstract class Writer<T> {
             //    | 12.3   |
             //    | 12.34  |
             //    |123.4567|
-            var bigDecimalParts = partsOfBigDecimal((BigDecimal) value);
+            var bigDecimalParts = partsOfBigDecimal(x);
             var previousWholeWidth = widths.getOrDefault(getWholeWidthKey(label), 0);
             var currentWholeWidth = bigDecimalParts[0].length();
             widths.put(getWholeWidthKey(label), Math.max(previousWholeWidth, currentWholeWidth));
@@ -225,7 +225,7 @@ public abstract class Writer<T> {
             return "";
         }
 
-        if (value instanceof BigDecimal) {
+        if (value instanceof BigDecimal x) {
             var fractionalWidth = widths.get(getFractionalWidthKey(label));
             var columnWidth = calculateBigDecimalWidth(widths, label);
             var labelWidth = label.getLabel(language).length();
@@ -233,7 +233,7 @@ public abstract class Writer<T> {
                     ? widths.get(getWholeWidthKey(label)) + labelWidth - columnWidth
                     : widths.get(getWholeWidthKey(label));
 
-            var parts = partsOfBigDecimal((BigDecimal) value);
+            var parts = partsOfBigDecimal(x);
             var spaces = (fractionalWidth == 0) ? "" : " ".repeat(fractionalWidth + 1);
             var valueAsFormattedString = parts[1].isEmpty()
                     ? Strings.rightPad(parts[0], wholeWidth) + spaces
@@ -260,23 +260,20 @@ public abstract class Writer<T> {
         if (value instanceof String) {
             stringValue = Optional.of(value.toString());
 
-        } else if (value instanceof TransactionType) {
-            stringValue = Optional.of(((TransactionType) value).name());
+        } else if (value instanceof TransactionType x) {
+            stringValue = Optional.of((x).name());
 
-        } else if (value instanceof InventoryValuationType) {
-            stringValue = Optional.of(((InventoryValuationType) value).name());
+        } else if (value instanceof InventoryValuationType x) {
+            stringValue = Optional.of((x).name());
 
-        } else if (value instanceof LocalDateTime) {
-            stringValue = Optional.of(LocalDateTimes.toString(zoneTo, dateTimePattern, (LocalDateTime) value));
+        } else if (value instanceof LocalDateTime x) {
+            stringValue = Optional.of(LocalDateTimes.toString(zoneTo, dateTimePattern, x));
 
-        } else if (value instanceof BigDecimal) {
-            stringValue = Optional.of(BigDecimals.toString(
-                    decimalFormat,
-                    decimalGroupingSeparator,
-                    (BigDecimal) value).trim());
+        } else if (value instanceof BigDecimal x) {
+            stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());
 
-        } else if (value instanceof CurrencyType) {
-            stringValue = Optional.of(((CurrencyType) value).name());
+        } else if (value instanceof CurrencyType x) {
+            stringValue = Optional.of(x.name());
 
         } else {
             stringValue = Optional.empty();

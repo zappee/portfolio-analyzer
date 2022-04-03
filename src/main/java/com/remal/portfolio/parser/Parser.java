@@ -65,24 +65,22 @@ public abstract class Parser<T> {
         List<T> items;
         var fileType = Files.getFileType(file);
         switch (fileType) {
-            case CSV:
+            case CSV -> {
                 log.debug(LOG_BEFORE_EXECUTION, file, "CSV");
                 items = parseCsvFile(file);
-                break;
-
-            case EXCEL:
+            }
+            case EXCEL -> {
                 log.debug(LOG_BEFORE_EXECUTION, file, "Excel");
                 items = parseExcelFile(file);
-                break;
-
-            case MARKDOWN:
+            }
+            case MARKDOWN -> {
                 log.debug(LOG_BEFORE_EXECUTION, file, "Markdown");
                 items = parseMarkdownFile(file);
-                break;
-
-            default:
+            }
+            default -> {
                 Logger.logErrorAndExit("Unsupported input file type: '{}'", file);
                 items = Collections.emptyList();
+            }
         }
 
         log.debug("{} items have been loaded", items.size());

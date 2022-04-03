@@ -58,11 +58,8 @@ public class FileWriter {
             log.debug("writing the report to '{}', write-mode: {}...", filename, writeMode);
 
             switch (writeMode) {
-                case OVERWRITE:
-                    Files.write(path, content);
-                    break;
-
-                case APPEND:
+                case OVERWRITE -> Files.write(path, content);
+                case APPEND -> {
                     if ((new File(filename)).createNewFile()) {
                         log.debug("The '{}' file has been created successfully.", filename);
                     }
@@ -70,11 +67,8 @@ public class FileWriter {
                         Files.write(path, System.lineSeparator().getBytes(), StandardOpenOption.APPEND);
                     }
                     Files.write(path, content, StandardOpenOption.APPEND);
-                    break;
-
-                case STOP_IF_EXIST:
-                default:
-                    Files.write(path, content, StandardOpenOption.CREATE_NEW);
+                }
+                default -> Files.write(path, content, StandardOpenOption.CREATE_NEW);
             }
         } catch (IOException e) {
             var message = "An unexpected error has occurred while writing to '{}' file. Error: {}";
