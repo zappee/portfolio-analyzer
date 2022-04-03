@@ -1,4 +1,4 @@
-package com.remal.portfolio.parser.coinbase;
+package com.remal.portfolio.downloader.coinbasepro;
 
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
@@ -17,8 +17,7 @@ import java.util.Base64;
 import java.util.Optional;
 
 /**
- * Helper that helps to build Coinbase rest api calls and process the
- * responses.
+ * Helper that builds Coinbase rest api calls and process the responses.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -26,7 +25,7 @@ import java.util.Optional;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public abstract class CoinbaseProApiRequestBuilder {
+public abstract class CoinbaseProRequestBuilder {
 
     /**
      * Coinbase Pro API url.
@@ -55,7 +54,7 @@ public abstract class CoinbaseProApiRequestBuilder {
      * @param passphrase Coinbase Pro passphrase
      * @param secret Coinbase Pro secret for the API key
      */
-    protected CoinbaseProApiRequestBuilder(String publicKey, String passphrase, String secret) {
+    protected CoinbaseProRequestBuilder(String publicKey, String passphrase, String secret) {
         this.publicKey = publicKey;
         this.passphrase = passphrase;
         this.secret = secret;

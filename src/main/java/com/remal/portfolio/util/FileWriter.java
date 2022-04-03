@@ -1,7 +1,6 @@
 package com.remal.portfolio.util;
 
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +10,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 /**
- * This is a tool that writes string to file.
+ * This is a tool that writes content to file.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -22,7 +21,7 @@ import java.nio.file.StandardOpenOption;
 public class FileWriter {
 
     /**
-     * The mode how to persist data to file.
+     * The mode how to open the file.
      */
     public enum WriteMode {
 
@@ -47,50 +46,48 @@ public class FileWriter {
     }
 
     /**
-     * Writes content to file.
+     * Write the content to a file.
      *
-     * @param writeMode controls how to open the file
-     * @param pathToFile the path of the file to be created, e.g. "''yyyy-MM-dd'_portfolio-summary.md'"
-     * @param content the content that wil be written to the file
+     * @param writeMode how to open the file
+     * @param filename the file to write the content to
+     * @param content content that wil be written to the file
      */
-    public static void write(FileWriter.WriteMode writeMode, String pathToFile, String content) {
+    public static void write(FileWriter.WriteMode writeMode, String filename, byte[] content) {
         try {
-            var filename = Strings.patternToString(pathToFile);
             var path = Paths.get(filename);
-            log.debug("writing report to '{}', write-mode: {}", filename, writeMode);
+            log.debug("writing the report to '{}', write-mode: {}...", filename, writeMode);
 
             switch (writeMode) {
                 case OVERWRITE:
-                    Files.writeString(path, content);
+                    Files.write(path, content);
                     break;
 
                 case APPEND:
                     if ((new File(filename)).createNewFile()) {
                         log.debug("The '{}' file has been created successfully.", filename);
                     }
-                    if (isEmptyOrEndsWithNewline(filename)) {
-                        Files.write(path, content.getBytes(), StandardOpenOption.APPEND);
-                    } else {
-                        Files.write(path, (System.lineSeparator() + content).getBytes(), StandardOpenOption.APPEND);
+                    if (!isEmptyOrEndsWithNewline(filename)) {
+                        Files.write(path, System.lineSeparator().getBytes(), StandardOpenOption.APPEND);
                     }
+                    Files.write(path, content, StandardOpenOption.APPEND);
                     break;
 
                 case STOP_IF_EXIST:
                 default:
-                    Files.write(path, content.getBytes(), StandardOpenOption.CREATE_NEW);
+                    Files.write(path, content, StandardOpenOption.CREATE_NEW);
             }
         } catch (IOException e) {
-            log.error("An unexpected error has occurred while writing to '{}'. Error: {}", pathToFile, e.toString());
-            System.exit(CommandLine.ExitCode.SOFTWARE);
+            var message = "An unexpected error has occurred while writing to '{}' file. Error: {}";
+            Logger.logErrorAndExit(message, filename, e.toString());
         }
     }
 
     /**
-     * Checks whether the file ends with a new line character or not.
+     * Check how the file ends.
      *
      * @param pathToFile path to the file
      * @return true if the file ends with a new line character
-     * @throws IOException throws in case of error
+     * @throws IOException case of error
      */
     private static boolean isEmptyOrEndsWithNewline(String pathToFile) throws IOException {
         File file = new File(pathToFile);

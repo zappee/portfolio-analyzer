@@ -17,9 +17,9 @@ import java.util.List;
 public class StringToListConverter implements CommandLine.ITypeConverter<List<String>> {
 
     /**
-     * Converts comma separated string to list.
+     * Converts comma separated strings to a list.
      *
-     * @param values user defined value from the command line interface
+     * @param values value from the command line interface
      * @return the list with trimmed values
      */
     @Override

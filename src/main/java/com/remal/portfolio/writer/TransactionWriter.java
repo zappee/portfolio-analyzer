@@ -3,20 +3,20 @@ package com.remal.portfolio.writer;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.picocli.command.CommonCommand;
-import com.remal.portfolio.util.FileWriter;
-import com.remal.portfolio.util.Files;
+import com.remal.portfolio.picocli.command.OutputCommandGroup;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Strings;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
+import org.apache.poi.ss.formula.eval.NotImplementedException;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Generate a ledger as a string.
+ * Generate transaction reports.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -24,226 +24,166 @@ import java.util.Map;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class TransactionWriter extends Writer {
+public class TransactionWriter extends Writer<Transaction> {
 
     /**
-     * Show the header at the top of the report.
-     */
-    @Setter
-    private boolean showReportTitle = true;
-
-    /**
-     * The complete list of the transactions that the user has made and was filled.
-     */
-    private final List<Transaction> transactions;
-
-    /**
-     * Produces a report writer instance.
+     * Builder that initializes a new writer instance.
      *
-     * @param transactions list of transactions
-     * @param outputCliGroup command line interface options
-     * @param replaces list of the portfolio names that will be overridden
-     * @return an initialized TransactionWriter instance
-     * @throws java.lang.UnsupportedOperationException in case of usage of Excel file
+     * @param datePattern the date/time format that is used in the reports
+     * @param zoneTo the timezone that is used to convert dates to user's timezone
+     * @param outputArgGroup report and output file format
+     * @return the writer
      */
-    public static TransactionWriter build(List<Transaction> transactions,
-                                          CommonCommand.OutputGroup outputCliGroup,
-                                          List<String> replaces) {
+    public static Writer<Transaction> build(String datePattern,
+                                            String zoneTo,
+                                            OutputCommandGroup.OutputArgGroup outputArgGroup) {
 
-        log.debug("initializing transaction report writer with '{}' language...", outputCliGroup.language);
-
-        var writer = new TransactionWriter(transactions, replaces);
-        writer.setShowReportTitle(Boolean.parseBoolean(outputCliGroup.printTitle));
-        writer.setShowHeader(Boolean.parseBoolean(outputCliGroup.printHeader));
-        writer.setLanguage(outputCliGroup.language);
-        writer.setColumnsToHide(outputCliGroup.columnsToHide);
-        writer.setDateTimePattern(outputCliGroup.dateTimePattern);
+        Writer<Transaction> writer = new TransactionWriter();
+        writer.setHideTitle(outputArgGroup.hideTitle);
+        writer.setHideHeader(outputArgGroup.hideHeader);
+        writer.setLanguage(outputArgGroup.language);
+        writer.setColumnsToHide(outputArgGroup.columnsToHide);
+        writer.setDateTimePattern(datePattern);
+        writer.setDecimalFormat("##################.########");
+        writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
+        writer.setZoneTo(zoneTo);
         return writer;
     }
 
     /**
-     * Constructor.
+     * Generate the CSV report.
      *
-     * @param transactions the list of the transactions that the user has made and was filled
-     * @param replaces list of the portfolio names that will be overridden
+     * @param transactions list of the transactions
+     * @return the report content as a String
      */
-    public TransactionWriter(List<Transaction> transactions, List<String> replaces) {
-        this.transactions = transactions;
-        if (replaces != null) {
-            renamePortfolioNames(replaces);
-        }
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param transactions the list of the transactions that the user has made and was filled
-     */
-    public TransactionWriter(List<Transaction> transactions) {
-        this.transactions = transactions;
-    }
-
-    /**
-     * Writes the report to file.
-     *
-     * @param writeMode controls how to open the file
-     * @param file the report file
-     * @throws java.lang.UnsupportedOperationException throws if unsupported file format was requested
-     */
-    public void writeToFile(FileWriter.WriteMode writeMode, String file) {
-        var filetype = Files.getFileType(file);
-        switch (filetype) {
-            case TEXT:
-                FileWriter.write(writeMode, file, printAsMarkdown());
-                break;
-
-            case CSV:
-                FileWriter.write(writeMode, file, printAsCsv());
-                break;
-
-            default:
-                log.error("Unsupported output file type: '{}'", file);
-                System.exit(CommandLine.ExitCode.SOFTWARE);
-        }
-    }
-
-    /**
-     * Generates the transaction report.
-     *
-     * @return the report as a Markdown string
-     */
-    public String printAsMarkdown() {
-        log.debug("building the Markdown transaction report with {} transactions for {}:{}...",
-                transactions.size(),
-                transactions.isEmpty() ? "<nothing>" : transactions.get(0).getPortfolio(),
-                transactions.isEmpty() ? "<nothing>" : transactions.get(0).getTicker());
-
-        var widths = calculateColumnWidth();
-        var sb = new StringBuilder();
-
-        if (transactions.isEmpty()) {
-            return sb.toString();
-        }
+    @Override
+    protected String buildCsvReport(List<Transaction> transactions) {
+        var report = new StringBuilder();
 
         // report title
-        if (showReportTitle) {
-            sb.append(buildMarkdownReportHeader(Label.LABEL_TRANSACTION_REPORT.getLabel(language)));
+        if (!hideTitle) {
+            report
+                    .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
+                    .append(NEW_LINE)
+                    .append(Label.LABEL_GENERATED.getLabel(language))
+                    .append(": ")
+                    .append(LocalDateTimes.toString(zoneTo, dateTimePattern, LocalDateTime.now()))
+                    .append(NEW_LINE);
         }
 
         // table header
-        if (showHeader) {
-            var header = new StringBuilder().append(NEW_LINE);
-            var headerSeparator = new StringBuilder();
+        if (!hideHeader) {
+            Arrays
+                    .stream(LabelCollection.TRANSACTION_TABLE_HEADERS)
+                    .filter(label -> !columnsToHide.contains(label.getId()))
+                    .forEach(label -> report.append(label.getLabel(language)).append(csvSeparator));
+            report.setLength(report.length() - csvSeparator.length());
+            report.append(NEW_LINE);
+        }
 
-            LabelCollection.getTransactionTable()
-                    .stream().filter(label -> !columnsToHide.contains(label.getId()))
-                    .forEach(label -> {
-                        var translation = label.getLabel(language);
-                        header.append(TABLE_SEPARATOR).append(Strings.leftPad(translation, widths.get(label.getId())));
-                        headerSeparator.append(TABLE_SEPARATOR).append("-".repeat(widths.get(label.getId())));
+        // data
+        transactions
+                .forEach(transaction -> {
+                    report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator);
+                    report.append(getCell(Label.TICKER, transaction.getTicker())).append(csvSeparator);
+                    report.append(getCell(Label.TYPE, transaction.getType())).append(csvSeparator);
+                    report.append(getCell(Label.VALUATION, transaction.getInventoryValuation())).append(csvSeparator);
+                    report.append(getCell(Label.TRADE_DATE, transaction.getTradeDate())).append(csvSeparator);
+                    report.append(getCell(Label.QUANTITY, transaction.getQuantity())).append(csvSeparator);
+                    report.append(getCell(Label.PRICE, transaction.getPrice())).append(csvSeparator);
+                    report.append(getCell(Label.FEE, transaction.getFee())).append(csvSeparator);
+                    report.append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator);
+                    report.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
+                    report.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
+                    report.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE);
+                });
+        return report.toString();
+    }
+
+    /**
+     * Generate the Excel report.
+     *
+     * @param transactions list of the transactions
+     * @return the report content as bytes
+     */
+    @Override
+    protected byte[] buildExcelReport(List<Transaction> transactions) {
+        throw new NotImplementedException(null);
+    }
+
+    /**
+     * Generate the Text/Markdown report.
+     *
+     * @param transactions list of the transactions
+     * @return the report content as a String
+     */
+    @Override
+    protected String buildMarkdownReport(List<Transaction> transactions) {
+        var widths = calculateColumnWidth(transactions);
+        var report = new StringBuilder();
+
+        // report title
+        if (!hideTitle) {
+            report
+                    .append("# ")
+                    .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
+                    .append(NEW_LINE)
+                    .append("_")
+                    .append(Label.LABEL_GENERATED.getLabel(language))
+                    .append(": ")
+                    .append(LocalDateTimes.toString(zoneTo, dateTimePattern, LocalDateTime.now()))
+                    .append("_")
+                    .append(NEW_LINE)
+                    .append(NEW_LINE);
+        }
+
+        // table header
+        if (!hideHeader && !transactions.isEmpty()) {
+            var header = new StringBuilder();
+            var headerSeparator = new StringBuilder();
+            Arrays
+                    .stream(LabelCollection.TRANSACTION_TABLE_HEADERS)
+                    .filter(label -> !columnsToHide.contains(label.getId()))
+                    .forEach(labelKey -> {
+                        var labelValue = labelKey.getLabel(language);
+                        var width = widths.get(labelKey.getId());
+                        header.append(markdownSeparator).append(Strings.leftPad(labelValue, width));
+                        headerSeparator.append(markdownSeparator).append("-".repeat(width));
                     });
 
-            header.append(TABLE_SEPARATOR).append(NEW_LINE);
-            headerSeparator.append(TABLE_SEPARATOR).append(NEW_LINE);
-            sb.append(header).append(headerSeparator);
+            header.append(markdownSeparator).append(NEW_LINE);
+            headerSeparator.append(markdownSeparator).append(NEW_LINE);
+            report.append(header).append(headerSeparator);
         }
 
         // data
         transactions
                 .forEach(transaction -> {
-                    sb.append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), widths));
-                    sb.append(getCell(Label.TICKER, transaction.getTicker(), widths));
-                    sb.append(getCell(Label.TYPE, transaction.getType(), widths));
-                    sb.append(getCell(Label.VALUATION, transaction.getInventoryValuation(), widths));
-                    sb.append(getCell(Label.TRADE_DATE, transaction.getTradeDate(), widths));
-                    sb.append(getCell(Label.QUANTITY, transaction.getQuantity(), widths));
-                    sb.append(getCell(Label.PRICE, transaction.getPrice(), widths));
-                    sb.append(getCell(Label.FEE, transaction.getFee(), widths));
-                    sb.append(getCell(Label.CURRENCY, transaction.getCurrency(), widths));
-                    sb.append(getCell(Label.ORDER_ID, transaction.getOrderId(), widths));
-                    sb.append(getCell(Label.TRADE_ID, transaction.getTradeId(), widths));
-                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId(), widths));
-                    sb.append(TABLE_SEPARATOR).append(NEW_LINE);
+                    report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), widths));
+                    report.append(getCell(Label.TICKER, transaction.getTicker(), widths));
+                    report.append(getCell(Label.TYPE, transaction.getType(), widths));
+                    report.append(getCell(Label.VALUATION, transaction.getInventoryValuation(), widths));
+                    report.append(getCell(Label.TRADE_DATE, transaction.getTradeDate(), widths));
+                    report.append(getCell(Label.QUANTITY, transaction.getQuantity(), widths));
+                    report.append(getCell(Label.PRICE, transaction.getPrice(), widths));
+                    report.append(getCell(Label.FEE, transaction.getFee(), widths));
+                    report.append(getCell(Label.CURRENCY, transaction.getCurrency(), widths));
+                    report.append(getCell(Label.ORDER_ID, transaction.getOrderId(), widths));
+                    report.append(getCell(Label.TRADE_ID, transaction.getTradeId(), widths));
+                    report.append(getCell(Label.TRANSFER_ID, transaction.getTransferId(), widths));
+                    report.append(markdownSeparator).append(NEW_LINE);
                 });
-        return sb.toString();
+
+        return report.toString();
     }
 
     /**
-     * Generates the transaction report.
+     * Calculate the with of the columns that are shown in the report.
      *
-     * @return the report as a CSV content
-     */
-    private String printAsCsv() {
-        log.debug("building the Ledger CSV report...");
-        var csvSeparator = ",";
-        var sb = new StringBuilder();
-
-        // report title
-        if (showReportTitle) {
-            sb.append(buildCsvReportHeader());
-        }
-
-        // table header
-        if (showHeader) {
-            LabelCollection.getTransactionTable()
-                    .stream()
-                    .filter(label -> !columnsToHide.contains(label.getId()))
-                    .forEach(label -> sb.append(label.getLabel(language)).append(csvSeparator));
-            sb.setLength(sb.length() - 1);
-            sb.append(NEW_LINE);
-        }
-
-        // data
-        transactions
-                .forEach(transaction -> {
-                    sb.append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator);
-                    sb.append(getCell(Label.TICKER, transaction.getTicker())).append(csvSeparator);
-                    sb.append(getCell(Label.TYPE, transaction.getType())).append(csvSeparator);
-                    sb.append(getCell(Label.VALUATION, transaction.getInventoryValuation())).append(csvSeparator);
-                    sb.append(getCell(Label.TRADE_DATE, transaction.getTradeDate())).append(csvSeparator);
-                    sb.append(getCell(Label.QUANTITY, transaction.getQuantity())).append(csvSeparator);
-                    sb.append(getCell(Label.PRICE, transaction.getPrice())).append(csvSeparator);
-                    sb.append(getCell(Label.FEE, transaction.getFee())).append(csvSeparator);
-                    sb.append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator);
-                    sb.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
-                    sb.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
-                    sb.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE);
-                });
-        return sb.toString();
-    }
-
-    /**
-     * Initialize the list of the portfolio names that will be overridden
-     * during the parse.
-     *
-     * @param replaces user defined values from the command line interface
-     */
-    private void renamePortfolioNames(List<String> replaces) {
-        Map<String, String> portfolioNameToRename = new HashMap<>();
-        try {
-            replaces.forEach(x -> {
-                var from = x.split(":")[0];
-                var to = x.split(":")[1];
-                log.debug("portfolio name overwriting: '{}' -> '{}'", from, to);
-                portfolioNameToRename.put(from, to);
-            });
-
-            portfolioNameToRename.forEach((k, v) -> transactions
-                    .stream()
-                    .filter(x -> x.getPortfolio().equals(k)).forEach(x -> x.setPortfolio(v)));
-
-        } catch (ArrayIndexOutOfBoundsException e) {
-            log.error("Invalid value provided for '-map' option.");
-            System.exit(CommandLine.ExitCode.SOFTWARE);
-        }
-    }
-
-    /**
-     * Calculates the with of the columns that are shown in the Markdown report.
-     *
+     * @param transactions list of the transactions
      * @return length of the columns
      */
-    private Map<String, Integer> calculateColumnWidth() {
+    private Map<String, Integer> calculateColumnWidth(List<Transaction> transactions) {
         Map<String, Integer> widths = new HashMap<>();
         transactions.forEach(transaction -> {
             updateWidth(widths, Label.PORTFOLIO, transaction.getPortfolio());

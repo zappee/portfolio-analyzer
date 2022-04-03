@@ -1,7 +1,6 @@
 package com.remal.portfolio.util;
 
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -11,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 /**
- * Tool that converts and formats String objects.
+ * Tool that works with String objects.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -54,11 +53,11 @@ public class Strings {
     }
 
     /**
-     * Converts ISO formatted timestamp string to a LocalDateTime.
-     * Pattern: 2021-12-31T22.00.00.000[00]
+     * Convert ISO formatted timestamp string to a LocalDateTime.
+     * ISO pattern: 2021-12-31T22.00.00.000[00]
      *
      * @param timeAsString the timestamp as a string
-     * @return LocalDateTime converted object
+     * @return LocalDateTime the LocalDateTime object
      */
     public static LocalDateTime toLocalDateTime(String timeAsString) {
         var formatter = DateTimeFormatter.ISO_INSTANT;
@@ -67,38 +66,24 @@ public class Strings {
     }
 
     /**
-     * Converts ISO formatted timestamp string to a LocalDateTime.
+     * Convert string to a LocalDateTime.
      *
-     * @param dateTimePattern the date-time format for parsing dates from the Excel
-     * @param timestampAsString the timestamp as a string
-     * @return LocalDateTime converted object
+     * @param dateTimePattern the date/time pattern used for parsing the string
+     * @param timestampAsString timestamp as a string
+     * @return LocalDateTime the LocalDateTime object
      */
     public static LocalDateTime toLocalDateTime(String dateTimePattern, String timestampAsString) {
+        LocalDateTime timestamp = null;
         try {
             var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
-            return LocalDateTime.parse(timestampAsString, formatter);
+            timestamp = LocalDateTime.parse(timestampAsString, formatter);
         } catch (DateTimeParseException e) {
-            log.error(
+            Logger.logErrorAndExit(
                     "Error while parsing the '{}' string to datetime, pattern: '{}'.",
                     timestampAsString,
                     dateTimePattern);
-            System.exit(CommandLine.ExitCode.SOFTWARE);
         }
-        return null;
-    }
-
-    /**
-     * Replaces the date-time pattern in a string with real date and time.
-     *
-     * @param s the string with the pattern, e.g. "'report_'yyyy-MM-dd'.md'"
-     * @return the effective string
-     */
-    public static String patternToString(String s) {
-        // Within date and time pattern strings, unquoted letters from 'A' to 'Z' and from 'a' to 'z' are
-        // interpreted as pattern letters representing the components of a date or time string. Text can be
-        // quoted using single quotes (') to avoid interpretation.
-        var escapedFilename = s.contains("'") ? s : "'" + s + "'";
-        return LocaleDateTimes.toString(escapedFilename, LocalDateTime.now());
+        return timestamp;
     }
 
     /**

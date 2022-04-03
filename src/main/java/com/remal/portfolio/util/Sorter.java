@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 public class Sorter {
 
     /**
-     * Sorts transaction by created date.
+     * Sort the list of transaction by created date.
      *
-     * @param transactions the list of transaction to be sorted
+     * @param transactions the list of transaction to sort
      */
     public static void sort(List<Transaction> transactions) {
         var sorted = transactions

@@ -20,7 +20,7 @@ public class ManifestVersionProvider implements CommandLine.IVersionProvider {
      * Builds version info.
      *
      * @return an array that contains details about the build
-     * @throws Exception throws in case of error
+     * @throws Exception case of error
      */
     @Override
     public String[] getVersion() throws Exception {

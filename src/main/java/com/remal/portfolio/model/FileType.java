@@ -13,7 +13,7 @@ public enum FileType {
     /**
      * File type for *,txt and *.md files.
      */
-    TEXT,
+    MARKDOWN,
 
     /**
      * File type for *.xls files.

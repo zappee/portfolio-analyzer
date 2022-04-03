@@ -1,13 +1,17 @@
 package com.remal.portfolio.writer;
 
-import com.remal.portfolio.model.Currency;
-import com.remal.portfolio.model.InventoryValuation;
+import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
-import com.remal.portfolio.util.LocaleDateTimes;
+import com.remal.portfolio.util.FileWriter;
+import com.remal.portfolio.util.Files;
+import com.remal.portfolio.util.LocalDateTimes;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Strings;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -27,17 +31,9 @@ import java.util.Optional;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public abstract class Writer {
-
-    /**
-     * Markdown table separator character.
-     */
-    protected static final String TABLE_SEPARATOR = "|";
-
-    /**
-     * CSV separator character.
-     */
-    protected static final char CSV_SEPARATOR = ',';
+@Slf4j
+@Setter
+public abstract class Writer<T> {
 
     /**
      * New line character.
@@ -45,46 +41,131 @@ public abstract class Writer {
     protected static final String NEW_LINE = System.lineSeparator();
 
     /**
+     * Markdown table separator character.
+     */
+    protected String markdownSeparator = "|";
+
+    /**
+     * CSV separator character.
+     */
+    protected String csvSeparator = ",";
+
+    /**
      * Default language.
      */
-    @Setter
     protected String language = "en";
 
     /**
-     * If it set to true then the header of the transaction table will print.
+     * Set it to true to hide the report title.
      */
-    @Setter
-    protected boolean showHeader = true;
+    protected boolean hideTitle = false;
 
     /**
-     * Date pattern that is used to show timestamps in the reports.
+     * Set it to true to hide the table headers.
      */
-    @Setter
+    protected boolean hideHeader = false;
+
+    /**
+     * Pattern that is used to display date and times.
+     */
     protected String dateTimePattern = "yyyy.MM.dd HH:mm:ss";
 
     /**
      * Controls how the decimal numbers will be converted to String.
      */
-    @Setter
     protected String decimalFormat = "###,###,###,###,###,###.########";
 
     /**
      * The character used for thousands separator.
      */
-    @Setter
     protected char decimalGroupingSeparator = ' ';
 
     /**
-     * List of the columns that will be displayed in the report.
+     * List of the columns that won't be displayed in the report.
      */
-    @Setter
     protected List<String> columnsToHide = new ArrayList<>();
+
+    /**
+     * If not null then date/time conversions will perform.
+     */
+    protected String zoneTo;
+
+    /**
+     * Generate the CSV report.
+     *
+     * @param items data
+     * @return the report content as a String
+     */
+    protected abstract String buildCsvReport(List<T> items);
+
+    /**
+     * Generate the Excel report.
+     *
+     * @param items data
+     * @return the report content as bytes
+     */
+    protected abstract byte[] buildExcelReport(List<T> items);
+
+    /**
+     * Generate the Text/Markdown report.
+     *
+     * @param items data
+     * @return the report content as a String
+     */
+    protected abstract String buildMarkdownReport(List<T> items);
+
+    /**
+     * Write the report to the output. The output can be a file ot the
+     * standard output.
+     *
+     * @param writeMode control the way of open the file
+     * @param fileNameTemplate the report file name, can contain date/time patterns too
+     * @param items source of the report
+     * @throws java.lang.UnsupportedOperationException unsupported file format was requested
+     */
+    public void write(FileWriter.WriteMode writeMode, String fileNameTemplate, List<T> items) {
+        byte[] reportAsBytes;
+        String filename;
+        var fileType = Files.getFileType(fileNameTemplate);
+
+        switch (fileType) {
+            case CSV:
+                log.debug("generating the CSV report...");
+                reportAsBytes = buildCsvReport(items).getBytes();
+                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                FileWriter.write(writeMode, filename, reportAsBytes);
+                break;
+
+            case EXCEL:
+                log.debug("generating the Excel report...");
+                reportAsBytes = buildExcelReport(items);
+                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                FileWriter.write(writeMode, filename, reportAsBytes);
+                break;
+
+            case MARKDOWN:
+                log.debug("generating the Markdown report...");
+                reportAsBytes = buildMarkdownReport(items).getBytes();
+                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                FileWriter.write(writeMode, filename, reportAsBytes);
+                break;
+
+            case NOT_DEFINED:
+                var reportAsString = buildMarkdownReport(items);
+                log.debug("{} items have been processed", items.size());
+                StdoutWriter.write(reportAsString);
+                break;
+
+            default:
+                Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
+        }
+    }
 
     /**
      * Calculates the length of the columns in the reports based on the
      * column title and the length of the cell contents.
      *
-     * @param widths the list that stores with of the columns
+     * @param widths the list that stores the width of the columns
      * @param label column title
      * @param value cell value
      */
@@ -121,52 +202,23 @@ public abstract class Writer {
     }
 
     /**
-     * Converts values to string.
+     * Return the value as a string or an empty string if the column is hidden.
      *
-     * @param value the value
-     * @return the string representation of the given value
+     * @param label column ID
+     * @param value cell value
+     * @return the value or an empty string
      */
-    private Optional<String> getStringValue(final Object value) {
-        if (Objects.isNull(value)) {
-            return Optional.empty();
-        }
-
-        Optional<String> stringValue;
-        if (value instanceof String) {
-            stringValue = Optional.of(value.toString());
-
-        } else if (value instanceof TransactionType) {
-            stringValue = Optional.of(((TransactionType) value).name());
-
-        } else if (value instanceof InventoryValuation) {
-            stringValue = Optional.of(((InventoryValuation) value).name());
-
-        } else if (value instanceof LocalDateTime) {
-            stringValue = Optional.ofNullable(LocaleDateTimes.toString(dateTimePattern, (LocalDateTime) value));
-
-        } else if (value instanceof BigDecimal) {
-            stringValue = Optional.of(BigDecimals.toString(
-                    decimalFormat,
-                    decimalGroupingSeparator,
-                    (BigDecimal) value).trim());
-
-        } else if (value instanceof Currency) {
-            stringValue = Optional.of(((Currency) value).name());
-
-        } else {
-            stringValue = Optional.empty();
-        }
-
-        return stringValue;
+    protected String getCell(Label label, Object value) {
+        return columnsToHide.contains(label.getId()) ? "" : getStringValue(value).orElse("");
     }
 
     /**
-     * Generates the left alignment cell value.
+     * Generate an alignment value as a String.
      *
-     * @param label column title
+     * @param label column ID
      * @param value cell value
      * @param widths column width
-     * @return the cell value or an empty string if the column is hidden
+     * @return the value or an empty String if the column is hidden
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
         if (columnsToHide.contains(label.getId())) {
@@ -186,87 +238,80 @@ public abstract class Writer {
             var valueAsFormattedString = parts[1].isEmpty()
                     ? Strings.rightPad(parts[0], wholeWidth) + spaces
                     : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);
-            return TABLE_SEPARATOR + valueAsFormattedString;
+            return markdownSeparator + valueAsFormattedString;
         } else {
             var width = widths.get(label.getId());
-            return TABLE_SEPARATOR + Strings.leftPad(getStringValue(value).orElse(""), width);
+            return markdownSeparator + Strings.leftPad(getStringValue(value).orElse(""), width);
         }
     }
 
     /**
-     * Returns the header label or with an empty string if the column is hidden.
+     * Convert an object to String.
      *
-     * @param label column title
-     * @param value cell value
-     * @return the cell title or an empty string if the column is hidded
+     * @param value the value
+     * @return the string representation of the object
      */
-    protected String getCell(Label label, Object value) {
-        return columnsToHide.contains(label.getId())
-                ? ""
-                : getStringValue(value).orElse("");
+    private Optional<String> getStringValue(final Object value) {
+        if (Objects.isNull(value)) {
+            return Optional.empty();
+        }
+
+        Optional<String> stringValue;
+        if (value instanceof String) {
+            stringValue = Optional.of(value.toString());
+
+        } else if (value instanceof TransactionType) {
+            stringValue = Optional.of(((TransactionType) value).name());
+
+        } else if (value instanceof InventoryValuationType) {
+            stringValue = Optional.of(((InventoryValuationType) value).name());
+
+        } else if (value instanceof LocalDateTime) {
+            stringValue = Optional.of(LocalDateTimes.toString(zoneTo, dateTimePattern, (LocalDateTime) value));
+
+        } else if (value instanceof BigDecimal) {
+            stringValue = Optional.of(BigDecimals.toString(
+                    decimalFormat,
+                    decimalGroupingSeparator,
+                    (BigDecimal) value).trim());
+
+        } else if (value instanceof CurrencyType) {
+            stringValue = Optional.of(((CurrencyType) value).name());
+
+        } else {
+            stringValue = Optional.empty();
+        }
+
+        return stringValue;
     }
 
     /**
-     * Builds the report header with title and timestamp.
+     * Generate a string that is used as a key in the Map that keeps the length of
+     * BigDecimal fields.
      *
-     * @param title report title
-     * @return the report header
-     */
-    protected StringBuilder buildMarkdownReportHeader(String title) {
-        return new StringBuilder()
-                .append("# ")
-                .append(title)
-                .append(NEW_LINE)
-                .append("_")
-                .append(Label.LABEL_GENERATED.getLabel(language))
-                .append(": ")
-                .append(LocaleDateTimes.toString(dateTimePattern, LocalDateTime.now()))
-                .append("_")
-                .append(NEW_LINE);
-    }
-
-    /**
-     * Builds the report header with title and timestamp.
-     *
-     * @return the report header
-     */
-    protected StringBuilder buildCsvReportHeader() {
-        return new StringBuilder()
-                .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
-                .append(CSV_SEPARATOR)
-                .append(NEW_LINE)
-                .append(Label.LABEL_GENERATED.getLabel(language))
-                .append(": ")
-                .append(LocaleDateTimes.toString(dateTimePattern, LocalDateTime.now()))
-                .append(CSV_SEPARATOR)
-                .append(NEW_LINE);
-    }
-
-    /**
-     * Generated the key that is used in Map for BigDecimal types.
-     *
-     * @param label the column label
-     * @return id of the label for the whole part of the BigDecimal type
+     * @param label the column ID
+     * @return the key for the Map
      */
     private String getWholeWidthKey(Label label) {
         return label.getId() + "-W";
     }
 
     /**
-     * Generated the key that is used in Map for BigDecimal types.
+     * Generate a string that is used as a key in the Map that keeps the length of
+     * BigDecimal fields.
      *
-     * @param label the column label
-     * @return the id of the label for the fractional part of the BigDecimal type
+     * @param label the column ID
+     * @return the key for the Map
      */
     private String getFractionalWidthKey(Label label) {
         return label.getId() + "-F";
     }
 
     /**
-     * Compute the full length of the decimal fields.
+     * Compute the full length of a decimal field.
      *
-     * @param widths the list that stores with of the columns
-     * @param label column title
+     * @param widths the list that keeps info about the columns
+     * @param label column ID
      * @return the length of the decimal number
      */
     private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
@@ -277,7 +322,7 @@ public abstract class Writer {
     }
 
     /**
-     * Splits the decimal number to whole and fractal parts.
+     * Split the decimal number to whole and fractal parts.
      *
      * @param value the decimal number
      * @return the parts
@@ -304,7 +349,7 @@ public abstract class Writer {
     }
 
     /**
-     * Escapes the special character in order to it can be used as a regexp expression.
+     * Escape the special character in order to it can be used as a regexp expression.
      *
      * @param charToEscape the special character
      * @return the escaped special character

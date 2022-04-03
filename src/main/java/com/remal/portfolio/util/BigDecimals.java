@@ -6,7 +6,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Objects;
 
 /**
- * Tool that converts and formats BigDecimal objects.
+ * Tool that works with BigDecimal objects.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -16,12 +16,12 @@ import java.util.Objects;
 public class BigDecimals {
 
     /**
-     * Converts decimal number to String based on the provided format.
+     * Convert decimal number to a formatted String.
      *
      * @param decimalFormat decimal format, e.g. '###,###.###'
      * @param decimalGroupingSeparator the character used for thousands separator
      * @param number the number to format
-     * @return the number as a string
+     * @return the number as a formatted string
      */
     public static String toString(String decimalFormat, char decimalGroupingSeparator, BigDecimal number) {
         if (Objects.isNull(number)) {
@@ -36,11 +36,11 @@ public class BigDecimals {
     }
 
     /**
-     * Converts string to BigDecimal.
-     * This method can be user to convert formatted decimals to BigDecimal like "123 456.78".
+     * Convert a String to BigDecimal. This method can be used to convert
+     * formatted decimals to BigDecimal, e.g. "123 456.78".
      *
-     * @param s the string that represents the decimal value
-     * @return the BigDecimal
+     * @param s the decimal value as a string
+     * @return the BigDecimal object
      */
     public static BigDecimal valueOf(String s) {
         if (Objects.isNull(s)) {

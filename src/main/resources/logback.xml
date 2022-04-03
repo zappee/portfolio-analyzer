@@ -1,6 +1,7 @@
 <configuration>
     <conversionRule conversionWord="highlight" converterClass="com.remal.portfolio.logback.OverwriteDefaultColors" />
 
+    <!-- application log -->
     <appender name="STDOUT_LOG" class="ch.qos.logback.core.ConsoleAppender">
         <withJansi>true</withJansi>
         <encoder>
@@ -8,16 +9,20 @@
         </encoder>
     </appender>
 
+    <!-- application output (System.out.println) -->
     <appender name="STDOUT_DATA" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
-
     <logger name="com.remal.portfolio.writer.StdoutWriter" level="debug" additivity = "false">
         <appender-ref ref="STDOUT_DATA" />
     </logger>
 
+    <!-- disable loggers for a specific package -->
+    <logger name="yahoofinance" level="off" additivity = "false" />
+
+    <!-- root logger configuration -->
     <root level="debug">
         <appender-ref ref="STDOUT_LOG" />
     </root>

@@ -2,8 +2,8 @@ package com.remal.portfolio;
 
 import com.remal.portfolio.picocli.command.CoinbaseDownloaderCommand;
 import com.remal.portfolio.picocli.command.CombineCommand;
+import com.remal.portfolio.picocli.command.PriceCommand;
 import com.remal.portfolio.picocli.command.ShowCommand;
-import com.remal.portfolio.picocli.command.SummaryCommand;
 import com.remal.portfolio.picocli.provider.ManifestVersionProvider;
 import com.remal.portfolio.picocli.renderer.CustomOptionRenderer;
 import org.apache.logging.log4j.Level;
@@ -23,12 +23,12 @@ import picocli.CommandLine;
             CoinbaseDownloaderCommand.class,
             ShowCommand.class,
             CombineCommand.class,
-            SummaryCommand.class
+            PriceCommand.class
         },
-        synopsisSubcommandLabel = "(ledger | summary)",
-        name = "Remal Portfolio-Analyzer",
-        description = "This is a command-line tool that helps you to track your portfolio in one place and "
-                + "generates regular investment reports.%n",
+        synopsisSubcommandLabel = "[coinbase | show | combine | price]",
+        name = "java -jar portfolio-analyzer.jar",
+        description = "Remal Portfolio Analyzer is a command-line tool that helps you to track your portfolio "
+                + "in one place and generate regular investment reports.%n",
         usageHelpAutoWidth = true,
         mixinStandardHelpOptions = true,
         versionProvider = ManifestVersionProvider.class,
@@ -43,14 +43,14 @@ import picocli.CommandLine;
 public final class Main {
 
     /**
-     * CommonCommand line interface footer.
-     */
-    public static final String FOOTER = "%nDocumentation, source code: https://github.com/zappee/portfolio-analyzer%n";
-
-    /**
-     * CommonCommand line interface footer heading.
+     * Footer header of the application help.
      */
     public static final String FOOTER_HEADING = "%nPlease report issues at arnold.somogyi@gmail.com.";
+
+    /**
+     * Footer of the application help.
+     */
+    public static final String FOOTER = "%nDocumentation, source code: https://github.com/zappee/portfolio-analyzer%n";
 
     /**
      * Entry point of the application.

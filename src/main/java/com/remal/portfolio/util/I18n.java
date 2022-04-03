@@ -4,8 +4,8 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
- * This is a property file reader that reads human-readable labels used in
- * the reports.
+ * This is a I18N property file reader that translates Strings to different
+ * languages.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -15,10 +15,10 @@ import java.util.ResourceBundle;
 public class I18n {
 
     /**
-     * Reads translation from the internationalization properties file.
+     * Get the translation from the internationalization properties file.
      *
-     * @param language an ISO 639 alpha-2 or alpha-3 language code, e.g. 'en'
-     * @param key key in the i18n properties file
+     * @param language an ISO 639 alpha-2 or alpha-3 language code, e.g. en
+     * @param key key in the language properties file
      * @return the translation
      */
     public static String get(String language, String key) {

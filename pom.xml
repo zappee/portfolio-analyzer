@@ -6,7 +6,7 @@
 
     <groupId>com.remal.portfolio</groupId>
     <artifactId>portfolio-analyzer</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.13</version>
 
     <licenses>
         <license>
@@ -38,11 +38,12 @@
 
         <json.simple.version>1.1.1</json.simple.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
-        <logback.classic.version>1.2.10</logback.classic.version>
+        <logback.classic.version>1.2.11</logback.classic.version>
         <lombok.version>1.18.22</lombok.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
         <picocli.version>4.6.3</picocli.version>
-        <poi.version>5.1.0</poi.version>
+        <poi.version>5.2.0</poi.version>
+        <yahoo-finance-api.version>3.15.0</yahoo-finance-api.version>
     </properties>
 
     <dependencies>
@@ -98,6 +99,13 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- this library makes it easy to communicate with
+             the Yahoo Finance API -->
+        <dependency>
+            <groupId>com.yahoofinance-api</groupId>
+            <artifactId>YahooFinanceAPI</artifactId>
+            <version>${yahoo-finance-api.version}</version>
+        </dependency>
         <!-- test dependency: junit-5 api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -129,7 +137,6 @@
                         </goals>
                         <configuration>
                             <appendAssemblyId>false</appendAssemblyId>
-                            <finalName>${project.artifactId}</finalName>
                             <archive>
                                 <manifestEntries>
                                     <Application-Version>${project.version}</Application-Version>

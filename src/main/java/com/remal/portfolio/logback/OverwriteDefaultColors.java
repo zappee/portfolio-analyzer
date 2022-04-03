@@ -20,6 +20,36 @@ import ch.qos.logback.core.pattern.color.ForegroundCompositeConverterBase;
 public class OverwriteDefaultColors extends ForegroundCompositeConverterBase<ILoggingEvent> {
 
     /**
+     * ANSI color definition.
+     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+     */
+    private static final String LIGHT_BOLD_RED = "1;91";
+
+    /**
+     * ANSI color definition.
+     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+     */
+    private static final String LIGHT_RED = "91";
+
+    /**
+     * ANSI color definition.
+     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+     */
+    private static final String LIGHT_YELLOW = "93";
+
+    /**
+     * ANSI color definition.
+     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+     */
+    private static final String LIGHT_GREEN = "92";
+
+    /**
+     * ANSI color definition.
+     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
+     */
+    private static final String LIGHT_CYAN = "96";
+
+    /**
      * Derived classes return the foreground color specific to the derived class instance.
      *
      * @param event log event
@@ -31,13 +61,19 @@ public class OverwriteDefaultColors extends ForegroundCompositeConverterBase<ILo
 
         switch (level.toInt()) {
             case Level.ERROR_INT:
-                return ANSIConstants.BOLD + ANSIConstants.RED_FG;
+                return LIGHT_BOLD_RED;
 
             case Level.WARN_INT:
-                return ANSIConstants.YELLOW_FG;
+                return LIGHT_RED;
 
             case Level.INFO_INT:
-                return ANSIConstants.CYAN_FG;
+                return LIGHT_GREEN;
+
+            case Level.DEBUG_INT:
+                return LIGHT_YELLOW;
+
+            case Level.TRACE_INT:
+                return LIGHT_CYAN;
 
             default:
                 return ANSIConstants.DEFAULT_FG;

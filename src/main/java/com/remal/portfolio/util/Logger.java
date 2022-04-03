@@ -2,7 +2,11 @@ package com.remal.portfolio.util;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
+
+import java.util.logging.LogManager;
 
 /**
  * Runtime log level configuration.
@@ -12,18 +16,35 @@ import org.slf4j.LoggerFactory;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public class LogLevel {
+@Slf4j
+public class Logger {
+
+    static {
+        // disabling the JDK PlatformLogger
+        LogManager.getLogManager().reset();
+    }
 
     /**
-     * Turn on or off the logger.
+     * Log the message at ERROR level and terminate the program.
      *
-     * @param quietMode if it is true then the logger will be turned off
+     * @param message the error message to log
+     * @param arguments a list of arguments
      */
-    public static void configureLogger(boolean quietMode) {
-        if (quietMode) {
-            LogLevel.off();
+    public static void logErrorAndExit(String message, Object... arguments) {
+        log.error(message, arguments);
+        System.exit(CommandLine.ExitCode.SOFTWARE);
+    }
+
+    /**
+     * Set the silent mode.
+     *
+     * @param silentMode true will set the silent mode
+     */
+    public static void setSilentMode(boolean silentMode) {
+        if (silentMode) {
+            Logger.off();
         } else {
-            LogLevel.on();
+            Logger.on();
         }
     }
 
@@ -48,7 +69,7 @@ public class LogLevel {
      *
      * @throws java.lang.UnsupportedOperationException if this method is called
      */
-    private LogLevel() {
+    private Logger() {
         throw new UnsupportedOperationException();
     }
 }

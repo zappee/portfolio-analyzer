@@ -1,23 +1,26 @@
-package com.remal.portfolio.parser.coinbase;
+package com.remal.portfolio.downloader.coinbasepro;
 
-import com.remal.portfolio.model.Currency;
-import com.remal.portfolio.model.InventoryValuation;
+import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
-import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import picocli.CommandLine;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 /**
@@ -30,7 +33,7 @@ import java.util.stream.IntStream;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implements Parser {
+public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
 
     /**
      * Coinbase profile info.
@@ -53,14 +56,19 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
     private final List<String> currencies = new ArrayList<>();
 
     /**
-     * Base currency of the CoinbasePro account.
+     * Base currency of the user's CoinbasePro account.
      */
-    private final String baseCurrency;
+    private final CurrencyType baseCurrency;
 
     /**
-     * Default inventory valuation.
+     * Inventory valuation.
      */
-    private final InventoryValuation defaultInventoryValuation;
+    private final InventoryValuationType defaultInventoryValuation;
+
+    /**
+     * The timezone to where trade date will convert to.
+     */
+    private final String zoneTo;
 
     /**
      * Constructor.
@@ -69,17 +77,20 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
      * @param passphrase Coinbase Pro passphrase
      * @param secret Coinbase Pro secret for the API key
      * @param defaultInventoryValuation default inventory valuation
-     * @param baseCurrency the ISO 4217 currency code that Coinbase registered for you
+     * @param baseCurrency ISO 4217 currency code that Coinbase registered during the registration process
+     * @param zoneTo the timezone to where trade date will convert to
      */
-    public CoinbaseProApiParser(String publicKey,
-                                String passphrase,
-                                String secret,
-                                String baseCurrency,
-                                InventoryValuation defaultInventoryValuation) {
+    public CoinbaseProResponseParser(String publicKey,
+                                     String passphrase,
+                                     String secret,
+                                     CurrencyType baseCurrency,
+                                     InventoryValuationType defaultInventoryValuation,
+                                     String zoneTo) {
 
         super(publicKey, passphrase, secret);
         this.baseCurrency = baseCurrency;
         this.defaultInventoryValuation = defaultInventoryValuation;
+        this.zoneTo = zoneTo;
         log.debug("initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {
@@ -88,8 +99,7 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
             initializeAccounts();
             initializeCurrencies();
         } catch (IOException | NoSuchAlgorithmException | InvalidKeyException e) {
-            log.error("Coinbase Pro API Initialization error: {}", e.toString());
-            System.exit(CommandLine.ExitCode.SOFTWARE);
+            Logger.logErrorAndExit("Coinbase Pro API Initialization error: {}", e.getMessage());
         }
     }
 
@@ -99,12 +109,11 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
      *
      * @return list of transactions
      */
-    @Override
     public List<Transaction> parse() {
         List<Transaction> transactions = new ArrayList<>();
         downloadTransfers(transactions);
         productIds
-                .stream().filter(product -> baseCurrency == null || product.contains(baseCurrency))
+                .stream().filter(product -> baseCurrency == null || product.contains(baseCurrency.name()))
                 .forEach(productId -> downloadTransactions(transactions, productId));
 
         Sorter.sort(transactions);
@@ -120,15 +129,12 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
     private void downloadTransfers(List<Transaction> transactions) {
         try {
             var endpoint = "/transfers";
-            var coinbaseDateTimePattern = "yyyy-MM-dd HH:mm:ss.[SSSSSS][SSSSS]x";
             var jsonArray = getJsonArrayResponse(endpoint);
             jsonArray.ifPresent(x ->
                     IntStream.range(0, x.size()).forEach(index -> {
                         var jsonItem = x.get(index);
                         var fillJson = (JSONObject) jsonItem;
-                        var createdAt = Strings.toLocalDateTime(
-                                coinbaseDateTimePattern,
-                                fillJson.get("created_at").toString());
+                        var createdAt = getCreatedAt((String) fillJson.get("created_at"));
                         var ticker = accounts.get(fillJson.get("account_id").toString());
                         var isCurrency = currencies.contains(ticker);
 
@@ -140,7 +146,7 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
                                 .quantity(new BigDecimal(fillJson.get("amount").toString()))
                                 .price(isCurrency ? BigDecimal.ONE : BigDecimal.TEN)
                                 .fee(isCurrency ? BigDecimal.ZERO : BigDecimal.TEN)
-                                .currency(isCurrency ? Currency.getEnum(ticker) : Currency.UNKNOWN)
+                                .currency(isCurrency ? CurrencyType.getEnum(ticker) : CurrencyType.UNKNOWN)
                                 .ticker(ticker)
                                 .transferId(fillJson.get("id").toString())
                                 .build();
@@ -151,6 +157,20 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
             log.error("An unexpected error has occurred while downloading transfers from Coinbase Pro. {}.",
                     e.toString());
         }
+    }
+
+    private LocalDateTime getCreatedAt(String createdAtAsString) {
+        var pattern = "yyyy-MM-dd HH:mm:ss.[SSSSSS][SSSSS]x";
+        var createdAt = Strings.toLocalDateTime(pattern, createdAtAsString);
+
+        if (Objects.nonNull(zoneTo)) {
+            createdAt = createdAt
+                    .atZone(ZoneOffset.UTC)
+                    .withZoneSameInstant(ZoneId.of(zoneTo))
+                    .toLocalDateTime();
+        }
+
+        return createdAt;
     }
 
     /**
@@ -169,7 +189,7 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
                         var jsonItem = x.get(index);
                         var fillJson = (JSONObject) jsonItem;
                         var transactionType = TransactionType.getEnum(fillJson.get("side").toString());
-                        var inventoryValuation = transactionType == TransactionType.SELL
+                        var inventoryValuation = (transactionType == TransactionType.SELL)
                                 ? defaultInventoryValuation
                                 : null;
 
@@ -182,7 +202,7 @@ public class CoinbaseProApiParser extends CoinbaseProApiRequestBuilder implement
                                 .quantity(new BigDecimal(fillJson.get("size").toString()))
                                 .price(new BigDecimal(fillJson.get("price").toString()))
                                 .fee(new BigDecimal(fillJson.get("fee").toString()))
-                                .currency(Currency.getEnum(productId.split("-")[1]))
+                                .currency(CurrencyType.getEnum(productId.split("-")[1]))
                                 .ticker(productId)
                                 .tradeId(fillJson.get("trade_id").toString())
                                 .orderId(fillJson.get("order_id").toString())

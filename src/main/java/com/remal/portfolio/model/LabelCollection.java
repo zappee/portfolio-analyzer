@@ -1,10 +1,7 @@
 package com.remal.portfolio.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * POJO that holds information for labels appear in the reports.
+ * Labels that appear in the reports.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -14,57 +11,35 @@ import java.util.List;
 public class LabelCollection {
 
     /**
-     * List of the supported headers in the transaction report.
+     * List of the column headers in the transaction report.
      */
-    private static final List<Label> TRANSACTION_TABLE = new ArrayList<>();
+    public static final Label[] TRANSACTION_TABLE_HEADERS = {
+        Label.PORTFOLIO,
+        Label.TICKER,
+        Label.TYPE,
+        Label.VALUATION,
+        Label.TRADE_DATE,
+        Label.QUANTITY,
+        Label.PRICE,
+        Label.FEE,
+        Label.CURRENCY,
+        Label.ORDER_ID,
+        Label.TRADE_ID,
+        Label.TRANSFER_ID
+    };
 
     /**
-     * List of the supported headers in portfolio summary report.
+     * List of the column headers in portfolio summary report.
      */
-    private static final List<Label> PORTFOLIO_SUMMARY_TABLE = new ArrayList<>();
-
-    static {
-        // transaction report
-        TRANSACTION_TABLE.add(Label.PORTFOLIO);
-        TRANSACTION_TABLE.add(Label.TICKER);
-        TRANSACTION_TABLE.add(Label.TYPE);
-        TRANSACTION_TABLE.add(Label.VALUATION);
-        TRANSACTION_TABLE.add(Label.TRADE_DATE);
-        TRANSACTION_TABLE.add(Label.QUANTITY);
-        TRANSACTION_TABLE.add(Label.PRICE);
-        TRANSACTION_TABLE.add(Label.FEE);
-        TRANSACTION_TABLE.add(Label.CURRENCY);
-        TRANSACTION_TABLE.add(Label.ORDER_ID);
-        TRANSACTION_TABLE.add(Label.TRADE_ID);
-        TRANSACTION_TABLE.add(Label.TRANSFER_ID);
-
-        // portfolio summary report
-        PORTFOLIO_SUMMARY_TABLE.add(Label.TICKER);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.QUANTITY);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.AVG_PRICE);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.DEPOSITS);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.WITHDRAWALS);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.NET_COST);
-        PORTFOLIO_SUMMARY_TABLE.add(Label.MARKET_VALUE);
-    }
-
-    /**
-     * Static getter method.
-     *
-     * @return list of the column names for transaction table
-     */
-    public static List<Label> getTransactionTable() {
-        return TRANSACTION_TABLE;
-    }
-
-    /**
-     * Static getter method.
-     *
-     * @return list of the column names for portfolio summary table
-     */
-    public static List<Label> getPortfolioSummaryTable() {
-        return PORTFOLIO_SUMMARY_TABLE;
-    }
+    public static final Label[] PORTFOLIO_SUMMARY_TABLE_HEADER = {
+        Label.TICKER,
+        Label.QUANTITY,
+        Label.AVG_PRICE,
+        Label.DEPOSITS,
+        Label.WITHDRAWALS,
+        Label.NET_COST,
+        Label.MARKET_VALUE
+    };
 
     /**
      * Utility classes should not have public constructors.

@@ -3,8 +3,10 @@ package com.remal.portfolio.util;
 import com.remal.portfolio.model.FileType;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Objects;
+
 /**
- * Tool that works with files and its names.
+ * Tool that works with files and filenames.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -15,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 public class Files {
 
     /**
-     * Determines the file type based on the filename.
+     * Determine the file type based on the filename.
      *
      * @param fileName filename with extension
      * @return the file type
@@ -23,7 +25,7 @@ public class Files {
     public static FileType getFileType(String fileName) {
         var fileType = FileType.NOT_SUPPORTED;
 
-        if (fileName != null) {
+        if (Objects.nonNull(fileName)) {
             // remove the ' char from the end of the filename
             // e.g. 'coinbase-pro_'yyyy-MM-dd'.md'
             var escapedFileName = fileName.endsWith("'")
@@ -31,7 +33,7 @@ public class Files {
                     : fileName;
 
             if (escapedFileName.matches("^.*\\.(md|txt)$")) {
-                fileType = FileType.TEXT;
+                fileType = FileType.MARKDOWN;
 
             } else if (escapedFileName.matches("^.*\\.(xls|xlsx)$")) {
                 fileType = FileType.EXCEL;

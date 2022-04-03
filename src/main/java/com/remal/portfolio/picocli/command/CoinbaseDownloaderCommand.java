@@ -1,21 +1,20 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.model.FileType;
-import com.remal.portfolio.model.InventoryValuation;
+import com.remal.portfolio.downloader.coinbasepro.CoinbaseProResponseParser;
+import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.Parser;
-import com.remal.portfolio.parser.coinbase.CoinbaseProApiParser;
-import com.remal.portfolio.util.Files;
-import com.remal.portfolio.util.LogLevel;
-import com.remal.portfolio.writer.StdoutWriter;
+import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.validator.ZoneIdValidator;
 import com.remal.portfolio.writer.TransactionWriter;
+import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
@@ -30,80 +29,89 @@ import java.util.concurrent.Callable;
         name = "coinbase",
         sortOptions = false,
         usageHelpAutoWidth = true,
-        description = "Downloads transactions from Coinbase Pro API.",
+        description = "Download your personal transactions from Coinbase.",
         descriptionHeading = "%n",
         optionListHeading = "%n",
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class CoinbaseDownloaderCommand extends CommonCommand implements Callable<Integer> {
+public class CoinbaseDownloaderCommand extends OutputCommandGroup implements Callable<Integer> {
 
     /**
-     * An argument group definition for the input options.
+     * In the silent mode the application performs actions without
+     * displaying any details.
      */
-    @CommandLine.ArgGroup(
-            heading = "%nInput:%n",
-            exclusive = false)
-    final SourceGroup sourceGroup = new SourceGroup();
+    @CommandLine.Option(names = {"-s", "--silent"},
+            description = "Perform actions without displaying any details.")
+    boolean silentMode;
 
     /**
-     * Option list definition for input.
+     * Set the date/time format that is used in the reports.
      */
-    public static class SourceGroup {
-
-        /**
-         * CLI definition: set the list of the portfolio names that will be
-         * overridden during the parse.
-         */
-        @CommandLine.Option(
-                names = {"-r", "--replace"},
-                description = "Replace portfolio name.%n"
-                        + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
-                split = ",")
-        final List<String> replaces = new ArrayList<>();
-
-        /**
-         * CLI definition: set the output file name.
-         */
-        @CommandLine.Option(
-                names = {"-v", "--valuation"},
-                description = "Default inventory valuation type."
-                        + "%n  Candidates: ${COMPLETION-CANDIDATES}"
-                        + "%n  Default: ${DEFAULT-VALUE}",
-                defaultValue = "FIFO")
-
-        private InventoryValuation inventoryValuation;
-    }
+    @CommandLine.Option(
+            names = {"-p", "--date-pattern"},
+            description = "Dates in the report are shown according to the pattern. Default: \"${DEFAULT-VALUE}\"",
+            defaultValue = "yyyy-MM-dd HH:mm:ss")
+    String datePattern;
 
     /**
-     * An argument group definition for writing the report to file.
+     * Set the timezone that is used to convert dates to user's timezone.
+     */
+    @CommandLine.Option(
+            names = {"-z", "--timezone-to"},
+            description = "Convert the dates to your time zone. Supported zone types: "
+                    + "Fixed offset and Geographical region, e.g. \"GMT+2\" or \"Europe/Budapest\"")
+    String zoneTo;
+
+    /**
+     * The list of the portfolio names that will replace to another value
+     * during the parse.
+     */
+    @CommandLine.Option(
+            names = {"-r", "--replace"},
+            description = "Replace the portfolio name. Format: \"from:to, from:to\", e.g. \"default:coinbase\".",
+            split = ",")
+    final List<String> replaces = new ArrayList<>();
+
+    /**
+     * Set the inventory valuation type.
+     */
+    @CommandLine.Option(
+            names = {"-v", "--valuation"},
+            description = "Default inventory valuation type. Candidates: ${COMPLETION-CANDIDATES}"
+                    + "Default: \"${DEFAULT-VALUE}\"",
+            defaultValue = "FIFO")
+    InventoryValuationType inventoryValuation;
+
+    /**
+     * CLI Group definition for Coinbase API.
      */
     @CommandLine.ArgGroup(
             multiplicity = "1")
-    private final DataSourceGroup dataSourceGroup = new DataSourceGroup();
+    private final CoinbaseArgGroup coinbaseArgGroup = new CoinbaseArgGroup();
 
     /**
-     * Exclusive command line parameter.
+     * Coinbase API CLI parameters.
      */
-    private static class DataSourceGroup {
+    private static class CoinbaseArgGroup {
 
         /**
-         * An argument group definition for Coinbase PRO API.
+         * ACoinbase PRO API CLI group.
          */
         @CommandLine.ArgGroup(
                 exclusive = false,
                 multiplicity = "1",
                 heading = "%nCoinbase PRO API:%n")
-        final CoinbaseApiDataSourceOption coinbaseApiDataSourceOption = new CoinbaseApiDataSourceOption();
+        final CoinbaseApiArgGroup coinbaseApiArgGroup = new CoinbaseApiArgGroup();
     }
 
     /**
-     * Option list definition for Coinbase PRO API.
+     * Coinbase API CLI parameters.
      */
-    private static class CoinbaseApiDataSourceOption {
+    private static class CoinbaseApiArgGroup {
 
         /**
-         * CLI definition: set Coinbase Pro API key as a string.
+         * Set the Coinbase API key.
          */
         @CommandLine.Option(
                 names = {"-k", "--api-access-key"},
@@ -112,31 +120,30 @@ public class CoinbaseDownloaderCommand extends CommonCommand implements Callable
         String key;
 
         /**
-         * CLI definition: set Coinbase Pro passphrase.
+         * Set Coinbase Pro passphrase.
          */
         @CommandLine.Option(
-                names = {"-p", "--api-passphrase"},
+                names = {"-e", "--api-passphrase"},
                 description = "Coinbase PRO API passphrase.",
                 required = true)
         String passphrase;
 
         /**
-         * CLI definition: set Coinbase Pro secret for the API key.
+         * Set Coinbase Pro secret for the API key.
          */
         @CommandLine.Option(
-                names = {"-s", "--api-secret"},
+                names = {"-t", "--api-secret"},
                 description = "Coinbase PRO API secret.",
                 required = true)
         String secret;
 
         /**
-         * CLI definition: set the ISO 4217 currency code that Coinbase
+         * Set the ISO 4217 currency code that Coinbase
          * registered for you.
          */
         @CommandLine.Option(
-                names = {"-b", "--base-currency"},
-                description = "Used for determine the products you are allowed to trade."
-                        + "%n  Candidates: EUR, USD, GBP, etc.")
+                names = {"-c", "--base-currency"},
+                description = "The currency of your Coinbase account you are allowed to trade, e.g. \"EUR\", etc.")
         String baseCurrency;
     }
 
@@ -147,35 +154,24 @@ public class CoinbaseDownloaderCommand extends CommonCommand implements Callable
      */
     @Override
     public Integer call() {
-        LogLevel.configureLogger(quietMode);
+        Logger.setSilentMode(silentMode);
 
-        var baseCurrency = Optional
-                .ofNullable(dataSourceGroup.coinbaseApiDataSourceOption.baseCurrency)
-                .map(String::toUpperCase)
-                .orElse(null);
+        CurrencyType.validate(coinbaseArgGroup.coinbaseApiArgGroup.baseCurrency);
+        ZoneIdValidator.validate(zoneTo);
 
-        Parser parser = new CoinbaseProApiParser(
-                dataSourceGroup.coinbaseApiDataSourceOption.key,
-                dataSourceGroup.coinbaseApiDataSourceOption.passphrase,
-                dataSourceGroup.coinbaseApiDataSourceOption.secret,
-                baseCurrency,
-                sourceGroup.inventoryValuation);
-        List<Transaction> transactions = parser.parse();
-        log.debug("{} transactions has been downloaded", transactions.size());
+        var parser = new CoinbaseProResponseParser(
+                coinbaseArgGroup.coinbaseApiArgGroup.key,
+                coinbaseArgGroup.coinbaseApiArgGroup.passphrase,
+                coinbaseArgGroup.coinbaseApiArgGroup.secret,
+                CurrencyType.getEnum(coinbaseArgGroup.coinbaseApiArgGroup.baseCurrency),
+                inventoryValuation,
+                zoneTo);
 
-        // print to output
-        var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);
-        if (outputGroup.outputFile == null) {
-            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
-        } else {
-            // remove decimal format in case of CSV file
-            var fileType = Files.getFileType(outputGroup.outputFile);
-            if (fileType == FileType.CSV) {
-                writer.setDecimalFormat("##################.########");
-                writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
-            }
-            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
-        }
+        var transactions = parser.parse();
+        PortfolioNameRenamer.rename(transactions, replaces);
+
+        Writer<Transaction> writer = TransactionWriter.build(datePattern, zoneTo, outputArgGroup);
+        writer.write(outputArgGroup.writeMode, outputArgGroup.outputFile, transactions);
 
         return CommandLine.ExitCode.OK;
     }
