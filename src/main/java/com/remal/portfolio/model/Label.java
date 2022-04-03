@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 /**
- * POJO that holds information for labels appear in the reports.
+ * Constants for labels that appear in the reports.
  * <p>
  * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -206,16 +206,15 @@ public class Label {
     private String id;
 
     /**
-     * The key that identifies the translation in the I18N *.properties file
-     * for the label.
+     * The key that identifies the translation in the I18N *.properties file.
      */
     private String key;
 
     /**
      * Translation resolver that reads the belonging translation from
-     * the *.properties file.
+     * the property file.
      *
-     * @param language language code, e.g. 'en'
+     * @param language language code, e.g. en
      * @return the translation text
      */
     public String getLabel(String language) {

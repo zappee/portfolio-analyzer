@@ -59,7 +59,7 @@ public class Transaction {
     /**
      * The unit of the price and fee.
      */
-    private Currency currency;
+    private CurrencyType currency;
 
     /**
      * A ticker is an abbreviation used to uniquely identify publicly traded
@@ -90,5 +90,5 @@ public class Transaction {
     /**
      * Type of inventory valuation.
      */
-    private InventoryValuation inventoryValuation;
+    private InventoryValuationType inventoryValuation;
 }
