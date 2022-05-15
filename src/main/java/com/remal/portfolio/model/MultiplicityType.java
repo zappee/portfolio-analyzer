@@ -1,9 +1,10 @@
 package com.remal.portfolio.model;
 
 /**
- * Controls the export of the market price to the history file.
+ * Controls the export of the number of the market prices for a ticker
+ * in the history file.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -11,17 +12,17 @@ package com.remal.portfolio.model;
 public enum MultiplicityType {
 
     /**
-     * Allowed one record per day in the file.
+     * Allowed only one price record in the history file per hour.
      */
-    SINGLE_PER_DAY,
+    ONE_PRICE_PER_HOUR,
 
     /**
-     * Multiply records are allowed to present per day in the file.
+     * Allowed only one price record in the history file per day.
      */
-    MULTIPLY;
+    ONE_PRICE_PER_DAY,
 
     /**
-     * Default value while using the command line interface.
+     * Unlimited price record are allowed in the history file.
      */
-    public static final String DEFAULT = "SINGLE_PER_DAY";
+    MANY
 }

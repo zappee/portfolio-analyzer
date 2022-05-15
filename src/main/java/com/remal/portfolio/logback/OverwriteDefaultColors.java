@@ -11,7 +11,7 @@ import ch.qos.logback.core.pattern.color.ForegroundCompositeConverterBase;
  * to read on a black/dark console. Here is a converter allowing you to
  * customize the color scheme.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm

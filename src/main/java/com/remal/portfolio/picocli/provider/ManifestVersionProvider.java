@@ -9,7 +9,7 @@ import java.util.jar.Manifest;
  * Picocli version provider implementation that reads build info from the
  * MANIFEST.MF file.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -36,7 +36,7 @@ public class ManifestVersionProvider implements CommandLine.IVersionProvider {
                 "version: " + applicationVersion,
                 "created by " + createdBy,
                 "build time: " + buildTimestamp,
-                "Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved"
+                "Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved"
             };
         } catch (IOException ex) {
             return new String[] { "Unable to read from " + url + ": " + ex };

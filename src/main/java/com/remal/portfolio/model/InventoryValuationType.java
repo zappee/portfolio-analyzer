@@ -10,7 +10,7 @@ import java.util.Objects;
  * to find out the value of unsold inventory stock at the time they are
  * preparing their financial statements.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm

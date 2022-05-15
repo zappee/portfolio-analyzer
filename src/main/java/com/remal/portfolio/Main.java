@@ -13,7 +13,7 @@ import picocli.CommandLine;
 /**
  * Portfolio analyzer command line tool.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -61,7 +61,7 @@ public final class Main {
         var app = new Main();
         app.configureLogger();
 
-        CommandLine cmd = new CommandLine(app);
+        var cmd = new CommandLine(app);
         cmd.setHelpFactory(new CustomOptionRenderer());
         System.exit(cmd.execute(args));
     }

@@ -1,8 +1,8 @@
 package com.remal.portfolio.downloader.coinbasepro;
 
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.model.DataProvider;
 import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Provider;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
@@ -27,7 +27,7 @@ import java.util.Optional;
  * Product price downloader for Coinbase Pro data provider.
  * API information: https://docs.cloud.coinbase.com/exchange/docs
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -38,19 +38,17 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     /**
      * The ID of this provider.
      */
-    private static final DataProvider PROVIDER_ID = DataProvider.COINBASE_PRO;
+    private static final Provider PROVIDER = Provider.COINBASE_PRO;
 
     /**
-     * Coinbase prompt price REST endpoint URL.
+     * Error log message template.
      */
-    private static final String LATEST_API_URL =
-            "https://api.coinbase.com/v2/prices/%s/spot";
+    private static final String PRICE_NOT_FOUND = "market price of '{}' not found, provider: '{}'";
 
     /**
-     * Coinbase historical price REST endpoint URL.
+     * Error log message template.
      */
-    private static final String HISTORICAL_API_URL =
-            "https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=60";
+    private static final String DOWNLOAD_ERROR = "error while downloading the price of '{}', provider: '{}', error: {}";
 
     /**
      * Constructor.
@@ -72,8 +70,10 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker) {
-        log.debug(Downloader.GETTING_LATEST_PRICE_MESSAGE, ticker, PROVIDER_ID);
-        var uri = String.format(LATEST_API_URL, ticker);
+        log.debug("input < getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER);
+
+        var apiUrl = "https://api.coinbase.com/v2/prices/%s/spot";
+        var uri = String.format(apiUrl, ticker);
         Optional<ProductPrice> marketPrice = Optional.empty();
 
         try {
@@ -86,30 +86,30 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json) || json.isEmpty()) {
-                log.debug(Downloader.PRICE_NOT_FOUND_MESSAGE, ticker, PROVIDER_ID);
+                log.error(PRICE_NOT_FOUND, ticker, PROVIDER);
             } else {
                 var jsonObject = (JSONObject) new JSONParser().parse(json);
                 var data = (JSONObject) jsonObject.get("data");
                 var errors = jsonObject.get("errors");
 
                 if (Objects.nonNull(errors)) {
-                    log.debug(Downloader.PRICE_NOT_FOUND_MESSAGE, ticker, PROVIDER_ID);
+                    log.error(PRICE_NOT_FOUND, ticker, PROVIDER);
                 } else {
                     var amountAsString = (String) data.get("amount");
                     marketPrice = Optional.of(ProductPrice
                             .builder()
                             .ticker(ticker)
                             .price(BigDecimals.valueOf(amountAsString))
-                            .dataProvider(PROVIDER_ID)
+                            .provider(PROVIDER)
                             .timestamp(LocalDateTime.now())
                             .build());
                 }
             }
         } catch (IOException | ParseException e) {
-            Logger.logErrorAndExit(Downloader.DOWNLOADING_ERROR_MESSAGE, ticker, PROVIDER_ID, e.getMessage());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Logger.logErrorAndExit(Downloader.DOWNLOADING_ERROR_MESSAGE, ticker, PROVIDER_ID, e.getMessage());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
         }
 
         return marketPrice;
@@ -124,9 +124,12 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
-        log.debug(Downloader.GETTING_HISTORICAL_PRICE_MESSAGE, ticker, PROVIDER_ID, Calendars.toString(timestamp));
+        var message = "input < getting the price of '{}' at {}, provider: '{}'...";
+        log.debug(message, ticker, PROVIDER, Calendars.toString(timestamp));
+
         var timestampAsString = Calendars.toString(timestamp);
-        var uri = String.format(HISTORICAL_API_URL, ticker, timestampAsString, timestampAsString);
+        var apiUrl = "https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=60";
+        var uri = String.format(apiUrl, ticker, timestampAsString, timestampAsString);
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
                 .header("Accept", "application/json")
@@ -139,7 +142,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json) || json.isEmpty()) {
-                log.debug(Downloader.PRICE_NOT_FOUND_MESSAGE, ticker, PROVIDER_ID);
+                log.debug(PRICE_NOT_FOUND, ticker, PROVIDER);
             } else {
                 var bucket = json.replace("[", "");
                 bucket = bucket.replace("]", "");
@@ -150,17 +153,17 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
                         .builder()
                         .ticker(ticker)
                         .price(BigDecimals.valueOf(fields[4]))
-                        .dataProvider(PROVIDER_ID)
+                        .provider(PROVIDER)
                         .timestamp(LocalDateTime.ofInstant(
                                 Instant.ofEpochSecond(Long.parseLong(fields[0])),
                                 ZoneId.systemDefault()))
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(Downloader.DOWNLOADING_ERROR_MESSAGE, ticker, PROVIDER_ID, e.getMessage());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Logger.logErrorAndExit(Downloader.DOWNLOADING_ERROR_MESSAGE, ticker, PROVIDER_ID, e.getMessage());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
         }
 
         return marketPrice;

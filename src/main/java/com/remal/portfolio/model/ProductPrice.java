@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 /**
  * POJO that hold information about a sock price.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -32,7 +32,7 @@ public class ProductPrice {
     /**
      * The data provider.
      */
-    private DataProvider dataProvider;
+    private Provider provider;
 
     /**
      * The time and date when the price was downloaded.

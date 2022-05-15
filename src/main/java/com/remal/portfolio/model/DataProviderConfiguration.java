@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 /**
  * POJO holds the data provider configuration.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -24,7 +24,7 @@ public class DataProviderConfiguration {
     /**
      * The data provider ID.
      */
-    private DataProvider dataProvider;
+    private Provider provider;
 
     /**
      * The date and time when the data provider has been set.

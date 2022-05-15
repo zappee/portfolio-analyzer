@@ -8,32 +8,12 @@ import java.util.Optional;
 /**
  * Product price downloader interface that providers must implement.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
 public interface Downloader {
-
-    /**
-     * Log message template.
-     */
-    String GETTING_LATEST_PRICE_MESSAGE = "getting the latest price for '{}' from '{}'...";
-
-    /**
-     * Log message template.
-     */
-    String GETTING_HISTORICAL_PRICE_MESSAGE = "getting the price for '{}' from '{}' at {}...";
-
-    /**
-     * Log message template.
-     */
-    String PRICE_NOT_FOUND_MESSAGE = "market price not found for '{}', provider: '{}'";
-
-    /**
-     * Log message template.
-     */
-    String DOWNLOADING_ERROR_MESSAGE = "error while downloading the price for '{}' from '{}', error: {}";
 
     /**
      * Downloads the latest price of a stock.

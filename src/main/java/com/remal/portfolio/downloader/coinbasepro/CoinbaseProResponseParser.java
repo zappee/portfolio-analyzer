@@ -4,9 +4,11 @@ import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.picocli.arggroup.CoinbaseProArgGroup;
+import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
-import com.remal.portfolio.util.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 
@@ -15,19 +17,16 @@ import java.math.BigDecimal;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
 /**
  * Transaction downloader that downloads trades via Coinbase Pro API.
  * API information: https://docs.cloud.coinbase.com/exchange/docs
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -66,32 +65,28 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
     private final InventoryValuationType defaultInventoryValuation;
 
     /**
-     * The timezone to where trade date will convert to.
+     * Transaction date filter.
      */
-    private final String zoneTo;
+    private final LocalDateTime from;
+
+    /**
+     * Transaction date filter.
+     */
+    private final LocalDateTime to;
 
     /**
      * Constructor.
      *
-     * @param publicKey Coinbase Pro API key as a string
-     * @param passphrase Coinbase Pro passphrase
-     * @param secret Coinbase Pro secret for the API key
-     * @param defaultInventoryValuation default inventory valuation
-     * @param baseCurrency ISO 4217 currency code that Coinbase registered during the registration process
-     * @param zoneTo the timezone to where trade date will convert to
+     * @param arguments arguments from the command line interface
      */
-    public CoinbaseProResponseParser(String publicKey,
-                                     String passphrase,
-                                     String secret,
-                                     CurrencyType baseCurrency,
-                                     InventoryValuationType defaultInventoryValuation,
-                                     String zoneTo) {
+    public CoinbaseProResponseParser(CoinbaseProArgGroup arguments) {
+        super(arguments.getKey(), arguments.getPassphrase(), arguments.getSecret());
 
-        super(publicKey, passphrase, secret);
-        this.baseCurrency = baseCurrency;
-        this.defaultInventoryValuation = defaultInventoryValuation;
-        this.zoneTo = zoneTo;
-        log.debug("initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
+        this.baseCurrency = CurrencyType.getEnum(arguments.getBaseCurrency());
+        this.defaultInventoryValuation = arguments.getInventoryValuation();
+        this.from = LocalDateTimes.toLocalDateTime(arguments.getDateTimeFilterPattern(), arguments.getFrom());
+        this.to = LocalDateTimes.getFilterTo(arguments.getDateTimeFilterPattern(), arguments.getTo());
+        log.debug("input < initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {
             initializeProfiles();
@@ -113,11 +108,16 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
         List<Transaction> transactions = new ArrayList<>();
         downloadTransfers(transactions);
         productIds
-                .stream().filter(product -> baseCurrency == null || product.contains(baseCurrency.name()))
+                .stream()
+                .filter(product -> Filter.baseCurrencyFilter(baseCurrency, product))
                 .forEach(productId -> downloadTransactions(transactions, productId));
 
-        Sorter.sort(transactions);
-        return transactions;
+        return transactions
+                .stream()
+                .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
+                .filter(t -> Filter.dateEqualOrBeforeFilter(to, t))
+                .sorted(Sorter.tradeDateComparator())
+                .toList();
     }
 
     /**
@@ -134,15 +134,15 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                     IntStream.range(0, x.size()).forEach(index -> {
                         var jsonItem = x.get(index);
                         var fillJson = (JSONObject) jsonItem;
-                        var createdAt = getCreatedAt((String) fillJson.get("created_at"));
                         var ticker = accounts.get(fillJson.get("account_id").toString());
                         var isCurrency = currencies.contains(ticker);
+                        var pattern = "yyyy-MM-dd HH:mm:ss.[SSSSSS][SSSSS]x";
 
                         Transaction transaction = Transaction
                                 .builder()
                                 .portfolio(profiles.get(fillJson.get("user_id").toString()))
                                 .type(TransactionType.getEnum(fillJson.get("type").toString()))
-                                .tradeDate(createdAt)
+                                .tradeDate(LocalDateTimes.toLocalDateTime(pattern, (String) fillJson.get("created_at")))
                                 .quantity(new BigDecimal(fillJson.get("amount").toString()))
                                 .price(isCurrency ? BigDecimal.ONE : BigDecimal.TEN)
                                 .fee(isCurrency ? BigDecimal.ZERO : BigDecimal.TEN)
@@ -157,20 +157,6 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
             log.error("An unexpected error has occurred while downloading transfers from Coinbase Pro. {}.",
                     e.toString());
         }
-    }
-
-    private LocalDateTime getCreatedAt(String createdAtAsString) {
-        var pattern = "yyyy-MM-dd HH:mm:ss.[SSSSSS][SSSSS]x";
-        var createdAt = Strings.toLocalDateTime(pattern, createdAtAsString);
-
-        if (Objects.nonNull(zoneTo)) {
-            createdAt = createdAt
-                    .atZone(ZoneOffset.UTC)
-                    .withZoneSameInstant(ZoneId.of(zoneTo))
-                    .toLocalDateTime();
-        }
-
-        return createdAt;
     }
 
     /**
@@ -198,7 +184,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                                 .portfolio(profiles.get(fillJson.get("profile_id").toString()))
                                 .type(transactionType)
                                 .inventoryValuation(inventoryValuation)
-                                .tradeDate(Strings.toLocalDateTime(fillJson.get("created_at").toString()))
+                                .tradeDate(LocalDateTimes.toLocalDateTime(fillJson.get("created_at").toString()))
                                 .quantity(new BigDecimal(fillJson.get("size").toString()))
                                 .price(new BigDecimal(fillJson.get("price").toString()))
                                 .fee(new BigDecimal(fillJson.get("fee").toString()))

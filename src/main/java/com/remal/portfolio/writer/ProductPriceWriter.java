@@ -2,8 +2,9 @@ package com.remal.portfolio.writer;
 
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
+import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
+import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Filter;
@@ -40,7 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class TransactionWriter extends Writer<Transaction> {
+public class ProductPriceWriter extends Writer<ProductPrice> {
 
     /**
      * Builder that initializes a new writer instance.
@@ -48,26 +49,21 @@ public class TransactionWriter extends Writer<Transaction> {
      * @param arguments input arguments
      * @return the writer instance
      */
-    public static Writer<Transaction> build(OutputArgGroup arguments) {
+    public static Writer<ProductPrice> build(PriceArgGroup.OutputArgGroup arguments) {
         // validating the output params
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getFrom());
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getTo());
         ZoneIds.validate(arguments.getZone());
 
         //  initialize
-        Writer<Transaction> writer = new TransactionWriter();
-        writer.setPortfolioNameReplaces(arguments.getReplaces());
-        writer.setHideTitle(arguments.isHideTitle());
+        Writer<ProductPrice> writer = new ProductPriceWriter();
+        /*writer.setHideTitle(arguments.isHideTitle());
         writer.setHideHeader(arguments.isHideHeader());
         writer.setLanguage(arguments.getLanguage());
-        writer.setColumnsToHide(arguments.getColumnsToHide());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
         writer.setDateTimePattern(arguments.getDateTimePattern());
-        writer.setZone(ZoneId.of(arguments.getZone()));
-        writer.setFrom(LocalDateTimes.toLocalDateTime(arguments.getDateTimePattern(), arguments.getFrom()));
-        writer.setTo(LocalDateTimes.getFilterTo(arguments.getDateTimePattern(), arguments.getTo()));
+        writer.setZone(ZoneId.of(arguments.getZone()));*/
         return writer;
+
     }
 
     /**
@@ -77,7 +73,7 @@ public class TransactionWriter extends Writer<Transaction> {
      * @return the report content as a String
      */
     @Override
-    protected String buildCsvReport(List<Transaction> transactions) {
+    protected String buildCsvReport(List<ProductPrice> productPrices) {
         var report = new StringBuilder();
 
         // report title
@@ -102,7 +98,7 @@ public class TransactionWriter extends Writer<Transaction> {
         }
 
         // data
-        PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
+        /*PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
         transactions
                 .stream()
                 .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
@@ -121,7 +117,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     report.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
                     report.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
                     report.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE);
-                });
+                });*/
         return report.toString();
     }
 
@@ -132,7 +128,7 @@ public class TransactionWriter extends Writer<Transaction> {
      * @return the report content as bytes
      */
     @Override
-    protected byte[] buildExcelReport(List<Transaction> transactions) {
+    protected byte[] buildExcelReport(List<ProductPrice> productPrices) {
         var workbook = new XSSFWorkbook();
         var sheet = workbook.createSheet(Label.LABEL_TRANSACTION_REPORT.getLabel(language));
         var rowIndex = new AtomicInteger(-1);
@@ -167,7 +163,7 @@ public class TransactionWriter extends Writer<Transaction> {
         }
 
         // data
-        PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
+        /*PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
         transactions
                 .stream()
                 .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
@@ -190,7 +186,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     skipIfNullOrSet(workbook, row, index, transaction.getTradeId());
                     skipIfNullOrSet(workbook, row, index, transaction.getTransferId());
                 });
-
+*/
         return workbookToBytes(workbook);
     }
 
@@ -202,8 +198,8 @@ public class TransactionWriter extends Writer<Transaction> {
      * @return the report content as a String
      */
     @Override
-    protected String buildMarkdownReport(List<Transaction> transactions) {
-        var widths = calculateColumnWidth(transactions);
+    protected String buildMarkdownReport(List<ProductPrice> productPrices) {
+        /*var widths = calculateColumnWidth(transactions);
         var report = new StringBuilder();
 
         // report title
@@ -222,10 +218,10 @@ public class TransactionWriter extends Writer<Transaction> {
         }
 
         // table header
-        if (!hideHeader && !transactions.isEmpty()) {
+     /*   if (!hideHeader && !transactions.isEmpty()) {
             var header = new StringBuilder();
             var headerSeparator = new StringBuilder();
-            LabelCollection.TRANSACTION_TABLE_HEADERS
+    /*        LabelCollection.TRANSACTION_TABLE_HEADERS
                     .stream()
                     .filter(label -> Filter.columnsToHideFilter(columnsToHide, label))
                     .forEach(labelKey -> {
@@ -235,7 +231,7 @@ public class TransactionWriter extends Writer<Transaction> {
                         headerSeparator.append(markdownSeparator).append("-".repeat(width));
                     });
 
-            header.append(markdownSeparator).append(NEW_LINE);
+       /*     header.append(markdownSeparator).append(NEW_LINE);
             headerSeparator.append(markdownSeparator).append(NEW_LINE);
             report.append(header).append(headerSeparator);
         }
@@ -263,7 +259,8 @@ public class TransactionWriter extends Writer<Transaction> {
                     report.append(markdownSeparator).append(NEW_LINE);
                 });
 
-        return report.toString();
+        return report.toString();*/
+        return null;
     }
 
     /**

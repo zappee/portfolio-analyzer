@@ -1,23 +1,24 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.parser.Parse;
-import com.remal.portfolio.picocli.converter.StringToListConverter;
-import com.remal.portfolio.util.LogLevel;
-import com.remal.portfolio.writer.StdoutWriter;
+import com.remal.portfolio.model.Transaction;
+import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.picocli.arggroup.TransactionParserArgGroup;
+import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
+import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.PortfolioNameRenamer;
 import com.remal.portfolio.writer.TransactionWriter;
+import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 /**
- * Implementation of the 'summary' command.
+ * Implementation of the 'show' command.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -26,89 +27,38 @@ import java.util.stream.Collectors;
         name = "show",
         sortOptions = false,
         usageHelpAutoWidth = true,
-        description = "Shows transactions.",
+        description = "Show transactions.",
         descriptionHeading = "%n",
         optionListHeading = "%n",
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class ShowCommand extends CommonCommand implements Callable<Integer> {
+public class ShowCommand implements Callable<Integer> {
 
     /**
-     * An argument group definition to configure the input.
+     * In the silent mode the application performs actions without
+     * displaying any details.
+     */
+    @CommandLine.Option(names = {"-s", "--silent"},
+            description = "Perform actions without displaying any details.")
+    private boolean silentMode;
+
+    /**
+     * Input CLI group.
      */
     @CommandLine.ArgGroup(
-            heading = "%nInput:%n",
             exclusive = false,
-            multiplicity = "1")
-    private final SourceGroup sourceGroup = new SourceGroup();
+            multiplicity = "1",
+            heading = "%nInput:%n")
+    private final TransactionParserArgGroup inputArgGroup = new TransactionParserArgGroup();
 
     /**
-     *  Input data related arguments.
-     */
-    private static class SourceGroup {
-
-        /**
-         * CLI definition: set the source files.
-         */
-        @CommandLine.Option(
-                names = {"-i", "--input-file"},
-                description = "File that contains the transactions.",
-                required = true)
-        String inputFile;
-
-        /**
-         * CLI definition: set the timestamp that used in the reports.
-         */
-        @CommandLine.Option(
-                names = {"-a", "--in-date-pattern"},
-                description = "Timestamp pattern that is used to parse the input file."
-                        + "%n  Default: \"${DEFAULT-VALUE}\"",
-                defaultValue = "yyyy-MM-dd HH:mm:ss")
-        String dateTimePattern;
-
-        /**
-         * CLI definition: set the list of the portfolio names that will be
-         * overridden during the parse.
-         */
-        @CommandLine.Option(
-                names = {"-r", "--replace"},
-                description = "Replace portfolio name.%n"
-                        + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
-                split = ",")
-        final List<String> replaces = new ArrayList<>();
-    }
-
-    /**
-     * Report configuration command line parameters.
+     * CLI Group definition for configuring the output.
      */
     @CommandLine.ArgGroup(
-            heading = "%nFilter:%n",
+            heading = "%nOutput:%n",
             exclusive = false)
-    private final FilterGroup filterGroup = new FilterGroup();
-
-    /**
-     * Report configuration parameters.
-     */
-    private static class FilterGroup {
-
-        /**
-         * CLI definition: set the portfolio name filter.
-         */
-        @CommandLine.Option(
-                names = {"-p", "--portfolio"},
-                description = "Portfolio name filter.")
-        String portfolio;
-
-        /**
-         * CLI definition: set the product name filter.
-         */
-        @CommandLine.Option(
-                names = {"-c", "--ticker"},
-                description = "Comma separated product name (ticker) filter.",
-                converter = StringToListConverter.class)
-        final List<String> tickers = new ArrayList<>();
-    }
+    private final OutputArgGroup outputArgGroup = new OutputArgGroup();
 
     /**
      * Execute the command and computes a result.
@@ -117,22 +67,21 @@ public class ShowCommand extends CommonCommand implements Callable<Integer> {
      */
     @Override
     public Integer call() {
-        LogLevel.configureLogger(quietMode);
+        Logger.setSilentMode(silentMode);
 
-        var transactions = Parse.file(sourceGroup.inputFile, sourceGroup.dateTimePattern);
+        // parser
+        Parser<Transaction> parser = Parser.build(inputArgGroup);
+        var transactions = parser.parse(inputArgGroup.getFile());
+        PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
                 .stream()
-                .filter(x -> filterGroup.portfolio == null || x.getPortfolio().equals(filterGroup.portfolio))
-                .filter(x -> filterGroup.tickers.isEmpty() || filterGroup.tickers.contains(x.getTicker().toUpperCase()))
-                .collect(Collectors.toList());
+                .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
+                .filter(t -> Filter.tickerFilter(inputArgGroup.getTickers(), t))
+                .toList();
 
-        var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);
-        if (outputGroup.outputFile == null) {
-            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
-        } else {
-            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
-        }
-
+        // writer
+        Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
         return CommandLine.ExitCode.OK;
     }
 }

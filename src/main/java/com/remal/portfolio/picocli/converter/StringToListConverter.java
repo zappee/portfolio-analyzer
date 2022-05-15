@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Picocli type converter implementation.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -26,7 +26,7 @@ public class StringToListConverter implements CommandLine.ITypeConverter<List<St
     public List<String> convert(String values) {
         List<String> valueList = new ArrayList<>();
         var valuePieces = values.split(",");
-        Arrays.stream(valuePieces).forEach(x -> valueList.add(x.trim().toUpperCase()));
+        Arrays.stream(valuePieces).forEach(x -> valueList.add(x.trim()));
         return valueList;
     }
 }

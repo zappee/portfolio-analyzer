@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Helper that renames the portfolio names.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -30,7 +30,7 @@ public class PortfolioNameRenamer {
             replaces.forEach(replace -> {
                 var from = replace.split(":")[0];
                 var to = replace.split(":")[1];
-                log.debug("renaming portfolio name from '{}' to '{}'...", from, to);
+                log.debug("output > renaming portfolio name from '{}' to '{}'...", from, to);
                 portfolioNameToRename.put(from, to);
             });
 

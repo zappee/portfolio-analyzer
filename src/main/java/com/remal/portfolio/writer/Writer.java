@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ import java.util.Optional;
 /**
  * Common functionalities that is used by the report writers.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -86,9 +87,24 @@ public abstract class Writer<T> {
     protected List<String> columnsToHide = new ArrayList<>();
 
     /**
+     * The list of the portfolio names that will replace to another value.
+     */
+    protected List<String> portfolioNameReplaces = new ArrayList<>();
+
+    /**
      * If not null then date/time conversions will perform.
      */
-    protected String zoneTo;
+    protected ZoneId zone;
+
+    /**
+     * Transaction date filter.
+     */
+    protected LocalDateTime from;
+
+    /**
+     * Transaction date filter.
+     */
+    protected LocalDateTime to;
 
     /**
      * Generate the CSV report.
@@ -128,11 +144,12 @@ public abstract class Writer<T> {
         String filename;
         var fileType = Files.getFileType(fileNameTemplate);
 
+        showConfiguration();
         switch (fileType) {
             case CSV -> {
-                log.debug("generating the CSV report...");
+                log.debug("output > generating the CSV report...");
                 reportAsBytes = buildCsvReport(items).getBytes();
-                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
             }
             case EXCEL -> {
@@ -141,24 +158,24 @@ public abstract class Writer<T> {
                     Logger.logErrorAndExit(message, FileWriter.WriteMode.APPEND);
                 }
 
-                log.debug("generating the Excel report...");
+                log.debug("output > generating the Excel report...");
                 reportAsBytes = buildExcelReport(items);
-                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
             }
             case MARKDOWN -> {
-                log.debug("generating the Markdown report...");
+                log.debug("output > generating the Markdown report...");
                 reportAsBytes = buildMarkdownReport(items).getBytes();
-                filename = LocalDateTimes.toString(zoneTo, fileNameTemplate, LocalDateTime.now());
+                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
             }
             case NOT_DEFINED -> {
                 var reportAsString = buildMarkdownReport(items);
-                log.debug("{} items have been processed", items.size());
                 StdoutWriter.write(reportAsString);
             }
             default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
         }
+        log.debug("output > {} items have been processed by the writer", items.size());
     }
 
     /**
@@ -267,7 +284,7 @@ public abstract class Writer<T> {
             stringValue = Optional.of((x).name());
 
         } else if (value instanceof LocalDateTime x) {
-            stringValue = Optional.of(LocalDateTimes.toString(zoneTo, dateTimePattern, x));
+            stringValue = Optional.of(LocalDateTimes.toString(zone, dateTimePattern, x));
 
         } else if (value instanceof BigDecimal x) {
             stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());
@@ -357,5 +374,14 @@ public abstract class Writer<T> {
         } else {
             return String.valueOf(charToEscape);
         }
+    }
+
+    /**
+     * Show the writer configuration.
+     */
+    private void showConfiguration() {
+        log.debug("output > time zone: '{}'", zone.getId());
+        log.debug("output > report has title: {}", !hideTitle);
+        log.debug("output > table has header: {}", !hideHeader);
     }
 }

@@ -6,7 +6,7 @@
 
     <groupId>com.remal.portfolio</groupId>
     <artifactId>portfolio-analyzer</artifactId>
-    <version>0.0.13</version>
+    <version>0.1.13</version>
 
     <licenses>
         <license>
@@ -39,11 +39,12 @@
         <json.simple.version>1.1.1</json.simple.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <logback.classic.version>1.2.11</logback.classic.version>
-        <lombok.version>1.18.22</lombok.version>
+        <lombok.version>1.18.24</lombok.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
         <picocli.version>4.6.3</picocli.version>
-        <poi.version>5.2.0</poi.version>
+        <poi.version>5.2.2</poi.version>
         <yahoo-finance-api.version>3.15.0</yahoo-finance-api.version>
+        <maven.compiler.plugin.version>3.10.0</maven.compiler.plugin.version>
     </properties>
 
     <dependencies>
@@ -146,6 +147,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- set the Java version -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                </configuration>
             </plugin>
         </plugins>
     </build>

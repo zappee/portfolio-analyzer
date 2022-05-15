@@ -6,13 +6,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
  * This is a tool that writes content to file.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -54,8 +54,8 @@ public class FileWriter {
      */
     public static void write(FileWriter.WriteMode writeMode, String filename, byte[] content) {
         try {
-            var path = Paths.get(filename);
-            log.debug("writing the report to '{}', write-mode: {}...", filename, writeMode);
+            var path = Path.of(filename);
+            log.debug("output > writing the report to '{}', write-mode: {}...", filename, writeMode);
 
             switch (writeMode) {
                 case OVERWRITE -> Files.write(path, content);

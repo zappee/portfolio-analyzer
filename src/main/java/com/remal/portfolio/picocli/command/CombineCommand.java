@@ -2,26 +2,25 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.Parse;
-import com.remal.portfolio.util.LogLevel;
-import com.remal.portfolio.util.Sorter;
-import com.remal.portfolio.util.Strings;
-import com.remal.portfolio.writer.StdoutWriter;
+import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.picocli.arggroup.CombineArgGroup;
+import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
+import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.TransactionWriter;
+import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 
 /**
  * Implementation of the 'combine' command.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -36,64 +35,31 @@ import java.util.concurrent.Callable;
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class CombineCommand extends CommonCommand implements Callable<Integer> {
+public class CombineCommand implements Callable<Integer> {
 
     /**
-     * An argument group definition for the input files.
+     * In this mode the log file won't be written to the standard output.
+     */
+    @CommandLine.Option(names = {"-q", "--quiet"},
+            description = "In this mode log wont be shown.")
+    private boolean quietMode;
+
+    /**
+     * Input CLI group.
      */
     @CommandLine.ArgGroup(
-            heading = "%nInput:%n",
             exclusive = false,
-            multiplicity = "1")
-    private final SourceGroup sourceGroup = new SourceGroup();
+            multiplicity = "1",
+            heading = "%nInput:%n")
+    private final CombineArgGroup inputArgGroup = new CombineArgGroup();
 
     /**
-     * Option list definition for data sources.
+     * CLI Group definition for configuring the output.
      */
-    private static class SourceGroup {
-
-        /**
-         * CLI definition: set the source files.
-         */
-        @CommandLine.Option(
-                names = {"-i", "--input-files"},
-                description = "Comma separated list of files with transactions to be combined.",
-                split = ",")
-        final List<String> filesToCombine = Collections.emptyList();
-
-        /**
-         * CLI definition: set the timestamp that used in the reports.
-         */
-        @CommandLine.Option(
-                names = {"-a", "--in-date-pattern"},
-                description = "Timestamp pattern used in the input files."
-                        + "%n  Default: \"${DEFAULT-VALUE}\"",
-                defaultValue = "yyyy-MM-dd HH:mm:ss")
-        String dateTimePattern;
-
-        /**
-         * CLI definition: set the transaction overwrite mode.
-         */
-        @CommandLine.Option(
-                names = {"-e", "--overwrite"},
-                description = "Overwrite the transactions while combining them."
-                        + "%n  Candidates: true, false"
-                        + "%n  Default: false",
-                defaultValue = "false")
-        String overwrite;
-
-        /**
-         * CLI definition: set the list of the portfolio names that will be
-         * overridden during the parse.
-         */
-        @CommandLine.Option(
-                names = {"-r", "--replace"},
-                description = "Replace portfolio name.%n"
-                        + "  E.g.: \"default:coinbase, manual:interactive-brokers\"",
-                split = ",")
-        final List<String> replaces = new ArrayList<>();
-
-    }
+    @CommandLine.ArgGroup(
+            heading = "%nOutput:%n",
+            exclusive = false)
+    final OutputArgGroup outputArgGroup = new OutputArgGroup();
 
     /**
      * Execute the command and computes a result.
@@ -102,31 +68,29 @@ public class CombineCommand extends CommonCommand implements Callable<Integer> {
      */
     @Override
     public Integer call() {
-        LogLevel.configureLogger(quietMode);
+        Logger.setSilentMode(quietMode);
 
-        // combine transactions from the source with data from another sources
-        var overwrite = Boolean.parseBoolean(sourceGroup.overwrite);
-        List<Transaction> transactions = new ArrayList<>();
-        sourceGroup.filesToCombine.forEach(x -> combine(
-                Parse.file(Strings.patternToString(x.trim()), sourceGroup.dateTimePattern),
+        var overwrite = inputArgGroup.isOverwrite();
+        log.debug("overwrite mode: {}", overwrite ? "overwrite" : "skip if exist");
+        final List<Transaction> transactions = new ArrayList<>();
+
+        // parser
+        var parser = Parser.build(inputArgGroup);
+        inputArgGroup.getFiles().forEach(file -> combine(
+                parser.parse(file),
                 transactions,
                 overwrite)
         );
 
-        // print to output
-        Sorter.sort(transactions);
-        var writer = TransactionWriter.build(transactions, outputGroup, sourceGroup.replaces);
-        if (outputGroup.outputFile == null) {
-            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
-        } else {
-            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
-        }
-
+        // writer
+        Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
         return CommandLine.ExitCode.OK;
     }
 
     /**
      * Combine source and target transactions.
+     *
      * @param source source transactions
      * @param target target transactions
      * @param overwrite set it to true if you want to overwrite the target transactions
@@ -135,9 +99,8 @@ public class CombineCommand extends CommonCommand implements Callable<Integer> {
         source.forEach(sourceTr -> {
             Optional<Transaction> targetTr = target
                     .stream()
-                    .filter(x -> Objects.equals(sourceTr.getTransferId(), x.getTransferId())
-                            && Objects.equals(sourceTr.getOrderId(), x.getOrderId())
-                            && Objects.equals(sourceTr.getTradeId(), x.getTradeId()))
+                    .filter(actual -> Filter.transactionIdFilter(sourceTr, actual))
+                    .filter(actual -> Filter.tickerFilter(inputArgGroup.getTickers(), actual))
                     .findAny();
 
             if (targetTr.isPresent() && overwrite) {

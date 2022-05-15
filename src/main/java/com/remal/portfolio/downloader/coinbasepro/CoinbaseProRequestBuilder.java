@@ -19,7 +19,7 @@ import java.util.Optional;
 /**
  * Helper that builds Coinbase rest api calls and process the responses.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -101,7 +101,7 @@ public abstract class CoinbaseProRequestBuilder {
         var timestamp = Instant.now().getEpochSecond() + "";
         var url = new URL(BASE_URL + path);
 
-        log.debug("calling {}...", url);
+        log.debug("input < calling the {} api...", url);
         var connection = (HttpURLConnection) url.openConnection();
         connection.setRequestProperty("CB-ACCESS-KEY", publicKey);
         connection.setRequestProperty("CB-ACCESS-SIGN", signMessage(timestamp, path));
