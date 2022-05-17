@@ -73,6 +73,8 @@ public class YahooDownloader implements Downloader {
             }
         } catch (IOException e) {
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+        } catch (NullPointerException e) {
+            Logger.logErrorAndExit("Unknown ticker: '{}'", ticker);
         }
 
         logResult(ticker, marketPrice.orElse(null));
