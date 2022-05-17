@@ -1,6 +1,7 @@
 package com.remal.portfolio.model;
 
 import lombok.Builder;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  */
 @Builder
 @ToString
+@Getter
 public class ProductPrice {
 
     /**
@@ -32,10 +34,10 @@ public class ProductPrice {
     /**
      * The data provider.
      */
-    private Provider provider;
+    private ProviderType providerType;
 
     /**
      * The time and date when the price was downloaded.
      */
-    private LocalDateTime timestamp;
+    private LocalDateTime date;
 }

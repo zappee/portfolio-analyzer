@@ -2,7 +2,7 @@ package com.remal.portfolio.downloader.yahoo;
 
 import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.model.ProductPrice;
-import com.remal.portfolio.model.Provider;
+import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Product price downloader implementation for Yahoo Finance data provider.
+ * Product price downloader implementation for Yahoo Finance data providerType.
  * API information: https://financequotes-api.com
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
@@ -33,14 +33,14 @@ import java.util.Optional;
 public class YahooDownloader implements Downloader {
 
     /**
-     * The ID of this provider.
+     * The ID of this providerType.
      */
-    private static final Provider PROVIDER = Provider.YAHOO;
+    private static final ProviderType PROVIDER_TYPE = ProviderType.YAHOO;
 
     /**
      * Error log message template.
      */
-    private static final String PRICE_NOT_FOUND = "market price of '{}' not found, provider: '{}'";
+    private static final String PRICE_NOT_FOUND = "market price of '{}' not found, providerType: '{}'";
 
     /**
      * Error log message template.
@@ -56,7 +56,7 @@ public class YahooDownloader implements Downloader {
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker) {
-        log.debug("input < getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER);
+        log.debug("input < getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
         Optional<ProductPrice> marketPrice = Optional.empty();
 
         try {
@@ -67,13 +67,15 @@ public class YahooDownloader implements Downloader {
                         .builder()
                         .ticker(ticker)
                         .price(price)
-                        .provider(PROVIDER)
-                        .timestamp(LocalDateTime.now())
+                        .providerType(PROVIDER_TYPE)
+                        .date(LocalDateTime.now())
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         }
+
+        logResult(ticker, marketPrice.orElse(null));
         return marketPrice;
     }
 
@@ -88,30 +90,45 @@ public class YahooDownloader implements Downloader {
     @Override
     public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
         var message = "input < getting the price of '{}' at {}, provider: '{}'...";
-        log.debug(message, ticker, PROVIDER, Calendars.toString(timestamp));
+        log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
         Optional<ProductPrice> marketPrice = Optional.empty();
         try {
             Stock stock = YahooFinance.get(ticker);
             List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, timestamp, Interval.DAILY);
             if (historicalQuotes.isEmpty()) {
-                log.error(PRICE_NOT_FOUND, ticker, PROVIDER);
+                log.error(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {
                 var historicalQuote = historicalQuotes.get(0);
                 marketPrice = Optional.of(ProductPrice
                         .builder()
                         .ticker(ticker)
                         .price(historicalQuote.getClose())
-                        .provider(PROVIDER)
-                        .timestamp(LocalDateTime.ofInstant(
+                        .providerType(PROVIDER_TYPE)
+                        .date(LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(historicalQuote.getDate().getTimeInMillis()),
                                 ZoneId.systemDefault()))
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER, e.toString());
+            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         }
 
+        logResult(ticker, marketPrice.orElse(null));
         return marketPrice;
+    }
+
+    /**
+     * Log the result of the price downloader task.
+     *
+     * @param ticker product name
+     * @param marketPrice the result
+     */
+    private void logResult(String ticker, ProductPrice marketPrice) {
+        if (Objects.isNull(marketPrice)) {
+            log.warn("input < invalid ticker: {}", ticker);
+        } else {
+            log.info("input < downloaded price: {}", marketPrice);
+        }
     }
 }

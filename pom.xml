@@ -37,7 +37,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <json.simple.version>1.1.1</json.simple.version>
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <logback.classic.version>1.2.11</logback.classic.version>
         <lombok.version>1.18.24</lombok.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
@@ -60,6 +59,12 @@
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>${json.simple.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>junit</groupId>
+                    <artifactId>junit</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- command line interface -->
         <dependency>
@@ -99,20 +104,6 @@
             <groupId>com.yahoofinance-api</groupId>
             <artifactId>YahooFinanceAPI</artifactId>
             <version>${yahoo-finance-api.version}</version>
-        </dependency>
-        <!-- test dependency: junit-5 api -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- junit test-engine implementation -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

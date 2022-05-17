@@ -4,31 +4,21 @@ import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
-import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
-import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
 import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
 import com.remal.portfolio.util.ZoneIds;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -105,8 +95,8 @@ public class TransactionWriter extends Writer<Transaction> {
         PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
         transactions
                 .stream()
-                .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
-                .filter(t -> Filter.dateEqualOrBeforeFilter(to, t))
+                .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
+                .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> {
                     report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator);
@@ -170,8 +160,8 @@ public class TransactionWriter extends Writer<Transaction> {
         PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
         transactions
                 .stream()
-                .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
-                .filter(t -> Filter.dateEqualOrBeforeFilter(to, t))
+                .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
+                .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> {
                     var row = sheet.createRow(rowIndex.incrementAndGet());
@@ -193,7 +183,6 @@ public class TransactionWriter extends Writer<Transaction> {
 
         return workbookToBytes(workbook);
     }
-
 
     /**
      * Generate the Text/Markdown report.
@@ -244,8 +233,8 @@ public class TransactionWriter extends Writer<Transaction> {
         PortfolioNameRenamer.rename(transactions, portfolioNameReplaces);
         transactions
                 .stream()
-                .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
-                .filter(t -> Filter.dateEqualOrBeforeFilter(to, t))
+                .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
+                .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> {
                     report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), widths));
@@ -264,49 +253,6 @@ public class TransactionWriter extends Writer<Transaction> {
                 });
 
         return report.toString();
-    }
-
-    /**
-     * Set the cell value if the object is not null, otherwise skip
-     * the set operation.
-     *
-     * @param row row in the Excel spreadsheet
-     * @param columnIndex column index within the row
-     * @param obj the value to be set as a cell value
-     */
-    private void skipIfNullOrSet(XSSFWorkbook workbook, XSSFRow row, AtomicInteger columnIndex, Object obj) {
-        if (Objects.isNull(obj)) {
-            columnIndex.incrementAndGet();
-        } else {
-            if (obj instanceof BigDecimal x) {
-                getNextCell(row, columnIndex).setCellValue(BigDecimals.valueOf(x));
-            } else if (obj instanceof String x) {
-                getNextCell(row, columnIndex).setCellValue(x);
-            } else if (obj instanceof LocalDateTime x) {
-                var cell = getNextCell(row, columnIndex);
-                CellStyle dateCellStyle = workbook.createCellStyle();
-                CreationHelper creationHelper = workbook.getCreationHelper();
-                dateCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(dateTimePattern));
-
-                cell.setCellValue(x);
-                cell.setCellStyle(dateCellStyle);
-
-            } else {
-                columnIndex.incrementAndGet();
-                log.warn("Unhandled type: {}", obj.getClass().getSimpleName());
-            }
-        }
-    }
-
-    /**
-     * Get the next cell in the row.
-     *
-     * @param row row in the Excel spreadsheet
-     * @param columnIndex column index within the row
-     * @return the next cell in the row
-     */
-    private XSSFCell getNextCell(XSSFRow row, AtomicInteger columnIndex) {
-        return row.createCell(columnIndex.incrementAndGet());
     }
 
     /**
@@ -332,21 +278,5 @@ public class TransactionWriter extends Writer<Transaction> {
             updateWidth(widths, Label.ORDER_ID, transaction.getOrderId());
         });
         return widths;
-    }
-
-    /**
-     * Write Excel spreadsheet to a byte array.
-     *
-     * @param workbook the Excel spreadsheet
-     * @return the Excel file as a byte array
-     */
-    private byte[] workbookToBytes(XSSFWorkbook workbook) {
-        try (var outputStream = new ByteArrayOutputStream()) {
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            Logger.logErrorAndExit("Error while saving the Excel file, error: {}", e.toString());
-        }
-        return new byte[0];
     }
 }

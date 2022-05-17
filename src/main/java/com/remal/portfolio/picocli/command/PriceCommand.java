@@ -4,18 +4,26 @@ import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.downloader.coinbasepro.CoinbaseProDownloader;
 import com.remal.portfolio.downloader.yahoo.YahooDownloader;
+import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProductPrice;
-import com.remal.portfolio.model.Provider;
-import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
+import com.remal.portfolio.model.ProviderType;
+import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.util.Calendars;
+import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.writer.ProductPriceWriter;
+import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,7 +32,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.CoinbaseDataSourceArgGroup;
 import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.InputArgGroup;
 import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.OutputArgGroup;
 
@@ -49,15 +56,6 @@ import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.OutputArgGroup;
 public class PriceCommand implements Callable<Integer> {
 
     /**
-     * The CommandSpec class models a command specification, including the
-     * options, positional parameters and subcommands supported by the command,
-     * as well as attributes for the version help message and the usage help
-     * message of the command.
-     */
-    @CommandLine.Spec
-    CommandLine.Model.CommandSpec commandSpec;
-
-    /**
      * In this mode the log file won't be written to the standard output.
      */
     @CommandLine.Option(names = {"-q", "--quiet"},
@@ -65,22 +63,13 @@ public class PriceCommand implements Callable<Integer> {
     boolean quietMode;
 
     /**
-     * Data provider configuration.
+     * Data providerType configuration.
      */
     @CommandLine.ArgGroup(
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput:%n")
     private final InputArgGroup inputArgGroup = new InputArgGroup();
-
-    /**
-     * Coinbase PRO API configuration.
-     */
-    @CommandLine.ArgGroup(
-            exclusive = false,
-            multiplicity = "0",
-            heading = "%nCoinbase PRO API:%n")
-    private final CoinbaseDataSourceArgGroup coinbaseArgGroup = new CoinbaseDataSourceArgGroup();
 
     /**
      * Output configuration.
@@ -93,18 +82,15 @@ public class PriceCommand implements Callable<Integer> {
     /**
      * Supported price downloader modules.
      */
-    private final Map<Provider, Downloader> downloader;
+    private final Map<ProviderType, Downloader> downloader;
 
     /**
      * Constructor that initializes the price downloader objects.
      */
     public PriceCommand() {
-        var key = coinbaseArgGroup.getKey();
-        var passphrase = coinbaseArgGroup.getPassphrase();
-        var secret = coinbaseArgGroup.getSecret();
-        downloader = new EnumMap<>(Provider.class);
-        downloader.put(Provider.COINBASE_PRO, new CoinbaseProDownloader(key, passphrase, secret));
-        downloader.put(Provider.YAHOO, new YahooDownloader());
+        downloader = new EnumMap<>(ProviderType.class);
+        downloader.put(ProviderType.COINBASE_PRO, new CoinbaseProDownloader());
+        downloader.put(ProviderType.YAHOO, new YahooDownloader());
     }
 
     /**
@@ -116,58 +102,67 @@ public class PriceCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(quietMode);
 
-        validateCoinbaseDataSourceArgGroup();
         var ticker = inputArgGroup.getTicker();
-        var provider = Stream.<Supplier<Provider>>of(
-                        () -> inputArgGroup.getProviderArgGroup().getProvider(),
+        var provider = Stream.<Supplier<ProviderType>>of(
+                        () -> inputArgGroup.getProviderArgGroup().getProviderType(),
                         () -> getProvider(ticker, inputArgGroup.getProviderArgGroup().getProviderFile()))
                 .map(Supplier::get)
                 .filter(Objects::nonNull)
                 .findFirst();
         var productPrice = getPrice(ticker, provider.orElse(null));
+        List<ProductPrice> productPrices = new ArrayList<>();
 
-        System.out.println(productPrice);
         // read the history file
-   //     ProductPriceParser parser = Parser.build(inputArgGroup);
-   //     List<ProductPrice> productPrices = parser.parse(outputArgGroup.getPriceHistoryFile());
+        var historyFile = outputArgGroup.getPriceHistoryFile();
+        if (Objects.nonNull(historyFile)) {
+            Parser<ProductPrice> parser = Parser.build(outputArgGroup);
+            productPrices.addAll(parser.parse(outputArgGroup.getPriceHistoryFile()));
+        }
 
         // merge
-    //    productPrices.add(productPrice, outputArgGroup.getMultiplicity());
+        merge(productPrices, productPrice.orElse(null), outputArgGroup.getMultiplicity());
 
         // writer
-     //   Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
-     //   writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), productPrices);
+        Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), productPrices);
 
         return CommandLine.ExitCode.OK;
     }
 
     /**
-     * Validates the provided CLI parameters.
+     * Add a new price to the list based on  the provided multiplicity.
      *
-     * @throws picocli.CommandLine.ParameterException missing input parameters
+     * @param productPrices the product price list
+     * @param productPrice the current price to add to the list
+     * @param multiplicity controls how to add the price to the list
      */
-    private void validateCoinbaseDataSourceArgGroup() {
-        var apiKey = coinbaseArgGroup.getKey();
-        var apiPassphrase = coinbaseArgGroup.getPassphrase();
-        var apiSecret = coinbaseArgGroup.getSecret();
+    private void merge(List<ProductPrice> productPrices, ProductPrice productPrice, MultiplicityType multiplicity) {
+        var intervalEnd = LocalDateTime.now().atZone(ZoneId.of(outputArgGroup.getZone())).toLocalDateTime();
+        var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec());
+        var itemCount = productPrices
+                .stream()
+                .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getDate()))
+                .count();
 
-        if (inputArgGroup.getProviderArgGroup().getProvider() == Provider.COINBASE_PRO
-                && (Objects.isNull(apiKey) || Objects.isNull(apiPassphrase) || Objects.isNull(apiSecret))) {
+        log.debug("output > multiplicity: {}", multiplicity.name());
+        log.debug("output > number of item within the range: {}", itemCount);
 
-            var message = "Error: Missing required argument(s): (-k=<key> -p=<passphrase> -s=<secret>)";
-            throw new CommandLine.ParameterException(commandSpec.commandLine(), message);
+        if (multiplicity == MultiplicityType.MANY || itemCount == 0) {
+            productPrices.add(productPrice);
+        } else {
+            log.warn("output > price wont be added to the output because of the multiplicity setting that you use");
         }
     }
 
     /**
-     * Get the data provider from the *.properties file.
+     * Get the data providerType from the *.properties file.
      *
      * @param ticker the product id that represents the company's stock
-     * @param file the configuration file with the provider names
-     * @return the selected data provider
+     * @param file the configuration file with the providerType names
+     * @return the selected data providerType
      */
-    private Provider getProvider(String ticker, String file) {
-        Provider provider = null;
+    private ProviderType getProvider(String ticker, String file) {
+        ProviderType providerType = null;
         var providerAsString = "";
 
         try (InputStream inputStream = new FileInputStream(file)) {
@@ -176,11 +171,11 @@ public class PriceCommand implements Callable<Integer> {
 
             providerAsString = properties.getProperty(ticker);
             if (Objects.isNull(providerAsString)) {
-                var message = "There is no provider definition in the '{}' for ticker '{}'.";
+                var message = "There is no providerType definition in the '{}' for ticker '{}'.";
                 Logger.logErrorAndExit(message, file, ticker);
             }
 
-            provider = Provider.valueOf(providerAsString);
+            providerType = ProviderType.valueOf(providerAsString);
 
         } catch (IOException e) {
             var message = "Error while reading the \"{}\" file. Error: {}";
@@ -189,23 +184,23 @@ public class PriceCommand implements Callable<Integer> {
             var message = "Invalid data provider is set for ticker '{}' in the '{}' file, provider: '{}'";
             Logger.logErrorAndExit(message, ticker, file, providerAsString);
         }
-        return provider;
+        return providerType;
     }
 
     /**
      * Download the price from data provider.
      *
      * @param ticker the company's ticker
-     * @param provider trading data provider
+     * @param providerType trading data provider
      * @return the market price of the company
      */
-    private Optional<ProductPrice> getPrice(String ticker, Provider provider) {
-        if (Objects.nonNull(provider)) {
+    private Optional<ProductPrice> getPrice(String ticker, ProviderType providerType) {
+        if (Objects.nonNull(providerType)) {
             var tradeDate = inputArgGroup.getTradeDate();
             var pattern = inputArgGroup.getDateTimePattern();
             return Objects.isNull(tradeDate)
-                    ? downloader.get(provider).getPrice(ticker)
-                    : downloader.get(provider).getPrice(ticker, Calendars.fromString(tradeDate, pattern));
+                    ? downloader.get(providerType).getPrice(ticker)
+                    : downloader.get(providerType).getPrice(ticker, Calendars.fromString(tradeDate, pattern));
         } else {
             Logger.logErrorAndExit("Market price data provider can not be empty.");
             return Optional.empty();

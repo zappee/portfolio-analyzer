@@ -1,7 +1,7 @@
 package com.remal.portfolio.picocli.arggroup;
 
 import com.remal.portfolio.model.MultiplicityType;
-import com.remal.portfolio.model.Provider;
+import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.FileWriter;
 import lombok.Getter;
 import picocli.CommandLine;
@@ -39,7 +39,7 @@ public class PriceArgGroup {
          */
         @CommandLine.ArgGroup(
                 multiplicity = "1")
-        private ProviderArgGroup providerArgGroup = new ProviderArgGroup();
+        private final ProviderArgGroup providerArgGroup = new ProviderArgGroup();
 
         /**
          * The price of a stock on a certain date in the past.
@@ -71,7 +71,7 @@ public class PriceArgGroup {
         @CommandLine.Option(
                 names = {"-d", "--provider-id"},
                 description = "Retrieve the market price using the provider. Candidates: ${COMPLETION-CANDIDATES}.")
-        private Provider provider;
+        private ProviderType providerType;
 
         /**
          * Set the data provider properties file.
@@ -80,40 +80,6 @@ public class PriceArgGroup {
                 names = {"-f", "--provider-file"},
                 description = "Get the provider name used to retrieve the market price from a *.properties file.")
         private String providerFile;
-    }
-
-    /**
-     * Coinbase PRO API configuration.
-     */
-    @Getter
-    public static class CoinbaseDataSourceArgGroup {
-
-        /**
-         * Set Coinbase Pro API key as a string.
-         */
-        @CommandLine.Option(
-                names = {"-k", "--cb-access-key"},
-                description = "Coinbase PRO API key.",
-                required = true)
-        private String key;
-
-        /**
-         * Set Coinbase Pro passphrase.
-         */
-        @CommandLine.Option(
-                names = {"-p", "--cb-passphrase"},
-                description = "Coinbase PRO API passphrase.",
-                required = true)
-        private String passphrase;
-
-        /**
-         * Set Coinbase Pro secret for the API key.
-         */
-        @CommandLine.Option(
-                names = {"-s", "--cb-secret"},
-                description = "Coinbase PRO API secret.",
-                required = true)
-        private String secret;
     }
 
     /**
@@ -147,26 +113,10 @@ public class PriceArgGroup {
         @CommandLine.Option(
                 names = {"-U", "--multiplicity"},
                 description = "Controls the price export to file. Candidates: ${COMPLETION-CANDIDATES}. "
-                        + "Default: ONE_PRICE_PER_HOUR.",
-                defaultValue = "ONE_PRICE_PER_HOUR",
+                        + "Default: ONE_HOUR.",
+                defaultValue = "ONE_HOUR",
                 required = true)
         private MultiplicityType multiplicity;
-
-        /**
-         * Use it if you want to hide the report title.
-         */
-        @CommandLine.Option(
-                names = {"-E", "--hide-title"},
-                description = "Hide the report title.")
-        private boolean hideTitle;
-
-        /**
-         * Use it if you want to hide the header of the table.
-         */
-        @CommandLine.Option(
-                names = {"-A", "--hide-header"},
-                description = "Hide the table header in the report.")
-        private boolean hideHeader;
 
         /**
          * Set the report language.
@@ -200,7 +150,7 @@ public class PriceArgGroup {
          * Set the timezone.
          */
         @CommandLine.Option(
-                names = {"-z", "--timezone"},
+                names = {"-Z", "--timezone"},
                 description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
                         + "Default: the system default time-zone")
         private String zone = ZoneId.systemDefault().getId();

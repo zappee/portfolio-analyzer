@@ -3,6 +3,7 @@ package com.remal.portfolio.writer;
 import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Label;
+import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.FileWriter;
@@ -12,7 +13,14 @@ import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Strings;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.CreationHelper;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -23,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Common functionalities that is used by the report writers.
@@ -40,6 +49,11 @@ public abstract class Writer<T> {
      * New line character.
      */
     protected static final String NEW_LINE = System.lineSeparator();
+
+    /**
+     * Log message at the end of the processing.
+     */
+    protected static final String ITEMS_HAS_BEEN_PROCESSED = "output > {} items have been processed by the writer";
 
     /**
      * Markdown table separator character.
@@ -151,6 +165,7 @@ public abstract class Writer<T> {
                 reportAsBytes = buildCsvReport(items).getBytes();
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case EXCEL -> {
                 if (writeMode == FileWriter.WriteMode.APPEND) {
@@ -162,20 +177,22 @@ public abstract class Writer<T> {
                 reportAsBytes = buildExcelReport(items);
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case MARKDOWN -> {
                 log.debug("output > generating the Markdown report...");
                 reportAsBytes = buildMarkdownReport(items).getBytes();
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case NOT_DEFINED -> {
                 var reportAsString = buildMarkdownReport(items);
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
                 StdoutWriter.write(reportAsString);
             }
             default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
         }
-        log.debug("output > {} items have been processed by the writer", items.size());
     }
 
     /**
@@ -274,20 +291,23 @@ public abstract class Writer<T> {
         }
 
         Optional<String> stringValue;
-        if (value instanceof String) {
-            stringValue = Optional.of(value.toString());
+        if (value instanceof String x) {
+            stringValue = Optional.of(x);
 
         } else if (value instanceof TransactionType x) {
-            stringValue = Optional.of((x).name());
+            stringValue = Optional.of(x.name());
 
         } else if (value instanceof InventoryValuationType x) {
-            stringValue = Optional.of((x).name());
+            stringValue = Optional.of(x.name());
 
         } else if (value instanceof LocalDateTime x) {
             stringValue = Optional.of(LocalDateTimes.toString(zone, dateTimePattern, x));
 
         } else if (value instanceof BigDecimal x) {
             stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());
+
+        } else if (value instanceof ProviderType x) {
+            stringValue = Optional.of(x.name());
 
         } else if (value instanceof CurrencyType x) {
             stringValue = Optional.of(x.name());
@@ -377,11 +397,70 @@ public abstract class Writer<T> {
     }
 
     /**
+     * Write Excel spreadsheet to a byte array.
+     *
+     * @param workbook the Excel spreadsheet
+     * @return the Excel file as a byte array
+     */
+    protected byte[] workbookToBytes(XSSFWorkbook workbook) {
+        try (var outputStream = new ByteArrayOutputStream()) {
+            workbook.write(outputStream);
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            Logger.logErrorAndExit("Error while saving the Excel file, error: {}", e.toString());
+        }
+        return new byte[0];
+    }
+
+    /**
+     * Set the cell value if the object is not null, otherwise skip
+     * the set operation.
+     *
+     * @param row row in the Excel spreadsheet
+     * @param columnIndex column index within the row
+     * @param obj the value to be set as a cell value
+     */
+    protected void skipIfNullOrSet(XSSFWorkbook workbook, XSSFRow row, AtomicInteger columnIndex, Object obj) {
+        if (Objects.isNull(obj)) {
+            columnIndex.incrementAndGet();
+        } else {
+            if (obj instanceof BigDecimal x) {
+                getNextCell(row, columnIndex).setCellValue(BigDecimals.valueOf(x));
+            } else if (obj instanceof String x) {
+                getNextCell(row, columnIndex).setCellValue(x);
+            } else if (obj instanceof LocalDateTime x) {
+                var cell = getNextCell(row, columnIndex);
+                CellStyle dateCellStyle = workbook.createCellStyle();
+                CreationHelper creationHelper = workbook.getCreationHelper();
+                dateCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(dateTimePattern));
+
+                cell.setCellValue(x);
+                cell.setCellStyle(dateCellStyle);
+
+            } else {
+                columnIndex.incrementAndGet();
+                log.warn("Unhandled type: {}", obj.getClass().getSimpleName());
+            }
+        }
+    }
+
+    /**
      * Show the writer configuration.
      */
     private void showConfiguration() {
         log.debug("output > time zone: '{}'", zone.getId());
         log.debug("output > report has title: {}", !hideTitle);
         log.debug("output > table has header: {}", !hideHeader);
+    }
+
+    /**
+     * Get the next cell in the row.
+     *
+     * @param row row in the Excel spreadsheet
+     * @param columnIndex column index within the row
+     * @return the next cell in the row
+     */
+    private XSSFCell getNextCell(XSSFRow row, AtomicInteger columnIndex) {
+        return row.createCell(columnIndex.incrementAndGet());
     }
 }

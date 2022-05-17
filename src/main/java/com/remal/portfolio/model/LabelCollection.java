@@ -42,6 +42,15 @@ public class LabelCollection {
             Label.MARKET_VALUE);
 
     /**
+     * List of the column headers in the price report.
+     */
+    public static final List<Label> PRODUCT_PRICE_HEADERS = List.of(
+            Label.TICKER,
+            Label.PRICE,
+            Label.DATE,
+            Label.DATA_PROVIDER);
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws java.lang.UnsupportedOperationException if this method is called

@@ -34,7 +34,7 @@ public class Filter {
      *
      * @param tickers ticker names
      * @param transaction transaction to check
-     * @return true if the transaction meets with the conditions
+     * @return true if the date meets with the conditions
      */
     public static boolean tickerFilter(List<String> tickers, Transaction transaction) {
         return tickers.isEmpty() || tickers.contains(transaction.getTicker().trim());
@@ -43,27 +43,37 @@ public class Filter {
     /**
      * From date filter.
      *
-     * @param from timestamp
-     * @param transaction transaction to check
-     * @return true if the transaction meets with the conditions
+     * @param toCompare the value that will be compared
+     * @param compareTo compare the value with this
+     * @return true if the date meets with the conditions
      */
-    public static boolean dateEqualOrAfterFilter(LocalDateTime from, Transaction transaction) {
-        return Objects.isNull(from)
-                || transaction.getTradeDate().isEqual(from)
-                || transaction.getTradeDate().isAfter(from);
+    public static boolean dateEqualOrAfterFilter(LocalDateTime toCompare, LocalDateTime compareTo) {
+        return Objects.isNull(compareTo) || toCompare.isEqual(compareTo) || toCompare.isAfter(compareTo);
     }
 
     /**
      * To date filter.
      *
-     * @param to timestamp
-     * @param transaction transaction to check
+     * @param toCompare the value that will be compared
+     * @param compareTo compare the value with this
      * @return true if the transaction meets with the conditions
      */
-    public static boolean dateEqualOrBeforeFilter(LocalDateTime to, Transaction transaction) {
-        return Objects.isNull(to)
-                || transaction.getTradeDate().isEqual(to)
-                || transaction.getTradeDate().isBefore(to);
+    public static boolean dateEqualOrBeforeFilter(LocalDateTime toCompare, LocalDateTime compareTo) {
+        return Objects.isNull(compareTo) || toCompare.isEqual(compareTo) || toCompare.isBefore(compareTo);
+    }
+
+    /**
+     * Check whether the date is in the interval or not.
+     *
+     * @param rangeBegin start of the interval
+     * @param rangeEnd end of the interval
+     * @param dateToCheck the date to check whether is in the interval or not
+     * @return true if the date is between the interval
+     */
+    public static boolean dateBetweenFilter(LocalDateTime rangeBegin,
+                                            LocalDateTime rangeEnd,
+                                            LocalDateTime dateToCheck) {
+        return !dateToCheck.isBefore(rangeBegin) && !dateToCheck.isAfter(rangeEnd);
     }
 
     /**

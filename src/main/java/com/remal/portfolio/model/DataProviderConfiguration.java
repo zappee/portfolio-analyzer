@@ -24,7 +24,7 @@ public class DataProviderConfiguration {
     /**
      * The data provider ID.
      */
-    private Provider provider;
+    private ProviderType providerType;
 
     /**
      * The date and time when the data provider has been set.

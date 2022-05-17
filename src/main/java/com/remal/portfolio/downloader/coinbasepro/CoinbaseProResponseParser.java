@@ -114,8 +114,8 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
 
         return transactions
                 .stream()
-                .filter(t -> Filter.dateEqualOrAfterFilter(from, t))
-                .filter(t -> Filter.dateEqualOrBeforeFilter(to, t))
+                .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
+                .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .toList();
     }

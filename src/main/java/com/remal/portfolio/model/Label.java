@@ -35,6 +35,22 @@ public class Label {
     /**
      * A column header.
      */
+    public static final Label DATE = Label.builder()
+            .id("DATE")
+            .key("header.date")
+            .build();
+
+    /**
+     * A column header.
+     */
+    public static final Label DATA_PROVIDER = Label.builder()
+            .id("DATA_PROVIDER")
+            .key("header.data-provider")
+            .build();
+
+    /**
+     * A column header.
+     */
     public static final Label DEPOSITS = Label.builder()
             .id("DEPOSITS")
             .key("header.deposits")
@@ -158,6 +174,14 @@ public class Label {
     public static final Label LABEL_GENERATED = Label.builder()
             .id("LABEL_GENERATED")
             .key("label.generated")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_PRICE_HISTORY = Label.builder()
+            .id("LABEL_PRICE_HISTORY")
+            .key("label.price-history")
             .build();
 
     /**
