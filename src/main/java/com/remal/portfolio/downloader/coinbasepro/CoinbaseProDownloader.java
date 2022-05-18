@@ -43,7 +43,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     /**
      * Error log message template.
      */
-    private static final String PRICE_NOT_FOUND = "market price of '{}' not found, provider: '{}'";
+    private static final String PRICE_NOT_FOUND = "ticker '{}' not found, provider: '{}'";
 
     /**
      * Error log message template.
@@ -82,14 +82,14 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json) || json.isEmpty()) {
-                log.error(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {
                 var jsonObject = (JSONObject) new JSONParser().parse(json);
                 var data = (JSONObject) jsonObject.get("data");
                 var errors = jsonObject.get("errors");
 
                 if (Objects.nonNull(errors)) {
-                    log.error(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                    Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
                 } else {
                     var amountAsString = (String) data.get("amount");
                     marketPrice = Optional.of(ProductPrice
@@ -139,8 +139,11 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json) || json.isEmpty()) {
-                log.debug(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {
+                if (json.toLowerCase().contains("notfound")) {
+                    Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                }
                 var bucket = json.replace("[", "");
                 bucket = bucket.replace("]", "");
 

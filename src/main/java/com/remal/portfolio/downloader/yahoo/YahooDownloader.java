@@ -40,7 +40,7 @@ public class YahooDownloader implements Downloader {
     /**
      * Error log message template.
      */
-    private static final String PRICE_NOT_FOUND = "market price of '{}' not found, providerType: '{}'";
+    private static final String PRICE_NOT_FOUND = "ticker '{}' not found, provider: '{}'";
 
     /**
      * Error log message template.
@@ -74,7 +74,7 @@ public class YahooDownloader implements Downloader {
         } catch (IOException e) {
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         } catch (NullPointerException e) {
-            Logger.logErrorAndExit("Unknown ticker: '{}'", ticker);
+            Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE.name());
         }
 
         logResult(ticker, marketPrice.orElse(null));
@@ -99,7 +99,7 @@ public class YahooDownloader implements Downloader {
             Stock stock = YahooFinance.get(ticker);
             List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, timestamp, Interval.DAILY);
             if (historicalQuotes.isEmpty()) {
-                log.error(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {
                 var historicalQuote = historicalQuotes.get(0);
                 marketPrice = Optional.of(ProductPrice
@@ -114,6 +114,8 @@ public class YahooDownloader implements Downloader {
             }
         } catch (IOException e) {
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+        } catch (NullPointerException e) {
+            Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
         }
 
         logResult(ticker, marketPrice.orElse(null));
