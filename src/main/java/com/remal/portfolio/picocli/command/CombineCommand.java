@@ -3,7 +3,7 @@ package com.remal.portfolio.picocli.command;
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
-import com.remal.portfolio.picocli.arggroup.CombineArgGroup;
+import com.remal.portfolio.picocli.arggroup.CombineInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
@@ -51,7 +51,7 @@ public class CombineCommand implements Callable<Integer> {
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput:%n")
-    private final CombineArgGroup inputArgGroup = new CombineArgGroup();
+    private final CombineInputArgGroup inputArgGroup = new CombineInputArgGroup();
 
     /**
      * CLI Group definition for configuring the output.

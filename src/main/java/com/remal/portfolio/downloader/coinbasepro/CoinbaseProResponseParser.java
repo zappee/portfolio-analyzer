@@ -79,7 +79,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
      *
      * @param arguments arguments from the command line interface
      */
-    public CoinbaseProResponseParser(CoinbaseProArgGroup arguments) {
+    public CoinbaseProResponseParser(CoinbaseProArgGroup.InputArgGroup arguments) {
         super(arguments.getKey(), arguments.getPassphrase(), arguments.getSecret());
 
         this.baseCurrency = CurrencyType.getEnum(arguments.getBaseCurrency());

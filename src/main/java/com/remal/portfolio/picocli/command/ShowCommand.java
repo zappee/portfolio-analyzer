@@ -4,7 +4,7 @@ import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
-import com.remal.portfolio.picocli.arggroup.TransactionParserArgGroup;
+import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
@@ -50,7 +50,7 @@ public class ShowCommand implements Callable<Integer> {
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput:%n")
-    private final TransactionParserArgGroup inputArgGroup = new TransactionParserArgGroup();
+    private final TransactionParserInputArgGroup inputArgGroup = new TransactionParserInputArgGroup();
 
     /**
      * CLI Group definition for configuring the output.

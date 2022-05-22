@@ -14,7 +14,7 @@ import picocli.CommandLine;
  */
 @Getter
 @Setter
-public class TransactionParserArgGroup extends InputArgGroup {
+public class SummaryInputArgGroup extends InputArgGroup {
 
     /**
      * Set the file that contains the transactions.
@@ -26,4 +26,3 @@ public class TransactionParserArgGroup extends InputArgGroup {
             required = true)
     private String file;
 }
-

@@ -50,7 +50,7 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput (Coinbase PRO API)%n")
-    private final CoinbaseProArgGroup inputArgGroup = new CoinbaseProArgGroup();
+    private final CoinbaseProArgGroup.InputArgGroup inputArgGroup = new CoinbaseProArgGroup.InputArgGroup();
 
     /**
      * CLI Group definition for configuring the output.

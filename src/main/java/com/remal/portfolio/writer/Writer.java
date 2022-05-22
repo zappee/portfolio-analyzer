@@ -416,6 +416,7 @@ public abstract class Writer<T> {
      * Set the cell value if the object is not null, otherwise skip
      * the set operation.
      *
+     * @param workbook the Excel workbook
      * @param row row in the Excel spreadsheet
      * @param columnIndex column index within the row
      * @param obj the value to be set as a cell value

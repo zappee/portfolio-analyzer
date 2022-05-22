@@ -4,6 +4,7 @@ import com.remal.portfolio.picocli.command.CoinbaseDownloaderCommand;
 import com.remal.portfolio.picocli.command.CombineCommand;
 import com.remal.portfolio.picocli.command.PriceCommand;
 import com.remal.portfolio.picocli.command.ShowCommand;
+import com.remal.portfolio.picocli.command.SummaryCommand;
 import com.remal.portfolio.picocli.provider.ManifestVersionProvider;
 import com.remal.portfolio.picocli.renderer.CustomOptionRenderer;
 import org.apache.logging.log4j.Level;
@@ -23,7 +24,8 @@ import picocli.CommandLine;
             CoinbaseDownloaderCommand.class,
             ShowCommand.class,
             CombineCommand.class,
-            PriceCommand.class
+            PriceCommand.class,
+            SummaryCommand.class
         },
         synopsisSubcommandLabel = "[coinbase | show | combine | price]",
         name = "java -jar portfolio-analyzer.jar",

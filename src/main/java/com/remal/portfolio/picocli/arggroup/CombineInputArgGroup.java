@@ -18,7 +18,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class CombineArgGroup extends InputArgGroup {
+public class CombineInputArgGroup extends InputArgGroup {
 
     @CommandLine.Option(
             order = 10,
@@ -35,4 +35,3 @@ public class CombineArgGroup extends InputArgGroup {
             description = "Overwrite the same transactions while combining them.")
     private boolean overwrite;
 }
-
