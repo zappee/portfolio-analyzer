@@ -1,7 +1,7 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.generator.SummaryGenerator;
+import com.remal.portfolio.builder.SummaryBuilder;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
@@ -11,6 +11,7 @@ import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
+
 import java.util.concurrent.Callable;
 
 /**
@@ -77,19 +78,20 @@ public class SummaryCommand implements Callable<Integer> {
                 .toList();
 
         // generate the report
-        var builder = new SummaryGenerator(transactions, inputArgGroup.getPortfolio(), inputArgGroup.getTickers());
+        var builder = new SummaryBuilder(transactions, inputArgGroup.getPortfolio(), inputArgGroup.getTickers());
         var report = builder.build();
 
         // writer
-        /*var writer = SummaryWriter.build(report, outputGroup.language, sourcesGroup.dateTimePattern);
-        writer.setShowTransactions(Boolean.parseBoolean(outputGroup.showTransactions));
-        writer.setShowTransactionHistory(Boolean.parseBoolean(outputGroup.showTransactionHistory));
+        System.out.println(report);
+        //var writer = SummaryWriter.build(report, outputArgGroup.getLanguage(), outputArgGroup.getDateTimePattern());
+        //writer.setShowTransactions(outputArgGroup.isShowTransactions());
+        //writer.setShowTransactionHistory(outputArgGroup.isShowTransactionHistory());
 
-        if (outputGroup.outputFile == null) {
-            StdoutWriter.debug(quietMode, writer.printAsMarkdown());
-        } else {
-            writer.writeToFile(outputGroup.fileWriteMode, outputGroup.outputFile);
-        }*/
+        //if (outputArgGroup.getOutputFile() == null) {
+        //    StdoutWriter.write(writer.printAsMarkdown());
+        //} else {
+        //    writer.writeToFile(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile());
+        //}
 
         return CommandLine.ExitCode.OK;
     }
