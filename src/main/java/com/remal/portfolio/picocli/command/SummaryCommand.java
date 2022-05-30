@@ -1,7 +1,7 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.builder.SummaryBuilder;
+import com.remal.portfolio.generator.PortfolioGenerator;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
@@ -9,6 +9,7 @@ import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.writer.SummaryWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -78,21 +79,12 @@ public class SummaryCommand implements Callable<Integer> {
                 .toList();
 
         // generate the report
-        var builder = new SummaryBuilder(transactions, inputArgGroup.getPortfolio(), inputArgGroup.getTickers());
-        var report = builder.build();
+        var generator = new PortfolioGenerator();
+        var summary = generator.generate(transactions);
 
         // writer
-        System.out.println(report);
-        //var writer = SummaryWriter.build(report, outputArgGroup.getLanguage(), outputArgGroup.getDateTimePattern());
-        //writer.setShowTransactions(outputArgGroup.isShowTransactions());
-        //writer.setShowTransactionHistory(outputArgGroup.isShowTransactionHistory());
-
-        //if (outputArgGroup.getOutputFile() == null) {
-        //    StdoutWriter.write(writer.printAsMarkdown());
-        //} else {
-        //    writer.writeToFile(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile());
-        //}
-
+        var writer = SummaryWriter.build(outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summary);
         return CommandLine.ExitCode.OK;
     }
 }

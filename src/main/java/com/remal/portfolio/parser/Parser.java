@@ -226,7 +226,7 @@ public abstract class Parser<T> {
             return null;
         } else {
             var value = fields[index.getAndIncrement()];
-            return value.isBlank() ? null : value;
+            return value.isBlank() ? null : value.trim();
         }
     }
 

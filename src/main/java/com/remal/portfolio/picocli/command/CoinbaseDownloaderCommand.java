@@ -70,9 +70,9 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
         Logger.setSilentMode(this.silentMode);
 
         // validating the inputs
-        CurrencyType.validate(inputArgGroup.getBaseCurrency());
-        LocalDateTimes.validate(inputArgGroup.getDateTimeFilterPattern(), inputArgGroup.getFrom());
-        LocalDateTimes.validate(inputArgGroup.getDateTimeFilterPattern(), inputArgGroup.getTo());
+        CurrencyType.abortIfInvalid(inputArgGroup.getBaseCurrency());
+        LocalDateTimes.validate(CoinbaseProArgGroup.InputArgGroup.DATE_TIME_FILTER_PATTERN, inputArgGroup.getFrom());
+        LocalDateTimes.validate(CoinbaseProArgGroup.InputArgGroup.DATE_TIME_FILTER_PATTERN, inputArgGroup.getTo());
 
         // input
         var parser = new CoinbaseProResponseParser(inputArgGroup);

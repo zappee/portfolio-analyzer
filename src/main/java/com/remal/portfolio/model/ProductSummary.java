@@ -1,11 +1,9 @@
 package com.remal.portfolio.model;
 
 import com.remal.portfolio.util.BigDecimals;
-import com.remal.portfolio.util.Logger;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import picocli.CommandLine;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -57,18 +55,18 @@ public class ProductSummary {
      * The sum of the withdrawals.
      * This field only used for currency, otherwise it is null.
      */
-    private BigDecimal withdrawalSummary;
+    private BigDecimal withdrawalTotal;
 
     /**
      * The sum of the deposits.
      * This field only used for currency, otherwise it is null.
      */
-    private BigDecimal depositSummary;
+    private BigDecimal depositTotal;
 
     /**
      * Net cost that was used to buy the product.
      */
-    private BigDecimal netCost;
+    private BigDecimal costTotal;
 
     /**
      * The current market value of the product.
@@ -96,26 +94,71 @@ public class ProductSummary {
      * @param transaction the transaction to add
      */
     public void addTransaction(Transaction transaction) {
-        // transaction history
         transactionHistory.add(transaction);
+        transactions.add(transaction);
 
-        // transactions
-        // dividend and money deposit/withdrawal are not relevant transactions
-        var currency = CurrencyType.getEnum(transaction.getTicker());
-        if (CurrencyType.UNKNOWN == currency && TransactionType.DIVIDEND != transaction.getType()) {
-            transactions.add(transaction);
-        }
+        updateTotal(transaction);
 
-        updateTotalShares(transaction.getType(), transaction.getQuantity());
         if (BigDecimals.isNullOrZero(totalShares)) {
             transactions.clear();
-            averagePrice = null;
-            netCost = null;
+            totalShares = BigDecimal.ZERO;
+            averagePrice = BigDecimal.ZERO;
+            costTotal = null;
             marketValue = null;
-            totalShares = null;
-        } else {
-            updateAveragePrice();
         }
+
+        updateAveragePrice();
+        updateDepositTotal();
+        updateWithdrawalTotal();
+        updateCostTotal();
+    }
+
+    private void updateCostTotal() {
+        if (CurrencyType.isValid(this.ticker)) {
+            costTotal = transactionHistory
+                    .stream()
+                    .filter(transaction -> CurrencyType.isValid(transaction.getTicker()))
+                    .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } else {
+            costTotal = transactionHistory
+                    .stream()
+                    .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+    }
+
+    private void updateDepositTotal() {
+        if (CurrencyType.isValid(this.ticker)) {
+            depositTotal = transactionHistory
+                    .stream()
+                    .filter(transaction -> transaction.getType() == TransactionType.DEPOSIT)
+                    .map(Transaction::getQuantity)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+    }
+
+    private void updateWithdrawalTotal() {
+        if (CurrencyType.isValid(this.ticker)) {
+            withdrawalTotal = transactionHistory
+                    .stream()
+                    .filter(transaction -> transaction.getType() == TransactionType.WITHDRAWAL)
+                    .map(Transaction::getQuantity)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+    }
+
+    /**
+     * Summary the quantity of the product.
+     */
+    private void updateTotal(Transaction transaction) {
+        totalShares = switch (transaction.getType()) {
+            case DEPOSIT, BUY -> totalShares.add(transaction.getQuantity());
+            case WITHDRAWAL, SELL, FEE -> totalShares.subtract(transaction.getQuantity());
+            case DEBIT -> totalShares.subtract(transaction.getQuantity().multiply(transaction.getPrice()));
+            case CREDIT -> totalShares.add(transaction.getQuantity().multiply(transaction.getPrice()));
+            default -> totalShares;
+        };
     }
 
     /**
@@ -125,9 +168,9 @@ public class ProductSummary {
         Map<BigDecimal, BigDecimal> supply = new LinkedHashMap<>();
         transactions.forEach(transaction -> {
             if (transaction.getType() == TransactionType.BUY) {
-                var key = transaction.getPrice();
-                var quantity = supply.getOrDefault(key, BigDecimal.ZERO);
-                supply.put(key, quantity.add(transaction.getQuantity()));
+                var price = transaction.getPrice();
+                var quantity = supply.getOrDefault(price, BigDecimal.ZERO);
+                supply.put(price, quantity.add(transaction.getQuantity()));
 
             } else if (transaction.getType() == TransactionType.SELL) {
                 if (transaction.getInventoryValuation() == InventoryValuationType.FIFO) {
@@ -209,22 +252,5 @@ public class ProductSummary {
         return BigDecimals.isNullOrZero(totalInvestedAmount) && BigDecimals.isNullOrZero(totalNumberOfShares)
                 ? null
                 : totalInvestedAmount.divide(totalNumberOfShares, MathContext.DECIMAL64);
-    }
-
-    /**
-     * Calculates the quantity of the product.
-     *
-     * @param transactionType transaction type, e.g. buy, sell
-     * @param volume quantity
-     */
-    private void updateTotalShares(TransactionType transactionType, BigDecimal volume) {
-        totalShares = switch (transactionType) {
-            case BUY -> Objects.isNull(totalShares) ? volume : totalShares.add(volume);
-            case SELL -> Objects.isNull(totalShares) ? volume.negate() : totalShares.subtract(volume);
-            default -> {
-                Logger.logErrorAndExit("Unhandled transaction type: {}", transactionType.name());
-                throw new UnsupportedOperationException();
-            }
-        };
     }
 }

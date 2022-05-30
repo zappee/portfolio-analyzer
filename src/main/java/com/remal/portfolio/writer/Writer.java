@@ -260,15 +260,17 @@ public abstract class Writer<T> {
         }
 
         if (value instanceof BigDecimal x) {
-            var fractionalWidth = widths.get(getFractionalWidthKey(label));
+            var fractionalWidth = widths.getOrDefault(getFractionalWidthKey(label), 0);
             var columnWidth = calculateBigDecimalWidth(widths, label);
             var labelWidth = label.getLabel(language).length();
             var wholeWidth = labelWidth > columnWidth
                     ? widths.get(getWholeWidthKey(label)) + labelWidth - columnWidth
-                    : widths.get(getWholeWidthKey(label));
+                    : widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
 
             var parts = partsOfBigDecimal(x);
-            var spaces = (fractionalWidth == 0) ? "" : " ".repeat(fractionalWidth + 1);
+            var spaces = (Objects.isNull(fractionalWidth) || fractionalWidth == 0)
+                    ? ""
+                    : " ".repeat(fractionalWidth + 1);
             var valueAsFormattedString = parts[1].isEmpty()
                     ? Strings.rightPad(parts[0], wholeWidth) + spaces
                     : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);
@@ -349,9 +351,9 @@ public abstract class Writer<T> {
      * @return the length of the decimal number
      */
     private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
-        var wholeWidth = widths.get(getWholeWidthKey(label));
+        var wholeWidth = widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
         var fractionalWidth = widths.get(getFractionalWidthKey(label));
-        var hasDecimalPoint = fractionalWidth != 0;
+        var hasDecimalPoint = Objects.nonNull(fractionalWidth) && fractionalWidth != 0;
         return hasDecimalPoint ? wholeWidth + fractionalWidth + 1 : wholeWidth;
     }
 

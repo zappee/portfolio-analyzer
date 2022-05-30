@@ -1,7 +1,6 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
@@ -9,7 +8,6 @@ import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
 import com.remal.portfolio.writer.TransactionWriter;
-import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -70,7 +68,7 @@ public class ShowCommand implements Callable<Integer> {
         Logger.setSilentMode(silentMode);
 
         // parser
-        Parser<Transaction> parser = Parser.build(inputArgGroup);
+        var parser = Parser.build(inputArgGroup);
         var transactions = parser.parse(inputArgGroup.getFile());
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
@@ -80,7 +78,7 @@ public class ShowCommand implements Callable<Integer> {
                 .toList();
 
         // writer
-        Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
+        var writer = TransactionWriter.build(outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
         return CommandLine.ExitCode.OK;
     }

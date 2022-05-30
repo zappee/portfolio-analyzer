@@ -21,7 +21,7 @@ public class Strings {
      * @return left padded String or original String if no padding is necessary, null if null String input
      */
     public static String leftPad(String str, int size) {
-        if (str == null) {
+        if (str == null || size == 0) {
             return " ".repeat(size);
         }
 

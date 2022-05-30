@@ -192,7 +192,7 @@ public class TransactionParser extends Parser<Transaction> {
      */
     private int getFirstDataRow(FileType fileType) {
         var titleRows = 2;
-        var headerRows = 1;
+        var headerRows = 2;
         var skipRows = hasTitle ? titleRows : 0;
         skipRows += hasHeader ? headerRows : 0;
         skipRows += (fileType == FileType.MARKDOWN && hasHeader) ? 1 : 0;

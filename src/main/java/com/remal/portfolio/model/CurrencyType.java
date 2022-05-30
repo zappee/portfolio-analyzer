@@ -36,13 +36,22 @@ public enum CurrencyType {
     }
 
     /**
+     * Checks whether the given currency name is a valid string of not.
+     *
+     * @param name name of the currency to check
+     * @return     true if the currency name is valid, otherwise false
+     */
+    public static boolean isValid(String name) {
+        return CurrencyType.getEnum(name) != CurrencyType.UNKNOWN;
+    }
+
+    /**
      * Check whether the provided currency string is valid or not.
      *
      * @param currency true if the currency is valid
      */
-    public static void validate(String currency) {
-        var baseCurrency = CurrencyType.getEnum(currency);
-        if (baseCurrency == CurrencyType.UNKNOWN) {
+    public static void abortIfInvalid(String currency) {
+        if (!isValid(currency)) {
             Logger.logErrorAndExit("Invalid base currency.");
         }
     }

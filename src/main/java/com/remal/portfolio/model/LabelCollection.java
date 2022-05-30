@@ -32,13 +32,14 @@ public class LabelCollection {
     /**
      * List of the column headers in portfolio summary report.
      */
-    public static final List<Label> PORTFOLIO_SUMMARY_TABLE_HEADER = List.of(
+    public static final List<Label> PORTFOLIO_SUMMARY_TABLE_HEADERS = List.of(
+            Label.PORTFOLIO,
             Label.TICKER,
             Label.QUANTITY,
             Label.AVG_PRICE,
-            Label.DEPOSITS,
-            Label.WITHDRAWALS,
-            Label.NET_COST,
+            Label.DEPOSIT_TOTAL,
+            Label.WITHDRAWAL_TOTAL,
+            Label.COST_TOTAL,
             Label.MARKET_VALUE);
 
     /**

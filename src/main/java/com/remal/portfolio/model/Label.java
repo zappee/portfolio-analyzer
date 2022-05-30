@@ -27,6 +27,14 @@ public class Label {
     /**
      * A column header.
      */
+    public static final Label COST_TOTAL = Label.builder()
+            .id("COST_TOTAL")
+            .key("header.cost-total")
+            .build();
+
+    /**
+     * A column header.
+     */
     public static final Label CURRENCY = Label.builder()
             .id("CURRENCY")
             .key("header.currency")
@@ -51,9 +59,9 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label DEPOSITS = Label.builder()
-            .id("DEPOSITS")
-            .key("header.deposits")
+    public static final Label DEPOSIT_TOTAL = Label.builder()
+            .id("DEPOSIT_TOTAL")
+            .key("header.deposit-total")
             .build();
 
     /**
@@ -70,14 +78,6 @@ public class Label {
     public static final Label MARKET_VALUE = Label.builder()
             .id("MARKET_VALUE")
             .key("header.market-value")
-            .build();
-
-    /**
-     * A column header.
-     */
-    public static final Label NET_COST = Label.builder()
-            .id("NET_COST")
-            .key("header.net-cost")
             .build();
 
     /**
@@ -163,9 +163,9 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label WITHDRAWALS = Label.builder()
-            .id("WITHDRAWALS")
-            .key("header.withdrawals")
+    public static final Label WITHDRAWAL_TOTAL = Label.builder()
+            .id("WITHDRAWAL_TOTAL")
+            .key("header.withdrawal-total")
             .build();
 
     /**

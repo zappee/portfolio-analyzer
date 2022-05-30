@@ -31,7 +31,21 @@ public enum TransactionType {
     WITHDRAWAL,
 
     /**
-     * Fee of the transaction.
+     * For only internal use.
+     * Use it for auto generated transactions when adding extra cash transactions
+     * for buy, sell, fees and dividends at the another side of the ledger.
+     */
+    CREDIT,
+
+    /*
+     * For only internal use.
+     * Use it for auto generated transactions when adding extra cash transactions
+     * for buy, sell, fees and dividends at the another side of the ledger.
+     */
+    DEBIT,
+
+    /**
+     * Fees, like monthly account fee, money holding fee, etc.
      */
     FEE,
 
@@ -39,11 +53,6 @@ public enum TransactionType {
      * Distribution of corporate profits to eligible shareholders.
      */
     DIVIDEND,
-
-    /**
-     * To exchange one currency for another.
-     */
-    EXCHANGE,
 
     /**
      * Used when the type is undefined or unknown.

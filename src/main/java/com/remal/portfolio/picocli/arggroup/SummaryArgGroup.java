@@ -55,14 +55,6 @@ public class SummaryArgGroup {
         public boolean showTransactions;
 
         /**
-         * Show the transaction history in the report.
-         */
-        @CommandLine.Option(
-                names = {"-S", "--show-tr-history"},
-                description = "Show transaction history")
-        public boolean showTransactionHistory;
-
-        /**
          * The list of the portfolio names that will replace to another value
          * during the parse.
          */
