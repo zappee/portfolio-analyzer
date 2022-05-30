@@ -84,8 +84,12 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
 
         this.baseCurrency = CurrencyType.getEnum(arguments.getBaseCurrency());
         this.defaultInventoryValuation = arguments.getInventoryValuation();
-        this.from = LocalDateTimes.toLocalDateTime(arguments.getDateTimeFilterPattern(), arguments.getFrom());
-        this.to = LocalDateTimes.getFilterTo(arguments.getDateTimeFilterPattern(), arguments.getTo());
+        this.from = LocalDateTimes.toLocalDateTime(
+                CoinbaseProArgGroup.InputArgGroup.DATE_TIME_FILTER_PATTERN,
+                arguments.getFrom());
+        this.to = LocalDateTimes.getFilterTo(
+                CoinbaseProArgGroup.InputArgGroup.DATE_TIME_FILTER_PATTERN,
+                arguments.getTo());
         log.debug("input < initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {

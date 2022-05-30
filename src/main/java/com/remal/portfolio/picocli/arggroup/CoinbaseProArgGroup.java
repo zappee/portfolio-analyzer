@@ -21,6 +21,12 @@ public class CoinbaseProArgGroup {
     public static class InputArgGroup {
 
         /**
+         * The date-time pattern that is used to parse the "from" and "to"
+         * parameters.
+         */
+        public static final String DATE_TIME_FILTER_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
+        /**
          * Set the Coinbase API key.
          */
         @CommandLine.Option(
@@ -83,12 +89,6 @@ public class CoinbaseProArgGroup {
                 names = {"-t", "--in-to"},
                 description = "Filter on trade date, before a specified date. Pattern: \"yyyy-MM-dd HH:mm:ss\"")
         private String to;
-
-        /**
-         * The date-time pattern that is used to parse the "from" and "to"
-         * parameters.
-         */
-        private String dateTimeFilterPattern = "yyyy-MM-dd HH:mm:ss";
     }
 
     /**
