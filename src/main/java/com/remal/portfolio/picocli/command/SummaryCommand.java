@@ -75,7 +75,6 @@ public class SummaryCommand implements Callable<Integer> {
         transactions = transactions
                 .stream()
                 .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
-                .filter(t -> Filter.tickerFilter(inputArgGroup.getTickers(), t))
                 .toList();
 
         // generate the report
@@ -84,6 +83,7 @@ public class SummaryCommand implements Callable<Integer> {
 
         // writer
         var writer = SummaryWriter.build(outputArgGroup);
+        writer.setTickers(inputArgGroup.getTickers());
         writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summary);
         return CommandLine.ExitCode.OK;
     }

@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,12 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
      */
     @Setter
     private boolean showTransactions;
+
+    /**
+     * Set the product name filter.
+     */
+    @Setter
+    private List<String> tickers = new ArrayList<>();
 
     /**
      * Builder that initializes a new writer instance.
@@ -77,21 +84,25 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
         }
 
         // data
-        items.forEach(portfolio -> portfolio.forEach(productSummary -> {
-            if (BigDecimals.isNotZero(productSummary.getTotalShares())) {
-                report
-                        .append(getCell(Label.PORTFOLIO, productSummary.getPortfolio(), widths))
-                        .append(getCell(Label.TICKER, productSummary.getTicker(), widths))
-                        .append(getCell(Label.QUANTITY, productSummary.getTotalShares(), widths))
-                        .append(getCell(Label.AVG_PRICE, productSummary.getAveragePrice(), widths))
-                        .append(getCell(Label.DEPOSIT_TOTAL, productSummary.getDepositTotal(), widths))
-                        .append(getCell(Label.WITHDRAWAL_TOTAL, productSummary.getWithdrawalTotal(), widths))
-                        .append(getCell(Label.COST_TOTAL, productSummary.getCostTotal(), widths))
-                        .append(getCell(Label.MARKET_VALUE, productSummary.getMarketValue(), widths))
-                        .append(markdownSeparator)
-                        .append(NEW_LINE);
-            }
-        }));
+        items
+                .forEach(summaries -> summaries
+                        .stream()
+                        .filter(summary -> tickers.isEmpty() || tickers.contains(summary.getTicker().trim()))
+                        .forEach(summary -> {
+                            if (BigDecimals.isNotZero(summary.getTotalShares())) {
+                                report
+                                        .append(getCell(Label.PORTFOLIO, summary.getPortfolio(), widths))
+                                        .append(getCell(Label.TICKER, summary.getTicker(), widths))
+                                        .append(getCell(Label.QUANTITY, summary.getTotalShares(), widths))
+                                        .append(getCell(Label.AVG_PRICE, summary.getAveragePrice(), widths))
+                                        .append(getCell(Label.DEPOSIT_TOTAL, summary.getDepositTotal(), widths))
+                                        .append(getCell(Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal(), widths))
+                                        .append(getCell(Label.COST_TOTAL, summary.getCostTotal(), widths))
+                                        .append(getCell(Label.MARKET_VALUE, summary.getMarketValue(), widths))
+                                        .append(markdownSeparator)
+                                        .append(NEW_LINE);
+                            }
+                        }));
 
         if (showTransactions) {
             // TODO finish it
@@ -108,7 +119,7 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
     private StringBuilder generateHeader(Map<String, Integer> widths) {
         var header = new StringBuilder();
         var headerSeparator = new StringBuilder();
-        LabelCollection.PORTFOLIO_SUMMARY_TABLE_HEADERS
+        LabelCollection.SUMMARY_TABLE_HEADERS
                 .stream()
                 .filter(label -> Filter.columnsToHideFilter(columnsToHide, label))
                 .forEach(labelKey -> {
@@ -150,19 +161,24 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
      */
     private Map<String, Integer> calculateColumnWidth(List<List<ProductSummary>> items) {
         Map<String, Integer> widths = new HashMap<>();
-        items.forEach(portfolio ->
-                portfolio.forEach(portfolioSummary -> {
-                    if (BigDecimals.isNotZero(portfolioSummary.getTotalShares())) {
-                        updateWidth(widths, Label.PORTFOLIO, portfolioSummary.getPortfolio());
-                        updateWidth(widths, Label.TICKER, portfolioSummary.getTicker());
-                        updateWidth(widths, Label.QUANTITY, portfolioSummary.getTotalShares());
-                        updateWidth(widths, Label.AVG_PRICE, portfolioSummary.getAveragePrice());
-                        updateWidth(widths, Label.DEPOSIT_TOTAL, portfolioSummary.getDepositTotal());
-                        updateWidth(widths, Label.WITHDRAWAL_TOTAL, portfolioSummary.getWithdrawalTotal());
-                        updateWidth(widths, Label.COST_TOTAL, portfolioSummary.getCostTotal());
-                        updateWidth(widths, Label.MARKET_VALUE, portfolioSummary.getMarketValue());
-                    }
-                }));
+
+        LabelCollection.SUMMARY_TABLE_HEADERS
+                .forEach(label -> widths.put(label.getId(), label.getLabel(language).length()));
+
+        items
+                .forEach(portfolio ->
+                        portfolio.forEach(summary -> {
+                            if (BigDecimals.isNotZero(summary.getTotalShares())) {
+                                updateWidth(widths, Label.PORTFOLIO, summary.getPortfolio());
+                                updateWidth(widths, Label.TICKER, summary.getTicker());
+                                updateWidth(widths, Label.QUANTITY, summary.getTotalShares());
+                                updateWidth(widths, Label.AVG_PRICE, summary.getAveragePrice());
+                                updateWidth(widths, Label.DEPOSIT_TOTAL, summary.getDepositTotal());
+                                updateWidth(widths, Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal());
+                                updateWidth(widths, Label.COST_TOTAL, summary.getCostTotal());
+                                updateWidth(widths, Label.MARKET_VALUE, summary.getMarketValue());
+                            }
+                        }));
         return widths;
     }
 }
