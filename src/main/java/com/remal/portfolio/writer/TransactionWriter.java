@@ -98,20 +98,19 @@ public class TransactionWriter extends Writer<Transaction> {
                 .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
                 .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
-                .forEach(transaction -> {
-                    report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator);
-                    report.append(getCell(Label.TICKER, transaction.getTicker())).append(csvSeparator);
-                    report.append(getCell(Label.TYPE, transaction.getType())).append(csvSeparator);
-                    report.append(getCell(Label.VALUATION, transaction.getInventoryValuation())).append(csvSeparator);
-                    report.append(getCell(Label.TRADE_DATE, transaction.getTradeDate())).append(csvSeparator);
-                    report.append(getCell(Label.QUANTITY, transaction.getQuantity())).append(csvSeparator);
-                    report.append(getCell(Label.PRICE, transaction.getPrice())).append(csvSeparator);
-                    report.append(getCell(Label.FEE, transaction.getFee())).append(csvSeparator);
-                    report.append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator);
-                    report.append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator);
-                    report.append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator);
-                    report.append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE);
-                });
+                .forEach(transaction -> report
+                        .append(getCell(Label.PORTFOLIO, transaction.getPortfolio())).append(csvSeparator)
+                        .append(getCell(Label.TICKER, transaction.getTicker())).append(csvSeparator)
+                        .append(getCell(Label.TYPE, transaction.getType())).append(csvSeparator)
+                        .append(getCell(Label.VALUATION, transaction.getInventoryValuation())).append(csvSeparator)
+                        .append(getCell(Label.TRADE_DATE, transaction.getTradeDate())).append(csvSeparator)
+                        .append(getCell(Label.QUANTITY, transaction.getQuantity())).append(csvSeparator)
+                        .append(getCell(Label.PRICE, transaction.getPrice())).append(csvSeparator)
+                        .append(getCell(Label.FEE, transaction.getFee())).append(csvSeparator)
+                        .append(getCell(Label.CURRENCY, transaction.getCurrency())).append(csvSeparator)
+                        .append(getCell(Label.ORDER_ID, transaction.getOrderId())).append(csvSeparator)
+                        .append(getCell(Label.TRADE_ID, transaction.getTradeId())).append(csvSeparator)
+                        .append(getCell(Label.TRANSFER_ID, transaction.getTransferId())).append(NEW_LINE));
         return report.toString();
     }
 

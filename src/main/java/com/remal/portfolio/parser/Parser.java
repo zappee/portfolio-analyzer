@@ -185,7 +185,7 @@ public abstract class Parser<T> {
             }
         }
 
-        log.debug("input < {} items have been loaded by the parser", items.size());
+        log.info("input < {} items have been loaded by the parser", items.size());
         return items;
     }
 

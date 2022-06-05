@@ -99,5 +99,4 @@ public class CoinbaseProArgGroup {
     private CoinbaseProArgGroup() {
         throw new UnsupportedOperationException();
     }
-
 }

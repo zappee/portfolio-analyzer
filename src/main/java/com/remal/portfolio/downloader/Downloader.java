@@ -1,8 +1,13 @@
 package com.remal.portfolio.downloader;
 
+import com.remal.portfolio.downloader.coinbasepro.CoinbaseProDownloader;
+import com.remal.portfolio.downloader.yahoo.YahooDownloader;
 import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.ProviderType;
 
 import java.util.Calendar;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -31,4 +36,16 @@ public interface Downloader {
      * @return the latest price
      */
     Optional<ProductPrice> getPrice(String ticker, Calendar timestamp);
+
+    /**
+     * Initialize the market price downloader instances.
+     *
+     * @return the market price downloader instances
+     */
+    static Map<ProviderType, Downloader> initializeDownloader() {
+        Map<ProviderType, Downloader> downloader = new EnumMap<>(ProviderType.class);
+        downloader.put(ProviderType.COINBASE_PRO, new CoinbaseProDownloader());
+        downloader.put(ProviderType.YAHOO, new YahooDownloader());
+        return downloader;
+    }
 }

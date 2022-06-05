@@ -52,6 +52,11 @@ public class ProductSummary {
     private BigDecimal averagePrice;
 
     /**
+     * The amount that was invested to buy the stock.
+     */
+    private BigDecimal investedAmount;
+
+    /**
      * The sum of the withdrawals.
      * This field only used for currency, otherwise it is null.
      */
@@ -69,7 +74,12 @@ public class ProductSummary {
     private BigDecimal costTotal;
 
     /**
-     * The current market value of the product.
+     * The current market price per unit.
+     */
+    private BigDecimal marketUnitPrice;
+
+    /**
+     * The current market value of the portfolio.
      */
     private BigDecimal marketValue;
 
@@ -77,6 +87,16 @@ public class ProductSummary {
      * The number of the shares that he/she owns.
      */
     private BigDecimal totalShares = BigDecimal.ZERO;
+
+    /**
+     * The profit/loss value in currency.
+     */
+    private BigDecimal profitLoss;
+
+    /**
+     * The profit/loss value in percent.
+     */
+    private BigDecimal profitLossPercent;
 
     /**
      * Constructor.
@@ -244,8 +264,8 @@ public class ProductSummary {
         for (var entry : supply.entrySet()) {
             var price = entry.getKey();
             var quantity = entry.getValue();
-            var investedAmount = price.multiply(quantity);
-            totalInvestedAmount = totalInvestedAmount.add(investedAmount);
+            var investment = price.multiply(quantity);
+            totalInvestedAmount = totalInvestedAmount.add(investment);
             totalNumberOfShares = totalNumberOfShares.add(quantity);
         }
 

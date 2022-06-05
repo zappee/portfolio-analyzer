@@ -67,6 +67,14 @@ public class Label {
     /**
      * A column header.
      */
+    public static final Label INVESTED_AMOUNT = Label.builder()
+            .id("INVESTED_AMOUNT")
+            .key("header.invested-amount")
+            .build();
+
+    /**
+     * A column header.
+     */
     public static final Label FEE = Label.builder()
             .id("FEE")
             .key("header.fee")
@@ -83,6 +91,14 @@ public class Label {
     /**
      * A column header.
      */
+    public static final Label MARKET_UNIT_PRICE = Label.builder()
+            .id("UNIT_PRICE")
+            .key("header.market-unit-price")
+            .build();
+
+    /**
+     * A column header.
+     */
     public static final Label ORDER_ID = Label.builder()
             .id("ORDER_ID")
             .key("header.order-id")
@@ -94,6 +110,22 @@ public class Label {
     public static final Label PORTFOLIO = Label.builder()
             .id("PORTFOLIO")
             .key("header.portfolio")
+            .build();
+
+    /**
+     * A column header.
+     */
+    public static final Label PROFIT_LOSS = Label.builder()
+            .id("PROFIT_LOSS")
+            .key("header.profit-loss")
+            .build();
+
+    /**
+     * A column header.
+     */
+    public static final Label PROFIT_LOSS_PERCENT = Label.builder()
+            .id("PROFIT_LOSS_PERCENT")
+            .key("header.profit-loss-percent")
             .build();
 
     /**

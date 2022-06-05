@@ -55,6 +55,7 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
         writer.setLanguage(arguments.getLanguage());
         writer.setDateTimePattern(arguments.getDateTimePattern());
         writer.setZone(ZoneId.of(arguments.getZone()));
+        writer.setColumnsToHide(arguments.getColumnsToHide());
         return writer;
     }
 
@@ -91,16 +92,20 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
                         .forEach(summary -> {
                             if (BigDecimals.isNotZero(summary.getTotalShares())) {
                                 report
-                                        .append(getCell(Label.PORTFOLIO, summary.getPortfolio(), widths))
-                                        .append(getCell(Label.TICKER, summary.getTicker(), widths))
-                                        .append(getCell(Label.QUANTITY, summary.getTotalShares(), widths))
-                                        .append(getCell(Label.AVG_PRICE, summary.getAveragePrice(), widths))
-                                        .append(getCell(Label.DEPOSIT_TOTAL, summary.getDepositTotal(), widths))
-                                        .append(getCell(Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal(), widths))
-                                        .append(getCell(Label.COST_TOTAL, summary.getCostTotal(), widths))
-                                        .append(getCell(Label.MARKET_VALUE, summary.getMarketValue(), widths))
-                                        .append(markdownSeparator)
-                                        .append(NEW_LINE);
+                                    .append(getCell(Label.PORTFOLIO, summary.getPortfolio(), widths))
+                                    .append(getCell(Label.TICKER, summary.getTicker(), widths))
+                                    .append(getCell(Label.QUANTITY, summary.getTotalShares(), widths))
+                                    .append(getCell(Label.AVG_PRICE, summary.getAveragePrice(), widths))
+                                    .append(getCell(Label.INVESTED_AMOUNT, summary.getInvestedAmount(), widths))
+                                    .append(getCell(Label.MARKET_UNIT_PRICE, summary.getMarketUnitPrice(), widths))
+                                    .append(getCell(Label.MARKET_VALUE, summary.getMarketValue(), widths))
+                                    .append(getCell(Label.PROFIT_LOSS, summary.getProfitLoss(), widths))
+                                    .append(getCell(Label.PROFIT_LOSS_PERCENT, summary.getProfitLossPercent(), widths))
+                                    .append(getCell(Label.COST_TOTAL, summary.getCostTotal(), widths))
+                                    .append(getCell(Label.DEPOSIT_TOTAL, summary.getDepositTotal(), widths))
+                                    .append(getCell(Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal(), widths))
+                                    .append(markdownSeparator)
+                                    .append(NEW_LINE);
                             }
                         }));
 
@@ -141,17 +146,16 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
      */
     private StringBuilder generateTitle() {
         return new StringBuilder()
-                .append("# ")
-                .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
-                .append(NEW_LINE)
-                .append("_")
-                .append(Label.LABEL_GENERATED.getLabel(language))
-                .append(": ")
-                .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
-                .append("_")
-                .append(NEW_LINE)
-                .append(NEW_LINE);
-
+            .append("# ")
+            .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
+            .append(NEW_LINE)
+            .append("_")
+            .append(Label.LABEL_GENERATED.getLabel(language))
+            .append(": ")
+            .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
+            .append("_")
+            .append(NEW_LINE)
+            .append(NEW_LINE);
     }
 
     /**
@@ -173,10 +177,14 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
                                 updateWidth(widths, Label.TICKER, summary.getTicker());
                                 updateWidth(widths, Label.QUANTITY, summary.getTotalShares());
                                 updateWidth(widths, Label.AVG_PRICE, summary.getAveragePrice());
+                                updateWidth(widths, Label.INVESTED_AMOUNT, summary.getInvestedAmount());
+                                updateWidth(widths, Label.MARKET_UNIT_PRICE, summary.getMarketUnitPrice());
+                                updateWidth(widths, Label.MARKET_VALUE, summary.getMarketValue());
+                                updateWidth(widths, Label.PROFIT_LOSS, summary.getProfitLoss());
+                                updateWidth(widths, Label.PROFIT_LOSS_PERCENT, summary.getProfitLossPercent());
+                                updateWidth(widths, Label.COST_TOTAL, summary.getCostTotal());
                                 updateWidth(widths, Label.DEPOSIT_TOTAL, summary.getDepositTotal());
                                 updateWidth(widths, Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal());
-                                updateWidth(widths, Label.COST_TOTAL, summary.getCostTotal());
-                                updateWidth(widths, Label.MARKET_VALUE, summary.getMarketValue());
                             }
                         }));
         return widths;

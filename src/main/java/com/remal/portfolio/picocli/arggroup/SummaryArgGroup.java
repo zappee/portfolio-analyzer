@@ -1,5 +1,6 @@
 package com.remal.portfolio.picocli.arggroup;
 
+import com.remal.portfolio.picocli.converter.StringToListConverter;
 import com.remal.portfolio.util.FileWriter;
 import lombok.Getter;
 import lombok.Setter;
@@ -117,6 +118,17 @@ public class SummaryArgGroup {
                 description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
                         + "Default: the system default time-zone")
         private String zone = ZoneId.systemDefault().getId();
+
+        /**
+         * List of the columns that won't be displayed in the reports.
+         */
+        @CommandLine.Option(
+                names = {"-C", "--columns-to-hide"},
+                description = "Comma separated list of column names that won't be displayed in the report. "
+                        + "Candidates: PORTFOLIO, TICKER, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, "
+                        + "MARKET_VALUE, PROFIT_LOSS, PROFIT_LOSS_PERCENT, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL",
+                converter = StringToListConverter.class)
+        private final List<String> columnsToHide = new ArrayList<>();
     }
 
     /**

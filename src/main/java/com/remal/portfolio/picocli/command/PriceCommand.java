@@ -2,8 +2,6 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.downloader.coinbasepro.CoinbaseProDownloader;
-import com.remal.portfolio.downloader.yahoo.YahooDownloader;
 import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.ProviderType;
@@ -16,18 +14,13 @@ import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -88,9 +81,7 @@ public class PriceCommand implements Callable<Integer> {
      * Constructor that initializes the price downloader objects.
      */
     public PriceCommand() {
-        downloader = new EnumMap<>(ProviderType.class);
-        downloader.put(ProviderType.COINBASE_PRO, new CoinbaseProDownloader());
-        downloader.put(ProviderType.YAHOO, new YahooDownloader());
+        downloader = Downloader.initializeDownloader();
     }
 
     /**
@@ -103,13 +94,15 @@ public class PriceCommand implements Callable<Integer> {
         Logger.setSilentMode(quietMode);
 
         var ticker = inputArgGroup.getTicker();
+        var providerFile = inputArgGroup.getProviderArgGroup().getProviderFile();
         var provider = Stream.<Supplier<ProviderType>>of(
                         () -> inputArgGroup.getProviderArgGroup().getProviderType(),
-                        () -> getProvider(ticker, inputArgGroup.getProviderArgGroup().getProviderFile()))
+                        () -> ProviderType.getProvider(ticker, providerFile))
                 .map(Supplier::get)
                 .filter(Objects::nonNull)
                 .findFirst();
-        var productPrice = getPrice(ticker, provider.orElse(null));
+        var decodedTicker = ProviderType.getTicker(ticker, providerFile);
+        var productPrice = getPrice(decodedTicker, provider.orElse(null));
         List<ProductPrice> productPrices = new ArrayList<>();
 
         // read the history file
@@ -152,39 +145,6 @@ public class PriceCommand implements Callable<Integer> {
         } else {
             log.warn("output > price wont be added to the output because of the multiplicity setting that you use");
         }
-    }
-
-    /**
-     * Get the data providerType from the *.properties file.
-     *
-     * @param ticker the product id that represents the company's stock
-     * @param file the configuration file with the providerType names
-     * @return the selected data providerType
-     */
-    private ProviderType getProvider(String ticker, String file) {
-        ProviderType providerType = null;
-        var providerAsString = "";
-
-        try (InputStream inputStream = new FileInputStream(file)) {
-            Properties properties = new Properties();
-            properties.load(inputStream);
-
-            providerAsString = properties.getProperty(ticker);
-            if (Objects.isNull(providerAsString)) {
-                var message = "There is no providerType definition in the '{}' for ticker '{}'.";
-                Logger.logErrorAndExit(message, file, ticker);
-            }
-
-            providerType = ProviderType.valueOf(providerAsString);
-
-        } catch (IOException e) {
-            var message = "Error while reading the \"{}\" file. Error: {}";
-            Logger.logErrorAndExit(message, file, e.toString());
-        } catch (IllegalArgumentException e) {
-            var message = "Invalid data provider is set for ticker '{}' in the '{}' file, provider: '{}'";
-            Logger.logErrorAndExit(message, ticker, file, providerAsString);
-        }
-        return providerType;
     }
 
     /**

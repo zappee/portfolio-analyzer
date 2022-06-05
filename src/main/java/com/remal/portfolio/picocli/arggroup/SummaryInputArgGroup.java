@@ -25,4 +25,14 @@ public class SummaryInputArgGroup extends InputArgGroup {
             description = "File with transactions. Accepted extensions: .txt, .md, .csv and .xlsx",
             required = true)
     private String file;
+
+    /**
+     * Set the data provider properties file.
+     */
+    @CommandLine.Option(
+            order = 10,
+            names = {"-l", "--provider-file"},
+            description = "Path to a *.properties file to get the data provider name "
+                    + "used to retrieve the market price.")
+    private String providerFile;
 }

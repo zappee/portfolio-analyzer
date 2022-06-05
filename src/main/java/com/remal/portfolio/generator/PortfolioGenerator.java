@@ -1,14 +1,24 @@
 package com.remal.portfolio.generator;
 
+import com.remal.portfolio.downloader.Downloader;
+import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.ProductSummary;
+import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.Logger;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Builds the portfolio summary report based on the given transaction list.
@@ -23,6 +33,29 @@ import java.util.List;
 public class PortfolioGenerator {
 
     /**
+     * The market price downloader instances.
+     */
+    private static final Map<ProviderType, Downloader> DOWNLOADER = Downloader.initializeDownloader();
+
+    /**
+     * Set the data provider properties file.
+     */
+    @Setter
+    private String providerFile;
+
+    /**
+     * Builder that initializes a new writer instance.
+     *
+     * @param providerFile the data provider properties file
+     * @return the PortfolioGenerator instance
+     */
+    public static PortfolioGenerator build(String providerFile) {
+        PortfolioGenerator generator = new PortfolioGenerator();
+        generator.setProviderFile(providerFile);
+        return generator;
+    }
+
+    /**
      * Generates the portfolio summary.
      *
      * @param transactions list of the transactions
@@ -31,7 +64,55 @@ public class PortfolioGenerator {
     public List<List<ProductSummary>> generate(List<Transaction> transactions) {
         List<List<ProductSummary>> portfolios = new ArrayList<>();
         transactions.forEach(transaction -> addTransactionToPortfolio(portfolios, transaction));
+
+        if (Objects.nonNull(providerFile)) {
+            portfolios.forEach(productSummaries -> productSummaries.forEach(this::updateMarketValue));
+        }
+
         return portfolios;
+    }
+
+    /**
+     * Update the market price and the market value.
+     *
+     * @param summary the product summary instance
+     */
+    private void updateMarketValue(ProductSummary summary) {
+        var ticker = summary.getTicker();
+        var marketUnitPrice = CurrencyType.isValid(ticker) ? null : getUnitMarketPrice(ticker);
+        var marketValue = Optional
+                .ofNullable(marketUnitPrice)
+                .map(x -> x.multiply(summary.getTotalShares()));
+        var investedAmount = Optional
+                .ofNullable(summary.getAveragePrice())
+                .map(x -> x.multiply(summary.getTotalShares()));
+        var profit = investedAmount.flatMap(x -> marketValue.map(y -> y.subtract(x)));
+        var profitPercent = investedAmount.flatMap(x -> marketValue
+                .map(y -> y.divide(x, 4, RoundingMode.HALF_EVEN).movePointRight(2))
+                .map(z -> z.subtract(BigDecimal.valueOf(100))));
+
+        summary.setMarketUnitPrice(marketUnitPrice);
+        summary.setInvestedAmount(investedAmount.orElse(null));
+        summary.setMarketValue(marketValue.orElse(null));
+        summary.setProfitLoss(profit.orElse(null));
+        summary.setProfitLossPercent(profitPercent.orElse(null));
+    }
+
+    /**
+     * Get the market price.
+     *
+     * @param ticker abbreviation used to uniquely identify the traded shares
+     * @return       the market price
+     */
+    private BigDecimal getUnitMarketPrice(String ticker) {
+        var providerType = ProviderType.getProvider(ticker, providerFile);
+        if (Objects.isNull(providerType)) {
+            Logger.logErrorAndExit("Market price data provider not defined in the {} file.", providerFile);
+        }
+
+        var translatedTicker = ProviderType.getTicker(ticker, providerFile);
+        var price = DOWNLOADER.get(providerType).getPrice(translatedTicker);
+        return price.orElse(ProductPrice.builder().price(null).build()).getPrice();
     }
 
     /**

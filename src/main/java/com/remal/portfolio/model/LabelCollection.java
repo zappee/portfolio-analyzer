@@ -37,10 +37,14 @@ public class LabelCollection {
             Label.TICKER,
             Label.QUANTITY,
             Label.AVG_PRICE,
-            Label.DEPOSIT_TOTAL,
-            Label.WITHDRAWAL_TOTAL,
+            Label.INVESTED_AMOUNT,
+            Label.MARKET_UNIT_PRICE,
+            Label.MARKET_VALUE,
+            Label.PROFIT_LOSS,
+            Label.PROFIT_LOSS_PERCENT,
             Label.COST_TOTAL,
-            Label.MARKET_VALUE);
+            Label.DEPOSIT_TOTAL,
+            Label.WITHDRAWAL_TOTAL);
 
     /**
      * List of the column headers in the price report.

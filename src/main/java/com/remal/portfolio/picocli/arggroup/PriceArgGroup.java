@@ -78,7 +78,8 @@ public class PriceArgGroup {
          */
         @CommandLine.Option(
                 names = {"-f", "--provider-file"},
-                description = "Get the provider name used to retrieve the market price from a *.properties file.")
+                description = "Path to a *.properties file to get the data provider name "
+                        + " used to retrieve the market price.")
         private String providerFile;
     }
 
