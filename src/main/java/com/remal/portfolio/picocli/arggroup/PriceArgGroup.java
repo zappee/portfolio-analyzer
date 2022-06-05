@@ -93,20 +93,10 @@ public class PriceArgGroup {
          * Set the price history file.
          */
         @CommandLine.Option(
-                names = {"-F", "--history-file"},
+                names = {"-P", "--price-history"},
                 description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
                         + "Accepted extensions: .txt, .md, .csv and .xlsx")
         private String priceHistoryFile;
-
-        /**
-         *  Set the file open mode.
-         */
-        @CommandLine.Option(
-                names = {"-M", "--file-mode"},
-                description = "How to write the report to the file. Default: ${DEFAULT-VALUE} "
-                        + "Candidates: ${COMPLETION-CANDIDATES}",
-                defaultValue = "STOP_IF_EXIST")
-        private FileWriter.WriteMode writeMode;
 
         /**
          * Controls the price export to file.
@@ -118,6 +108,16 @@ public class PriceArgGroup {
                 defaultValue = "ONE_HOUR",
                 required = true)
         private MultiplicityType multiplicity;
+
+        /**
+         *  Set the file open mode.
+         */
+        @CommandLine.Option(
+                names = {"-M", "--file-mode"},
+                description = "How to write the history file to disk. Default: ${DEFAULT-VALUE} "
+                        + "Candidates: ${COMPLETION-CANDIDATES}",
+                defaultValue = "STOP_IF_EXIST")
+        private FileWriter.WriteMode writeMode;
 
         /**
          * Set the report language.

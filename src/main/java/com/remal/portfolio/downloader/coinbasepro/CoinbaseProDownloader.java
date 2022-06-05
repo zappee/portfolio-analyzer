@@ -178,7 +178,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      */
     private void logResult(String ticker, ProductPrice marketPrice) {
         if (Objects.isNull(marketPrice)) {
-            log.warn("input < invalid ticker: {}", ticker);
+            Logger.logErrorAndExit("input < invalid ticker: {}", ticker);
         } else {
             log.info("input < downloaded price: {}", marketPrice);
         }
