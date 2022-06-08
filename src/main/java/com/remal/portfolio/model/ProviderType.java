@@ -32,7 +32,7 @@ public enum ProviderType {
      * A null safe valueOf method.
      *
      * @param value the String value of the enum
-     * @return the enum value or null if the given input is not parsable
+     * @return      the enum value or null if the given input is not parsable
      */
     public static ProviderType getEnum(String value) {
         try {
@@ -46,8 +46,8 @@ public enum ProviderType {
      * Get the data providerType from the *.properties file.
      *
      * @param ticker the product id that represents the company's stock
-     * @param file the configuration file with the providerType names
-     * @return the selected data providerType
+     * @param file   the configuration file with the providerType names
+     * @return       the selected data providerType
      */
     public static ProviderType getProvider(String ticker, String file) {
         ProviderType providerType = null;
@@ -86,11 +86,11 @@ public enum ProviderType {
      * Get the data providerType from the *.properties file.
      *
      * @param ticker the product id that represents the company's stock
-     * @param file the configuration file with the providerType names
-     * @return the selected data providerType
+     * @param file   the configuration file with the providerType names
+     * @return       the selected data providerType
      */
     public static String getTicker(String ticker, String file) {
-        var translatedTicker = ticker;
+        var tickerAlias = ticker;
         var providerAsString = "";
 
         if (Objects.isNull(file)) {
@@ -110,10 +110,9 @@ public enum ProviderType {
                 // sample: OTP.BD;YAHOO
                 var providerParts = providerAsString.split(";");
                 if (providerParts.length == 2) {
-                    translatedTicker = providerParts[0];
+                    tickerAlias = providerParts[0];
                 }
             }
-
         } catch (IOException e) {
             var message = "Error while reading the \"{}\" file. Error: {}";
             Logger.logErrorAndExit(message, file, e.toString());
@@ -121,6 +120,6 @@ public enum ProviderType {
             var message = "Invalid data provider is set for ticker '{}' in the '{}' file, provider: '{}'";
             Logger.logErrorAndExit(message, ticker, file, providerAsString);
         }
-        return translatedTicker;
+        return tickerAlias;
     }
 }

@@ -62,11 +62,11 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      * It uses the Coinbase PRO REST API to get the actual price.
      *
      * @param ticker product name
-     * @return the latest price
+     * @return       the latest price
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker) {
-        log.debug("input < getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
+        log.debug("< getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
 
         var apiUrl = "https://api.coinbase.com/v2/prices/%s/spot";
         var uri = String.format(apiUrl, ticker);
@@ -115,9 +115,9 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     /**
      * Downloads the price of a stock on a certain date in the past.
      *
-     * @param ticker product name
+     * @param ticker    product name
      * @param timestamp date in the past
-     * @return the latest price
+     * @return          the latest price
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
@@ -173,14 +173,14 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     /**
      * Log the result of the price downloader task.
      *
-     * @param ticker product name
+     * @param ticker      product name
      * @param marketPrice the result
      */
     private void logResult(String ticker, ProductPrice marketPrice) {
         if (Objects.isNull(marketPrice)) {
-            Logger.logErrorAndExit("input < invalid ticker: {}", ticker);
+            Logger.logErrorAndExit("< invalid ticker: {}", ticker);
         } else {
-            log.info("input < downloaded price: {}", marketPrice);
+            log.info("< {}", marketPrice);
         }
     }
 }

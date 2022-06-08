@@ -53,7 +53,7 @@ public abstract class Writer<T> {
     /**
      * Log message at the end of the processing.
      */
-    protected static final String ITEMS_HAS_BEEN_PROCESSED = "output > {} items have been processed by the writer";
+    protected static final String ITEMS_HAS_BEEN_PROCESSED = "> {} items have been processed by the writer";
 
     /**
      * Markdown table separator character.
@@ -66,7 +66,7 @@ public abstract class Writer<T> {
     protected String csvSeparator = ",";
 
     /**
-     * Default language.
+     * Report language.
      */
     protected String language = "en";
 
@@ -132,7 +132,7 @@ public abstract class Writer<T> {
      * Generate the Excel report.
      *
      * @param items data
-     * @return the report content as bytes
+     * @return      the report content as bytes
      */
     protected abstract byte[] buildExcelReport(List<T> items);
 
@@ -140,7 +140,7 @@ public abstract class Writer<T> {
      * Generate the Text/Markdown report.
      *
      * @param items data
-     * @return the report content as a String
+     * @return      the report content as a String
      */
     protected abstract String buildMarkdownReport(List<T> items);
 
@@ -148,10 +148,9 @@ public abstract class Writer<T> {
      * Write the report to the output. The output can be a file ot the
      * standard output.
      *
-     * @param writeMode control the way of open the file
+     * @param writeMode        control the way of open the file
      * @param fileNameTemplate the report file name, can contain date/time patterns too
-     * @param items source of the report
-     * @throws java.lang.UnsupportedOperationException unsupported file format was requested
+     * @param items            source of the report
      */
     public void write(FileWriter.WriteMode writeMode, String fileNameTemplate, List<T> items) {
         byte[] reportAsBytes;
@@ -161,7 +160,7 @@ public abstract class Writer<T> {
         showConfiguration();
         switch (fileType) {
             case CSV -> {
-                log.debug("output > generating the CSV report...");
+                log.debug("> generating the CSV report...");
                 reportAsBytes = buildCsvReport(items).getBytes();
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
@@ -173,14 +172,14 @@ public abstract class Writer<T> {
                     Logger.logErrorAndExit(message, FileWriter.WriteMode.APPEND);
                 }
 
-                log.debug("output > generating the Excel report...");
+                log.debug("> generating the Excel report...");
                 reportAsBytes = buildExcelReport(items);
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case MARKDOWN -> {
-                log.debug("output > generating the Markdown report...");
+                log.debug("> generating the Markdown report...");
                 reportAsBytes = buildMarkdownReport(items).getBytes();
                 filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
                 FileWriter.write(writeMode, filename, reportAsBytes);
@@ -200,8 +199,8 @@ public abstract class Writer<T> {
      * column title and the length of the cell contents.
      *
      * @param widths the list that stores the width of the columns
-     * @param label column title
-     * @param value cell value
+     * @param label  column title
+     * @param value  cell value
      */
     protected void updateWidth(Map<String, Integer> widths, Label label, final Object value) {
         if (value instanceof BigDecimal x) {
@@ -240,7 +239,7 @@ public abstract class Writer<T> {
      *
      * @param label column ID
      * @param value cell value
-     * @return the value or an empty string
+     * @return      the value or an empty string
      */
     protected String getCell(Label label, Object value) {
         return columnsToHide.contains(label.getId()) ? "" : getStringValue(value).orElse("");
@@ -249,10 +248,10 @@ public abstract class Writer<T> {
     /**
      * Generate an alignment value as a String.
      *
-     * @param label column ID
-     * @param value cell value
+     * @param label  column ID
+     * @param value  cell value
      * @param widths column width
-     * @return the value or an empty String if the column is hidden
+     * @return       the value or an empty String if the column is hidden
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
         if (columnsToHide.contains(label.getId())) {
@@ -285,7 +284,7 @@ public abstract class Writer<T> {
      * Convert an object to String.
      *
      * @param value the value
-     * @return the string representation of the object
+     * @return      the string representation of the object
      */
     private Optional<String> getStringValue(final Object value) {
         if (Objects.isNull(value)) {
@@ -325,7 +324,7 @@ public abstract class Writer<T> {
      * Generate a string that is used as a key in the Map that keeps the length of
      * BigDecimal fields.
      *
-     * @param label the column ID
+     * @param  label the column ID
      * @return the key for the Map
      */
     private String getWholeWidthKey(Label label) {
@@ -337,7 +336,7 @@ public abstract class Writer<T> {
      * BigDecimal fields.
      *
      * @param label the column ID
-     * @return the key for the Map
+     * @return      the key for the Map
      */
     private String getFractionalWidthKey(Label label) {
         return label.getId() + "-F";
@@ -347,8 +346,8 @@ public abstract class Writer<T> {
      * Compute the full length of a decimal field.
      *
      * @param widths the list that keeps info about the columns
-     * @param label column ID
-     * @return the length of the decimal number
+     * @param label  column ID
+     * @return       the length of the decimal number
      */
     private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
         var wholeWidth = widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
@@ -361,7 +360,7 @@ public abstract class Writer<T> {
      * Split the decimal number to whole and fractal parts.
      *
      * @param value the decimal number
-     * @return the parts
+     * @return      the parts
      */
     private String[] partsOfBigDecimal(BigDecimal value) {
         if (Objects.isNull(value)) {
@@ -388,7 +387,7 @@ public abstract class Writer<T> {
      * Escape the special character in order to it can be used as a regexp expression.
      *
      * @param charToEscape the special character
-     * @return the escaped special character
+     * @return             the escaped special character
      */
     private String escapeDecimalSeparator(char charToEscape) {
         if (charToEscape == '.') {
@@ -402,7 +401,7 @@ public abstract class Writer<T> {
      * Write Excel spreadsheet to a byte array.
      *
      * @param workbook the Excel spreadsheet
-     * @return the Excel file as a byte array
+     * @return         the Excel file as a byte array
      */
     protected byte[] workbookToBytes(XSSFWorkbook workbook) {
         try (var outputStream = new ByteArrayOutputStream()) {
@@ -418,10 +417,10 @@ public abstract class Writer<T> {
      * Set the cell value if the object is not null, otherwise skip
      * the set operation.
      *
-     * @param workbook the Excel workbook
-     * @param row row in the Excel spreadsheet
+     * @param workbook    the Excel workbook
+     * @param row         row in the Excel spreadsheet
      * @param columnIndex column index within the row
-     * @param obj the value to be set as a cell value
+     * @param obj         the value to be set as a cell value
      */
     protected void skipIfNullOrSet(XSSFWorkbook workbook, XSSFRow row, AtomicInteger columnIndex, Object obj) {
         if (Objects.isNull(obj)) {
@@ -451,17 +450,17 @@ public abstract class Writer<T> {
      * Show the writer configuration.
      */
     private void showConfiguration() {
-        log.debug("output > time zone: '{}'", zone.getId());
-        log.debug("output > report has title: {}", !hideTitle);
-        log.debug("output > table has header: {}", !hideHeader);
+        log.debug("> time zone: '{}'", zone.getId());
+        log.debug("> report has title: {}", !hideTitle);
+        log.debug("> table has header: {}", !hideHeader);
     }
 
     /**
      * Get the next cell in the row.
      *
-     * @param row row in the Excel spreadsheet
+     * @param row         row in the Excel spreadsheet
      * @param columnIndex column index within the row
-     * @return the next cell in the row
+     * @return            the next cell in the row
      */
     private XSSFCell getNextCell(XSSFRow row, AtomicInteger columnIndex) {
         return row.createCell(columnIndex.incrementAndGet());

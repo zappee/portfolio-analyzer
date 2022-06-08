@@ -60,7 +60,7 @@ public abstract class Parser<T> {
     /**
      * Log message.
      */
-    private static final String LOG_BEFORE_EXECUTION = "input < reading the '{}' {} file...";
+    private static final String LOG_BEFORE_EXECUTION = "< reading the '{}' {} file...";
 
     /**
      *  Use it if the input report file does not contain title.
@@ -118,7 +118,7 @@ public abstract class Parser<T> {
      * Builder that initializes a new writer instance.
      *
      * @param arguments input arguments
-     * @return the parser instance
+     * @return          the parser instance
      */
     public static Parser<Transaction> build(InputArgGroup arguments) {
         // validating the input params
@@ -144,7 +144,7 @@ public abstract class Parser<T> {
      * Builder that initializes a new writer instance.
      *
      * @param arguments input arguments
-     * @return the parser instance
+     * @return          the parser instance
      */
     public static Parser<ProductPrice> build(PriceArgGroup.OutputArgGroup arguments) {
         var zoneId = ZoneId.of(arguments.getZone());
@@ -158,7 +158,7 @@ public abstract class Parser<T> {
      * Parse the file.
      *
      * @param fileNameTemplate path to the data file
-     * @return the list of the parsed items
+     * @return                 the list of the parsed items
      */
     public List<T> parse(String fileNameTemplate) {
         List<T> items;
@@ -185,7 +185,7 @@ public abstract class Parser<T> {
             }
         }
 
-        log.info("input < {} items have been loaded by the parser", items.size());
+        log.info("< {} items have been loaded by the parser", items.size());
         return items;
     }
 
@@ -193,7 +193,7 @@ public abstract class Parser<T> {
      * Process a CSV file.
      *
      * @param file path to the data file
-     * @return the list of the parsed items
+     * @return     the list of the parsed items
      */
     protected abstract List<T> parseCsvFile(String file);
 
@@ -201,7 +201,7 @@ public abstract class Parser<T> {
      * Process an Excel file.
      *
      * @param file path to the data file
-     * @return the list of the parsed items
+     * @return     the list of the parsed items
      */
     protected abstract List<T> parseExcelFile(String file);
 
@@ -209,17 +209,17 @@ public abstract class Parser<T> {
      * Process a Text/Markdown file.
      *
      * @param file path to the data file
-     * @return the list of the parsed items
+     * @return     the list of the parsed items
      */
     protected abstract List<T> parseMarkdownFile(String file);
 
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
-     * @param fields the parsed line from the input file
+     * @param index        the variable holds the index's value
+     * @param fields       the parsed line from the input file
      * @param actualColumn column ID
-     * @return the next index value
+     * @return             the next index value
      */
     protected String getString(AtomicInteger index, String[] fields, Label actualColumn) {
         if (missingColumns.contains(actualColumn.getId())) {
@@ -233,10 +233,10 @@ public abstract class Parser<T> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
-     * @param fields the parsed line from the input file
+     * @param index        the variable holds the index's value
+     * @param fields       the parsed line from the input file
      * @param actualColumn column ID
-     * @return the next index value
+     * @return             the next index value
      */
     protected BigDecimal getBigDecimal(AtomicInteger index, String[] fields, Label actualColumn) {
         if (missingColumns.contains(actualColumn.getId())) {
@@ -249,9 +249,9 @@ public abstract class Parser<T> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
+     * @param index  the variable holds the index's value
      * @param fields the parsed line from the input file
-     * @return the next index value
+     * @return       the next index value
      */
     protected LocalDateTime getLocalDateTime(AtomicInteger index, String[] fields) {
         if (missingColumns.contains(Label.TRADE_DATE.getId())) {
@@ -264,9 +264,9 @@ public abstract class Parser<T> {
     /**
      * Get an excel cell value as a String.
      *
-     * @param row row in the Excel spreadsheet
+     * @param row      row in the Excel spreadsheet
      * @param colIndex column index within the row
-     * @return the cell value as a String or null in the row and column indexes are invalid
+     * @return         the cell value as a String or null in the row and column indexes are invalid
      */
     protected String getCellValueAsString(XSSFRow row, int colIndex) {
         return Objects.isNull(row.getCell(colIndex)) ? null : DATA_FORMATTER.formatCellValue(row.getCell(colIndex));
@@ -275,9 +275,9 @@ public abstract class Parser<T> {
     /**
      * Get an excel cell value as a BigDecimal.
      *
-     * @param row row in the Excel spreadsheet
+     * @param row      row in the Excel spreadsheet
      * @param colIndex column index within the row
-     * @return the cell value as a BigDecimal or null in the row and column indexes are invalid
+     * @return         the cell value as a BigDecimal or null in the row and column indexes are invalid
      */
     protected BigDecimal getCellValueAsBigDecimal(XSSFRow row, int colIndex) {
         return row.getCell(colIndex) == null
@@ -288,9 +288,9 @@ public abstract class Parser<T> {
     /**
      * Get an excel cell value as a String.
      *
-     * @param row row in the Excel spreadsheet
+     * @param row      row in the Excel spreadsheet
      * @param colIndex column index
-     * @return the cell value as a String or null in the row and column indexes are invalid
+     * @return         the cell value as a String or null in the row and column indexes are invalid
      */
     protected LocalDateTime getCellValueAsLocalDateTime(XSSFRow row, int colIndex) {
         if (Objects.isNull(row.getCell(colIndex))) {
@@ -304,11 +304,11 @@ public abstract class Parser<T> {
      * Show the parser configuration.
      */
     private void showConfiguration() {
-        log.debug("input < time zone: '{}'", zone.getId());
-        log.debug("input < report has title: {}", hasTitle);
-        log.debug("input < table has header: {}", hasHeader);
+        log.debug("< time zone: '{}'", zone.getId());
+        log.debug("< report has title: {}", hasTitle);
+        log.debug("< table has header: {}", hasHeader);
         if (!tickers.isEmpty()) {
-            log.debug("input < show only the following tickers: {}", tickers);
+            log.debug("< show the following tickers: {}", tickers);
         }
     }
 }

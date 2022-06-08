@@ -49,13 +49,13 @@ public class FileWriter {
      * Write the content to a file.
      *
      * @param writeMode how to open the file
-     * @param filename the file to write the content to
-     * @param content content that wil be written to the file
+     * @param filename  the file to write the content to
+     * @param content   content that wil be written to the file
      */
     public static void write(FileWriter.WriteMode writeMode, String filename, byte[] content) {
         try {
             var path = Path.of(filename);
-            log.debug("output > writing the report to '{}', write-mode: {}...", filename, writeMode);
+            log.debug("> writing the report to '{}', write-mode: {}...", filename, writeMode);
 
             switch (writeMode) {
                 case OVERWRITE -> Files.write(path, content);
@@ -79,8 +79,8 @@ public class FileWriter {
     /**
      * Check how the file ends.
      *
-     * @param pathToFile path to the file
-     * @return true if the file ends with a new line character
+     * @param pathToFile   path to the file
+     * @return             true if the file ends with a new line character
      * @throws IOException case of error
      */
     private static boolean isEmptyOrEndsWithNewline(String pathToFile) throws IOException {

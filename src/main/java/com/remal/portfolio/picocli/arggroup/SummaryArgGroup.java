@@ -1,5 +1,6 @@
 package com.remal.portfolio.picocli.arggroup;
 
+import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.picocli.converter.StringToListConverter;
 import com.remal.portfolio.util.FileWriter;
 import lombok.Getter;
@@ -46,6 +47,26 @@ public class SummaryArgGroup {
                         + "Candidates: ${COMPLETION-CANDIDATES}",
                 defaultValue = "STOP_IF_EXIST")
         private FileWriter.WriteMode writeMode;
+
+        /**
+         * Set the price history file.
+         */
+        @CommandLine.Option(
+                names = {"-P", "--price-history"},
+                description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
+                        + "Accepted extensions: .txt, .md, .csv and .xlsx")
+        private String priceHistoryFile;
+
+        /**
+         * Controls the price export to file.
+         */
+        @CommandLine.Option(
+                names = {"-U", "--multiplicity"},
+                description = "Controls the price export to file. Candidates: ${COMPLETION-CANDIDATES}. "
+                        + "Default: ONE_HOUR.",
+                defaultValue = "ONE_HOUR",
+                required = true)
+        private MultiplicityType multiplicity;
 
         /**
          * Show the relevant transactions in the report.

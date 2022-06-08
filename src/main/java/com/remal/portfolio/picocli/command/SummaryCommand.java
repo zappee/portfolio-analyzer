@@ -78,7 +78,7 @@ public class SummaryCommand implements Callable<Integer> {
                 .toList();
 
         // generate the report
-        var generator = PortfolioGenerator.build(inputArgGroup.getProviderFile());
+        var generator = PortfolioGenerator.build(inputArgGroup, outputArgGroup);
         var summary = generator.generate(transactions);
 
         // writer

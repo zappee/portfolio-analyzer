@@ -38,7 +38,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Process a CSV file.
      *
      * @param fileName path to the data file
-     * @return the list of the parsed items
+     * @return         the list of the parsed items
      */
     @Override
     protected List<Transaction> parseCsvFile(String fileName) {
@@ -66,7 +66,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Process an Excel file.
      *
      * @param fileName path to the data file
-     * @return the list of the parsed items
+     * @return         the list of the parsed items
      */
     @Override
     protected List<Transaction> parseExcelFile(String fileName) {
@@ -115,7 +115,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Process a Text/Markdown file.
      *
      * @param fileName path to the data file
-     * @return the list of the parsed items
+     * @return         the list of the parsed items
      */
     @Override
     protected List<Transaction> parseMarkdownFile(String fileName) {
@@ -146,11 +146,11 @@ public class TransactionParser extends Parser<Transaction> {
     /**
      * Parse the Markdown and CSV file.
      *
-     * @param skipRows number of the lines that must be skip while parsing the file
-     * @param firstColumn index from here starts to read the columns
-     * @param file the input file
-     * @param separator separator char used in the input file
-     * @return the list of the transactions
+     * @param skipRows     number of the lines that must be skip while parsing the file
+     * @param firstColumn  index from here starts to read the columns
+     * @param file         the input file
+     * @param separator    separator char used in the input file
+     * @return             the list of the transactions
      * @throws IOException in case of file not found
      */
     private List<Transaction> parseTextFile(int skipRows, int firstColumn, String file, String separator)
@@ -188,7 +188,7 @@ public class TransactionParser extends Parser<Transaction> {
      * Calculate the id of the first data row based on the title and header info.
      *
      * @param fileType file type
-     * @return the first line that contains data
+     * @return         the first line that contains data
      */
     private int getFirstDataRow(FileType fileType) {
         var titleRows = 2;
@@ -198,7 +198,7 @@ public class TransactionParser extends Parser<Transaction> {
         skipRows += (fileType == FileType.MARKDOWN && hasHeader) ? 1 : 0;
 
         if (skipRows != 0) {
-            log.debug("input < skipping the first {} lines while reading the file...", skipRows);
+            log.debug("< skipping the first {} lines while reading the file...", skipRows);
         }
         return skipRows;
     }
@@ -208,9 +208,9 @@ public class TransactionParser extends Parser<Transaction> {
      * When the ticker is null then the currency will be used as a ticker. That happens
      * in case of deposits and withdrawals of a company's stock.
      *
-     * @param ticker abbreviation used to uniquely identify the traded shares
+     * @param ticker   abbreviation used to uniquely identify the traded shares
      * @param currency the unit of the price and fee
-     * @return the ticker
+     * @return         the ticker
      */
     private String getTicker(String ticker, CurrencyType currency) {
         if (Objects.isNull(ticker) || ticker.isEmpty()) {
@@ -223,9 +223,9 @@ public class TransactionParser extends Parser<Transaction> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
+     * @param index  the variable holds the index's value
      * @param fields the parsed line from the input file
-     * @return the next index value
+     * @return       next index value
      */
     private TransactionType getTransactionType(AtomicInteger index, String[] fields) {
         if (missingColumns.contains(Label.TYPE.getId())) {
@@ -238,9 +238,9 @@ public class TransactionParser extends Parser<Transaction> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
+     * @param index  the variable holds the index's value
      * @param fields the parsed line from the input file
-     * @return the next index value
+     * @return       next index value
      */
     private InventoryValuationType getInventoryValuationType(AtomicInteger index, String[] fields) {
         if (missingColumns.contains(Label.VALUATION.getId())) {
@@ -253,9 +253,9 @@ public class TransactionParser extends Parser<Transaction> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index the variable holds the index's value
+     * @param index  the variable holds the index's value
      * @param fields the parsed line from the input file
-     * @return the next index value
+     * @return       next index value
      */
     private CurrencyType getCurrencyType(AtomicInteger index, String[] fields) {
         if (missingColumns.contains(Label.CURRENCY.getId())) {

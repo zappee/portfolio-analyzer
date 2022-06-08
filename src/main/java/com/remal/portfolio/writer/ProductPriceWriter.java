@@ -8,7 +8,6 @@ import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
 import com.remal.portfolio.util.ZoneIds;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.time.ZoneId;
@@ -25,14 +24,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-@Slf4j
 public class ProductPriceWriter extends Writer<ProductPrice> {
 
     /**
      * Builder that initializes a new writer instance.
      *
      * @param arguments input arguments
-     * @return the writer instance
+     * @return          the writer instance
      */
     public static Writer<ProductPrice> build(PriceArgGroup.OutputArgGroup arguments) {
         // validating the output params
@@ -52,7 +50,7 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
      * Generate the CSV report.
      *
      * @param productPrices list of the prices
-     * @return the report content as a String
+     * @return              the report content as a String
      */
     @Override
     protected String buildCsvReport(List<ProductPrice> productPrices) {
@@ -82,7 +80,7 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
      * Generate the Excel report.
      *
      * @param productPrices list of the prices
-     * @return the report content as bytes
+     * @return              the report content as bytes
      */
     @Override
     protected byte[] buildExcelReport(List<ProductPrice> productPrices) {
@@ -120,7 +118,7 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
      * Generate the Text/Markdown report.
      *
      * @param productPrices list of the prices
-     * @return the report content as a String
+     * @return              the report content as a String
      */
     @Override
     protected String buildMarkdownReport(List<ProductPrice> productPrices) {
@@ -163,7 +161,7 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
      * Calculate the with of the columns that are shown in the report.
      *
      * @param productPrices list of the prices
-     * @return length of the columns
+     * @return              length of the columns
      */
     private Map<String, Integer> calculateColumnWidth(List<ProductPrice> productPrices) {
         Map<String, Integer> widths = new HashMap<>();

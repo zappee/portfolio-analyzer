@@ -24,16 +24,16 @@ public interface Downloader {
      * Downloads the latest price of a stock.
      *
      * @param ticker product name
-     * @return the latest price
+     * @return       the latest price
      */
     Optional<ProductPrice> getPrice(String ticker);
 
     /**
      * Downloads the price of a stock on a certain date in the past.
      *
-     * @param ticker product name
+     * @param ticker    product name
      * @param timestamp date in the past
-     * @return the latest price
+     * @return          the latest price
      */
     Optional<ProductPrice> getPrice(String ticker, Calendar timestamp);
 

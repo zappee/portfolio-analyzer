@@ -2,20 +2,17 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
-import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.ProductPriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +21,6 @@ import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.InputArgGroup;
-import static com.remal.portfolio.picocli.arggroup.PriceArgGroup.OutputArgGroup;
 
 /**
  * Implementation of the 'price' command.
@@ -62,7 +56,7 @@ public class PriceCommand implements Callable<Integer> {
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput:%n")
-    private final InputArgGroup inputArgGroup = new InputArgGroup();
+    private final PriceArgGroup.InputArgGroup inputArgGroup = new PriceArgGroup.InputArgGroup();
 
     /**
      * Output configuration.
@@ -70,7 +64,7 @@ public class PriceCommand implements Callable<Integer> {
     @CommandLine.ArgGroup(
             heading = "%nOutput:%n",
             exclusive = false)
-    private final OutputArgGroup outputArgGroup = new OutputArgGroup();
+    private final PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
 
     /**
      * Supported price downloader modules.
@@ -100,20 +94,26 @@ public class PriceCommand implements Callable<Integer> {
                         () -> ProviderType.getProvider(ticker, providerFile))
                 .map(Supplier::get)
                 .filter(Objects::nonNull)
-                .findFirst();
-        var decodedTicker = ProviderType.getTicker(ticker, providerFile);
-        var productPrice = getPrice(decodedTicker, provider.orElse(null));
-        List<ProductPrice> productPrices = new ArrayList<>();
+                .findFirst()
+                .orElse(null);
+        var tickerAlias = ProviderType.getTicker(ticker, providerFile);
+        var productPrice = getPrice(tickerAlias, provider);
+        productPrice.ifPresent(p -> p.setTicker(ticker));
 
         // read the history file
+        List<ProductPrice> productPrices = new ArrayList<>();
         var historyFile = outputArgGroup.getPriceHistoryFile();
         if (Objects.nonNull(historyFile)) {
             Parser<ProductPrice> parser = Parser.build(outputArgGroup);
-            productPrices.addAll(parser.parse(outputArgGroup.getPriceHistoryFile()));
+            productPrices.addAll(parser.parse(historyFile));
         }
 
         // merge
-        merge(productPrices, productPrice.orElse(null), outputArgGroup.getMultiplicity());
+        ProductPrice.merge(
+                productPrices,
+                productPrice.orElse(null),
+                outputArgGroup.getMultiplicity(),
+                outputArgGroup.getZone());
 
         // writer
         Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
@@ -123,38 +123,15 @@ public class PriceCommand implements Callable<Integer> {
     }
 
     /**
-     * Add a new price to the list based on  the provided multiplicity.
-     *
-     * @param productPrices the product price list
-     * @param productPrice the current price to add to the list
-     * @param multiplicity controls how to add the price to the list
-     */
-    private void merge(List<ProductPrice> productPrices, ProductPrice productPrice, MultiplicityType multiplicity) {
-        var intervalEnd = LocalDateTime.now().atZone(ZoneId.of(outputArgGroup.getZone())).toLocalDateTime();
-        var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec());
-        var itemCount = productPrices
-                .stream()
-                .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getDate()))
-                .count();
-
-        log.debug("output > multiplicity: {}", multiplicity.name());
-        log.debug("output > number of item within the range: {}", itemCount);
-
-        if (multiplicity == MultiplicityType.MANY || itemCount == 0) {
-            productPrices.add(productPrice);
-        } else {
-            log.warn("output > price wont be added to the output because of the multiplicity setting that you use");
-        }
-    }
-
-    /**
      * Download the price from data provider.
      *
-     * @param ticker the company's ticker
+     * @param ticker       the company's ticker
      * @param providerType trading data provider
-     * @return the market price of the company
+     * @return             the market price of the company
      */
-    private Optional<ProductPrice> getPrice(String ticker, ProviderType providerType) {
+    private Optional<ProductPrice> getPrice(String ticker,
+                                            ProviderType providerType) {
+
         if (Objects.nonNull(providerType)) {
             var tradeDate = inputArgGroup.getTradeDate();
             var pattern = inputArgGroup.getDateTimePattern();

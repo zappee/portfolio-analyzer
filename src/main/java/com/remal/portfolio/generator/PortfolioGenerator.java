@@ -2,13 +2,21 @@ package com.remal.portfolio.generator;
 
 import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.ProductSummary;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
+import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
+import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.writer.ProductPriceWriter;
+import com.remal.portfolio.writer.Writer;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,20 +46,71 @@ public class PortfolioGenerator {
     private static final Map<ProviderType, Downloader> DOWNLOADER = Downloader.initializeDownloader();
 
     /**
+     * Date/time pattern that is used for converting string to LocalDateTime.
+     */
+    @Setter
+    private String dateTimePattern = "yyyy-MM-dd HH:mm:ss";
+
+    /**
+     * Report language.
+     */
+    @Setter
+    private String language = "en";
+
+    /**
+     * Controls how the decimal numbers will be converted to String.
+     */
+    @Setter
+    private String decimalFormat = "###,###,###,###,###,###.########";
+
+    /**
+     * If not null then date/time conversions will perform.
+     */
+    @Setter
+    private String zone;
+
+    /**
      * Set the data provider properties file.
      */
     @Setter
     private String providerFile;
 
     /**
+     * Set the price history file.
+     */
+    @Setter
+    private String priceHistoryFile;
+
+    /**
+     *  Set the file open mode.
+     */
+    @Setter
+    private FileWriter.WriteMode writeMode;
+
+    /**
+     * Controls the price export to file.
+     */
+    @Setter
+    private MultiplicityType multiplicity;
+
+    /**
      * Builder that initializes a new writer instance.
      *
-     * @param providerFile the data provider properties file
-     * @return the PortfolioGenerator instance
+     * @param inputArgGroup  the input CLI group
+     * @param outputArgGroup the output CLI group
+     * @return               the PortfolioGenerator instance
      */
-    public static PortfolioGenerator build(String providerFile) {
+    public static PortfolioGenerator build(SummaryInputArgGroup inputArgGroup,
+                                           SummaryArgGroup.OutputArgGroup outputArgGroup) {
         PortfolioGenerator generator = new PortfolioGenerator();
-        generator.setProviderFile(providerFile);
+        generator.setProviderFile(inputArgGroup.getProviderFile());
+        generator.setDateTimePattern(outputArgGroup.getDateTimePattern());
+        generator.setLanguage(outputArgGroup.getLanguage());
+        generator.setDecimalFormat(outputArgGroup.getDecimalFormat());
+        generator.setZone(outputArgGroup.getZone());
+        generator.setPriceHistoryFile(outputArgGroup.getPriceHistoryFile());
+        generator.setMultiplicity(outputArgGroup.getMultiplicity());
+        generator.setWriteMode(outputArgGroup.getWriteMode());
         return generator;
     }
 
@@ -79,7 +138,7 @@ public class PortfolioGenerator {
      */
     private void updateMarketValue(ProductSummary summary) {
         var ticker = summary.getTicker();
-        var marketUnitPrice = CurrencyType.isValid(ticker) ? null : getUnitMarketPrice(ticker);
+        var marketUnitPrice = CurrencyType.isValid(ticker) ? null : getProductMarketPrice(ticker);
         var marketValue = Optional
                 .ofNullable(marketUnitPrice)
                 .map(x -> x.multiply(summary.getTotalShares()));
@@ -104,15 +163,44 @@ public class PortfolioGenerator {
      * @param ticker abbreviation used to uniquely identify the traded shares
      * @return       the market price
      */
-    private BigDecimal getUnitMarketPrice(String ticker) {
+    private BigDecimal getProductMarketPrice(String ticker) {
         var providerType = ProviderType.getProvider(ticker, providerFile);
         if (Objects.isNull(providerType)) {
             Logger.logErrorAndExit("Market price data provider not defined in the {} file.", providerFile);
         }
 
-        var translatedTicker = ProviderType.getTicker(ticker, providerFile);
-        var price = DOWNLOADER.get(providerType).getPrice(translatedTicker);
-        return price.orElse(ProductPrice.builder().price(null).build()).getPrice();
+        var tickerAlias = ProviderType.getTicker(ticker, providerFile);
+        var productPrice = DOWNLOADER.get(providerType).getPrice(tickerAlias);
+        productPrice.ifPresent(p -> p.setTicker(ticker));
+
+        saveMarketPrice(productPrice.orElse(null));
+        return productPrice.map(ProductPrice::getPrice).orElse(null);
+    }
+
+    /**
+     * Save market price to file.
+     *
+     * @param productPrice the downloaded market price
+     */
+    private void saveMarketPrice(ProductPrice productPrice) {
+        if (Objects.nonNull(priceHistoryFile) && Objects.nonNull(productPrice)) {
+            // read the history file
+            PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
+            outputArgGroup.setDateTimePattern(dateTimePattern);
+            outputArgGroup.setLanguage(language);
+            outputArgGroup.setDecimalFormat(decimalFormat);
+            outputArgGroup.setZone(zone);
+
+            Parser<ProductPrice> parser = Parser.build(outputArgGroup);
+            List<ProductPrice> productPrices = new ArrayList<>(parser.parse(priceHistoryFile));
+
+            // merge
+            ProductPrice.merge(productPrices, productPrice, multiplicity, outputArgGroup.getZone());
+
+            // writer
+            Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
+            writer.write(writeMode, priceHistoryFile, productPrices);
+        }
     }
 
     /**

@@ -4,6 +4,7 @@ import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.FileWriter;
 import lombok.Getter;
+import lombok.Setter;
 import picocli.CommandLine;
 
 import java.time.ZoneId;
@@ -87,6 +88,7 @@ public class PriceArgGroup {
      * Output configuration.
      */
     @Getter
+    @Setter
     public static class OutputArgGroup {
 
         /**
@@ -117,7 +119,7 @@ public class PriceArgGroup {
                 description = "How to write the history file to disk. Default: ${DEFAULT-VALUE} "
                         + "Candidates: ${COMPLETION-CANDIDATES}",
                 defaultValue = "STOP_IF_EXIST")
-        private FileWriter.WriteMode writeMode;
+        private FileWriter.WriteMode writeMode = FileWriter.WriteMode.STOP_IF_EXIST;
 
         /**
          * Set the report language.
