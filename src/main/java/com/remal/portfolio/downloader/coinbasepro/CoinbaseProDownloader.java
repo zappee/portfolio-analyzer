@@ -121,7 +121,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
-        var message = "input < getting the price of '{}' at {}, provider: '{}'...";
+        var message = "< getting the price of '{}' at {}, provider: '{}'...";
         log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
         var timestampAsString = Calendars.toString(timestamp);

@@ -91,7 +91,7 @@ public class YahooDownloader implements Downloader {
      */
     @Override
     public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
-        var message = "input < getting the price of '{}' at {}, provider: '{}'...";
+        var message = "< getting the price of '{}' at {}, provider: '{}'...";
         log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
         Optional<ProductPrice> marketPrice = Optional.empty();

@@ -203,14 +203,6 @@ public class Label {
     /**
      * A simple text.
      */
-    public static final Label LABEL_GENERATED = Label.builder()
-            .id("LABEL_GENERATED")
-            .key("label.generated")
-            .build();
-
-    /**
-     * A simple text.
-     */
     public static final Label LABEL_PRICE_HISTORY = Label.builder()
             .id("LABEL_PRICE_HISTORY")
             .key("label.price-history")
@@ -254,6 +246,22 @@ public class Label {
     public static final Label LABEL_TRANSACTION = Label.builder()
             .id("LABEL_TRANSACTION")
             .key("label.transaction")
+            .build();
+
+    /**
+     * A report title.
+     */
+    public static final Label TITLE_SUMMARY_REPORT = Label.builder()
+            .id("TITLE_SUMMARY_REPORT")
+            .key("title.summary-report")
+            .build();
+
+    /**
+     * A report title.
+     */
+    public static final Label TITLE_TRANSACTIONS_REPORT = Label.builder()
+            .id("TITLE_TRANSACTIONS_REPORT")
+            .key("title.transactions-report")
             .build();
 
     /**

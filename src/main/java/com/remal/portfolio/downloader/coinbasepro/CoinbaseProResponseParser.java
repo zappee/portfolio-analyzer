@@ -90,7 +90,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
         this.to = LocalDateTimes.getFilterTo(
                 CoinbaseProArgGroup.InputArgGroup.DATE_TIME_FILTER_PATTERN,
                 arguments.getTo());
-        log.debug("input < initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
+        log.debug("< initializing Coinbase Pro API caller with base currency '{}'...", baseCurrency);
 
         try {
             initializeProfiles();

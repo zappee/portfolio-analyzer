@@ -13,6 +13,7 @@ import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
 import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.ProductPriceWriter;
@@ -94,6 +95,12 @@ public class PortfolioGenerator {
     private MultiplicityType multiplicity;
 
     /**
+     * Trade date, used for download the market price.
+     */
+    @Setter
+    private String tradeDate;
+
+    /**
      * Builder that initializes a new writer instance.
      *
      * @param inputArgGroup  the input CLI group
@@ -111,6 +118,7 @@ public class PortfolioGenerator {
         generator.setPriceHistoryFile(outputArgGroup.getPriceHistoryFile());
         generator.setMultiplicity(outputArgGroup.getMultiplicity());
         generator.setWriteMode(outputArgGroup.getWriteMode());
+        generator.setTradeDate(inputArgGroup.getTo());
         return generator;
     }
 
@@ -170,7 +178,9 @@ public class PortfolioGenerator {
         }
 
         var tickerAlias = ProviderType.getTicker(ticker, providerFile);
-        var productPrice = DOWNLOADER.get(providerType).getPrice(tickerAlias);
+        var productPrice = Objects.isNull(tradeDate)
+                ? DOWNLOADER.get(providerType).getPrice(tickerAlias)
+                : DOWNLOADER.get(providerType).getPrice(tickerAlias, Calendars.fromString(tradeDate, dateTimePattern));
         productPrice.ifPresent(p -> p.setTicker(ticker));
 
         saveMarketPrice(productPrice.orElse(null));
@@ -195,7 +205,7 @@ public class PortfolioGenerator {
             List<ProductPrice> productPrices = new ArrayList<>(parser.parse(priceHistoryFile));
 
             // merge
-            ProductPrice.merge(productPrices, productPrice, multiplicity, outputArgGroup.getZone());
+            ProductPrice.merge(productPrices, productPrice, multiplicity);
 
             // writer
             Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);

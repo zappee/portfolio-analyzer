@@ -101,7 +101,7 @@ public abstract class CoinbaseProRequestBuilder {
         var timestamp = Instant.now().getEpochSecond() + "";
         var url = new URL(BASE_URL + path);
 
-        log.debug("input < calling the {} api...", url);
+        log.debug("< calling the {} api...", url);
         var connection = (HttpURLConnection) url.openConnection();
         connection.setRequestProperty("CB-ACCESS-KEY", publicKey);
         connection.setRequestProperty("CB-ACCESS-SIGN", signMessage(timestamp, path));

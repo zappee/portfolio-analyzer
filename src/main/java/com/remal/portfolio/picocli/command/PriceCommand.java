@@ -112,8 +112,7 @@ public class PriceCommand implements Callable<Integer> {
         ProductPrice.merge(
                 productPrices,
                 productPrice.orElse(null),
-                outputArgGroup.getMultiplicity(),
-                outputArgGroup.getZone());
+                outputArgGroup.getMultiplicity());
 
         // writer
         Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);

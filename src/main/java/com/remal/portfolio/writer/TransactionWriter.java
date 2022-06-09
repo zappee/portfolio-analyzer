@@ -75,7 +75,7 @@ public class TransactionWriter extends Writer<Transaction> {
             report
                     .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
                     .append(NEW_LINE)
-                    .append(Label.LABEL_GENERATED.getLabel(language))
+                    .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
                     .append(": ")
                     .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
                     .append(NEW_LINE);
@@ -138,7 +138,7 @@ public class TransactionWriter extends Writer<Transaction> {
             // row 2
             row = sheet.createRow(rowIndex.incrementAndGet());
             cell = row.createCell(columnIndex);
-            cell.setCellValue(Label.LABEL_GENERATED.getLabel(language) + ": "
+            cell.setCellValue(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language) + ": "
                     + LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()));
         }
 
@@ -201,7 +201,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
                     .append(NEW_LINE)
                     .append("_")
-                    .append(Label.LABEL_GENERATED.getLabel(language))
+                    .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
                     .append(": ")
                     .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
                     .append("_")

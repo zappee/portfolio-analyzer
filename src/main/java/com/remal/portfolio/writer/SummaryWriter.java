@@ -4,6 +4,7 @@ import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.ProductSummary;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
+import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ProductSummary summary writer.
@@ -30,32 +32,39 @@ import java.util.Map;
 public class SummaryWriter extends Writer<List<ProductSummary>> {
 
     /**
-     * Set it to true to show the relevant transactions in the report.
-     */
-    @Setter
-    private boolean showTransactions;
-
-    /**
      * Set the product name filter.
      */
     @Setter
     private List<String> tickers = new ArrayList<>();
 
+    @Setter
+    private LocalDateTime tradeDate;
+
     /**
      * Builder that initializes a new writer instance.
      *
-     * @param arguments input arguments
+     * @param inputArgGroup  the input CLI group
+     * @param outputArgGroup the output CLI group
      * @return the writer instance
      */
-    public static SummaryWriter build(SummaryArgGroup.OutputArgGroup arguments) {
+    public static SummaryWriter build(SummaryInputArgGroup inputArgGroup,
+                                           SummaryArgGroup.OutputArgGroup outputArgGroup) {
+
         var writer = new SummaryWriter();
-        writer.setShowTransactions(arguments.isShowTransactions());
-        writer.setHideTitle(arguments.isHideTitle());
-        writer.setHideHeader(arguments.isHideHeader());
-        writer.setLanguage(arguments.getLanguage());
-        writer.setDateTimePattern(arguments.getDateTimePattern());
-        writer.setZone(ZoneId.of(arguments.getZone()));
-        writer.setColumnsToHide(arguments.getColumnsToHide());
+
+        writer.setTickers(inputArgGroup.getTickers());
+        writer.setTradeDate(LocalDateTimes.toLocalDateTime(
+                ZoneId.of(inputArgGroup.getZone()),
+                inputArgGroup.getDateTimePattern(),
+                inputArgGroup.getTo()));
+
+        writer.setHideTitle(outputArgGroup.isHideTitle());
+        writer.setHideHeader(outputArgGroup.isHideHeader());
+        writer.setLanguage(outputArgGroup.getLanguage());
+        writer.setDateTimePattern(outputArgGroup.getDateTimePattern());
+        writer.setZone(ZoneId.of(outputArgGroup.getZone()));
+        writer.setColumnsToHide(outputArgGroup.getColumnsToHide());
+
         return writer;
     }
 
@@ -109,9 +118,6 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
                             }
                         }));
 
-        if (showTransactions) {
-            // TODO finish it
-        }
         return report.toString();
     }
 
@@ -145,14 +151,18 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
      * @return the report title as a string
      */
     private StringBuilder generateTitle() {
+        var timestamp = Objects.isNull(tradeDate)
+                ? LocalDateTime.now()
+                : tradeDate;
+
         return new StringBuilder()
             .append("# ")
             .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
             .append(NEW_LINE)
             .append("_")
-            .append(Label.LABEL_GENERATED.getLabel(language))
+            .append(Label.TITLE_SUMMARY_REPORT.getLabel(language))
             .append(": ")
-            .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
+            .append(LocalDateTimes.toString(zone, dateTimePattern, timestamp))
             .append("_")
             .append(NEW_LINE)
             .append(NEW_LINE);

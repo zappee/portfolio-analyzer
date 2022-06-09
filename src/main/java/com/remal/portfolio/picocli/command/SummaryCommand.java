@@ -82,8 +82,7 @@ public class SummaryCommand implements Callable<Integer> {
         var summary = generator.generate(transactions);
 
         // writer
-        var writer = SummaryWriter.build(outputArgGroup);
-        writer.setTickers(inputArgGroup.getTickers());
+        var writer = SummaryWriter.build(inputArgGroup, outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summary);
         return CommandLine.ExitCode.OK;
     }

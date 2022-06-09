@@ -70,8 +70,12 @@ public class LocalDateTimes {
      * @return LocalDateTime the LocalDateTime object
      */
     public static LocalDateTime toLocalDateTime(ZoneId zone, String dateTimePattern, String dateTimeAsString) {
-        var dateTime = toLocalDateTime(dateTimePattern, dateTimeAsString);
-        return Objects.isNull(dateTime) ? null : dateTime.atZone(zone).toLocalDateTime();
+        if (Objects.isNull(dateTimeAsString)) {
+            return null;
+        } else {
+            var dateTime = toLocalDateTime(dateTimePattern, dateTimeAsString);
+            return Objects.isNull(dateTime) ? null : dateTime.atZone(zone).toLocalDateTime();
+        }
     }
 
     /**

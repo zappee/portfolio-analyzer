@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,16 +54,17 @@ public class ProductPrice {
      * @param productPrices the product price list
      * @param productPrice  the current price to add to the list
      * @param multiplicity  controls how to add the price to the list
-     * @param zone the      timezone as a string
      */
     public static void merge(List<ProductPrice> productPrices,
                              ProductPrice productPrice,
-                             MultiplicityType multiplicity,
-                             String zone) {
+                             MultiplicityType multiplicity) {
 
         if (Objects.nonNull(productPrice)) {
-            var intervalEnd = LocalDateTime.now().atZone(ZoneId.of(zone)).toLocalDateTime();
-            var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec());
+            // avoid the overlapping of the intervals
+            var correction = 1;
+
+            var intervalEnd = productPrice.getDate();
+            var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec() - correction);
             var itemCount = productPrices
                     .stream()
                     .filter(x -> x.getTicker().equals(productPrice.getTicker()))
