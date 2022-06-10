@@ -5,6 +5,7 @@ import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.ProductPrice;
 import com.remal.portfolio.model.ProductSummary;
+import com.remal.portfolio.model.ProductSummaryCollection;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
@@ -15,15 +16,19 @@ import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.FileWriter;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
-import com.remal.portfolio.writer.ProductPriceWriter;
+import com.remal.portfolio.writer.PriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,7 +44,7 @@ import java.util.Optional;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class PortfolioGenerator {
+public class SummaryGenerator {
 
     /**
      * The market price downloader instances.
@@ -68,7 +73,7 @@ public class PortfolioGenerator {
      * If not null then date/time conversions will perform.
      */
     @Setter
-    private String zone;
+    private ZoneId zone;
 
     /**
      * Set the data provider properties file.
@@ -105,16 +110,16 @@ public class PortfolioGenerator {
      *
      * @param inputArgGroup  the input CLI group
      * @param outputArgGroup the output CLI group
-     * @return               the PortfolioGenerator instance
+     * @return               the SummaryGenerator instance
      */
-    public static PortfolioGenerator build(SummaryInputArgGroup inputArgGroup,
-                                           SummaryArgGroup.OutputArgGroup outputArgGroup) {
-        PortfolioGenerator generator = new PortfolioGenerator();
+    public static SummaryGenerator build(SummaryInputArgGroup inputArgGroup,
+                                         SummaryArgGroup.OutputArgGroup outputArgGroup) {
+        SummaryGenerator generator = new SummaryGenerator();
         generator.setProviderFile(inputArgGroup.getProviderFile());
         generator.setDateTimePattern(outputArgGroup.getDateTimePattern());
         generator.setLanguage(outputArgGroup.getLanguage());
         generator.setDecimalFormat(outputArgGroup.getDecimalFormat());
-        generator.setZone(outputArgGroup.getZone());
+        generator.setZone(ZoneId.of(outputArgGroup.getZone()));
         generator.setPriceHistoryFile(outputArgGroup.getPriceHistoryFile());
         generator.setMultiplicity(outputArgGroup.getMultiplicity());
         generator.setWriteMode(outputArgGroup.getWriteMode());
@@ -128,7 +133,7 @@ public class PortfolioGenerator {
      * @param transactions list of the transactions
      * @return             the portfolio summary data
      */
-    public List<List<ProductSummary>> generate(List<Transaction> transactions) {
+    public ProductSummaryCollection generate(List<Transaction> transactions) {
         List<List<ProductSummary>> portfolios = new ArrayList<>();
         transactions.forEach(transaction -> addTransactionToPortfolio(portfolios, transaction));
 
@@ -136,7 +141,13 @@ public class PortfolioGenerator {
             portfolios.forEach(productSummaries -> productSummaries.forEach(this::updateMarketValue));
         }
 
-        return portfolios;
+        // sort
+        portfolios.forEach(summaries -> summaries.sort(Comparator.comparing(ProductSummary::getTicker)));
+
+        var tradeDateAsDate = Objects.isNull(tradeDate)
+                ? LocalDateTime.now().atZone(zone).toLocalDateTime()
+                : LocalDateTimes.toLocalDateTime(zone, dateTimePattern, tradeDate);
+        return ProductSummaryCollection.builder().generated(tradeDateAsDate).portfolios(portfolios).build();
     }
 
     /**
@@ -199,7 +210,7 @@ public class PortfolioGenerator {
             outputArgGroup.setDateTimePattern(dateTimePattern);
             outputArgGroup.setLanguage(language);
             outputArgGroup.setDecimalFormat(decimalFormat);
-            outputArgGroup.setZone(zone);
+            outputArgGroup.setZone(zone.getId());
 
             Parser<ProductPrice> parser = Parser.build(outputArgGroup);
             List<ProductPrice> productPrices = new ArrayList<>(parser.parse(priceHistoryFile));
@@ -208,7 +219,7 @@ public class PortfolioGenerator {
             ProductPrice.merge(productPrices, productPrice, multiplicity);
 
             // writer
-            Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
+            Writer<ProductPrice> writer = PriceWriter.build(outputArgGroup);
             writer.write(writeMode, priceHistoryFile, productPrices);
         }
     }

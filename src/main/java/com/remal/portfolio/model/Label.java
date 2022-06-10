@@ -92,7 +92,7 @@ public class Label {
      * A column header.
      */
     public static final Label MARKET_UNIT_PRICE = Label.builder()
-            .id("UNIT_PRICE")
+            .id("MARKET_UNIT_PRICE")
             .key("header.market-unit-price")
             .build();
 

@@ -304,7 +304,7 @@ public abstract class Parser<T> {
      * Show the parser configuration.
      */
     private void showConfiguration() {
-        log.debug("< time zone: '{}'", zone.getId());
+        log.debug("< time zone: '{}'", Objects.isNull(zone) ? "<not defined>" : zone.getId());
         log.debug("< report has title: {}", hasTitle);
         log.debug("< table has header: {}", hasHeader);
         if (!tickers.isEmpty()) {

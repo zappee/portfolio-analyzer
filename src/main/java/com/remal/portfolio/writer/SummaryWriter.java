@@ -3,6 +3,8 @@ package com.remal.portfolio.writer;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.ProductSummary;
+import com.remal.portfolio.model.ProductSummaryCollection;
+import com.remal.portfolio.parser.SummaryParser;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
 import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
@@ -15,10 +17,10 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * ProductSummary summary writer.
@@ -29,7 +31,7 @@ import java.util.Objects;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class SummaryWriter extends Writer<List<ProductSummary>> {
+public class SummaryWriter extends Writer<ProductSummaryCollection> {
 
     /**
      * Set the product name filter.
@@ -37,26 +39,18 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
     @Setter
     private List<String> tickers = new ArrayList<>();
 
-    @Setter
-    private LocalDateTime tradeDate;
-
     /**
      * Builder that initializes a new writer instance.
      *
      * @param inputArgGroup  the input CLI group
      * @param outputArgGroup the output CLI group
-     * @return the writer instance
+     * @return               the writer instance
      */
     public static SummaryWriter build(SummaryInputArgGroup inputArgGroup,
-                                           SummaryArgGroup.OutputArgGroup outputArgGroup) {
+                                      SummaryArgGroup.OutputArgGroup outputArgGroup) {
 
         var writer = new SummaryWriter();
-
         writer.setTickers(inputArgGroup.getTickers());
-        writer.setTradeDate(LocalDateTimes.toLocalDateTime(
-                ZoneId.of(inputArgGroup.getZone()),
-                inputArgGroup.getDateTimePattern(),
-                inputArgGroup.getTo()));
 
         writer.setHideTitle(outputArgGroup.isHideTitle());
         writer.setHideHeader(outputArgGroup.isHideHeader());
@@ -68,24 +62,65 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
         return writer;
     }
 
+    /**
+     * Generate the CSV report.
+     *
+     * @param items data
+     * @return the report content as a String
+     */
     @Override
-    protected String buildCsvReport(List<List<ProductSummary>> items) {
+    protected String buildCsvReport(List<ProductSummaryCollection> items) {
+        items.addAll((new SummaryParser()).parse("'filename.md'"));
+        items.sort(Comparator.comparing(ProductSummaryCollection::getGenerated));
+
+        var report = new StringBuilder();
+        report.append(buildTableHeader(items));
+        items.forEach(summaries -> {
+            report
+                    .append(LocalDateTimes.toString(zone, dateTimePattern, summaries.getGenerated()))
+                    .append(csvSeparator);
+            summaries.getPortfolios().forEach(portfolio -> portfolio
+                    .stream()
+                    .filter(summary -> BigDecimals.isNotNullAndNotZero(summary.getTotalShares()))
+                    .forEach(summary -> report.append(buildReportItem(summary))));
+        });
+        report.setLength(report.length() - csvSeparator.length());
+
+        return report.toString();
+    }
+
+    /**
+     * Generate the Excel report.
+     *
+     * @param items data
+     * @return      the report content as bytes
+     */
+    @Override
+    protected byte[] buildExcelReport(List<ProductSummaryCollection> items) {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * Generate the Text/Markdown report.
+     *
+     * @param items data
+     * @return      the report content as a String
+     */
     @Override
-    protected byte[] buildExcelReport(List<List<ProductSummary>> items) {
-        throw new UnsupportedOperationException();
-    }
+    protected String buildMarkdownReport(List<ProductSummaryCollection> items) {
+        items.addAll((new SummaryParser()).parse("'filename.md'"));
+        items.sort(Comparator.comparing(ProductSummaryCollection::getGenerated));
 
-    @Override
-    protected String buildMarkdownReport(List<List<ProductSummary>> items) {
         var widths = calculateColumnWidth(items);
         var report = new StringBuilder();
 
         // report title
         if (!hideTitle) {
-            report.append(generateTitle());
+            var lastSummary = items.stream().reduce((first, second) -> second);
+            var tradeDate = lastSummary
+                    .map(ProductSummaryCollection::getGenerated)
+                    .orElse(LocalDateTime.now().atZone(zone).toLocalDateTime());
+            report.append(generateTitle(tradeDate));
         }
 
         // table header
@@ -94,7 +129,7 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
         }
 
         // data
-        items
+        items.forEach(productSummary -> productSummary.getPortfolios()
                 .forEach(summaries -> summaries
                         .stream()
                         .filter(summary -> tickers.isEmpty() || tickers.contains(summary.getTicker().trim()))
@@ -116,11 +151,69 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
                                     .append(markdownSeparator)
                                     .append(NEW_LINE);
                             }
-                        }));
+                        })
+                )
+        );
 
         return report.toString();
     }
 
+    /**
+     * Generate the table header.
+     *
+     * @param items data
+     * @return the table headers as a string
+     */
+    private StringBuilder buildTableHeader(List<ProductSummaryCollection> items) {
+        var sb = new StringBuilder();
+        sb.append(Label.DATE.getLabel(language)).append(csvSeparator);
+        items.forEach(summaries ->
+                summaries.getPortfolios().forEach(portfolio ->
+                        portfolio
+                                .stream()
+                                .filter(summary -> BigDecimals.isNotNullAndNotZero(summary.getTotalShares()))
+                                .forEach(summary ->
+                                        LabelCollection.SUMMARY_TABLE_HEADERS
+                                                .stream()
+                                                .filter(label -> Filter.columnsToHideFilter(columnsToHide, label))
+                                                .forEach(label -> sb
+                                                        .append(getColumnName(summary))
+                                                        .append(" ")
+                                                        .append(label.getLabel(language))
+                                                        .append(csvSeparator)
+                                                )
+                                )
+                )
+        );
+        sb.setLength(sb.length() - csvSeparator.length());
+        sb.append(NEW_LINE);
+
+        return sb;
+    }
+
+    /**
+     * Generate the report item.
+     *
+     * @param summary product summary
+     * @return the report item
+     */
+    private StringBuilder buildReportItem(ProductSummary summary) {
+        return new StringBuilder()
+                .append(getCell(Label.PORTFOLIO, summary.getPortfolio(), csvSeparator))
+                .append(getCell(Label.TICKER, summary.getTicker(), csvSeparator))
+                .append(getCell(Label.QUANTITY, summary.getTotalShares(), csvSeparator))
+                .append(getCell(Label.AVG_PRICE, summary.getAveragePrice(), csvSeparator))
+                .append(getCell(Label.INVESTED_AMOUNT, summary.getInvestedAmount(), csvSeparator))
+                .append(getCell(Label.MARKET_UNIT_PRICE, summary.getMarketUnitPrice(), csvSeparator))
+                .append(getCell(Label.MARKET_VALUE, summary.getMarketValue(), csvSeparator))
+                .append(getCell(Label.PROFIT_LOSS, summary.getProfitLoss(), csvSeparator))
+                .append(getCell(Label.PROFIT_LOSS_PERCENT, summary.getProfitLossPercent(), csvSeparator))
+                .append(getCell(Label.COST_TOTAL, summary.getCostTotal(), csvSeparator))
+                .append(getCell(Label.DEPOSIT_TOTAL, summary.getDepositTotal(), csvSeparator))
+                .append(getCell(Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal(), csvSeparator));
+    }
+
+    /*
     /**
      * Build the table header.
      *
@@ -148,13 +241,10 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
     /**
      * Build the report title.
      *
-     * @return the report title as a string
+     * @param tradeDate the last trade date in the report
+     * @return          the report title as a string
      */
-    private StringBuilder generateTitle() {
-        var timestamp = Objects.isNull(tradeDate)
-                ? LocalDateTime.now()
-                : tradeDate;
-
+    private StringBuilder generateTitle(LocalDateTime tradeDate) {
         return new StringBuilder()
             .append("# ")
             .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
@@ -162,7 +252,7 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
             .append("_")
             .append(Label.TITLE_SUMMARY_REPORT.getLabel(language))
             .append(": ")
-            .append(LocalDateTimes.toString(zone, dateTimePattern, timestamp))
+            .append(LocalDateTimes.toString(zone, dateTimePattern, tradeDate))
             .append("_")
             .append(NEW_LINE)
             .append(NEW_LINE);
@@ -171,16 +261,17 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
     /**
      * Calculates the with of the columns that are shown in the Markdown report.
      *
-     * @return length of the columns
+     * @param productSummaries collection of product summaries
+     * @return                 length of the columns
      */
-    private Map<String, Integer> calculateColumnWidth(List<List<ProductSummary>> items) {
+    private Map<String, Integer> calculateColumnWidth(List<ProductSummaryCollection> productSummaries) {
         Map<String, Integer> widths = new HashMap<>();
 
-        LabelCollection.SUMMARY_TABLE_HEADERS
-                .forEach(label -> widths.put(label.getId(), label.getLabel(language).length()));
+        LabelCollection.SUMMARY_TABLE_HEADERS.forEach(label ->
+                widths.put(label.getId(), label.getLabel(language).length()));
 
-        items
-                .forEach(portfolio ->
+        productSummaries.forEach(productSummary ->
+                productSummary.getPortfolios().forEach(portfolio ->
                         portfolio.forEach(summary -> {
                             if (BigDecimals.isNotZero(summary.getTotalShares())) {
                                 updateWidth(widths, Label.PORTFOLIO, summary.getPortfolio());
@@ -196,7 +287,19 @@ public class SummaryWriter extends Writer<List<ProductSummary>> {
                                 updateWidth(widths, Label.DEPOSIT_TOTAL, summary.getDepositTotal());
                                 updateWidth(widths, Label.WITHDRAWAL_TOTAL, summary.getWithdrawalTotal());
                             }
-                        }));
+                        })
+                )
+        );
         return widths;
+    }
+
+    /**
+     * Generate the column name.
+     *
+     * @param summary the product summary instance
+     * @return the generated column name
+     */
+    private String getColumnName(ProductSummary summary) {
+        return summary.getPortfolio() + " " + summary.getTicker();
     }
 }

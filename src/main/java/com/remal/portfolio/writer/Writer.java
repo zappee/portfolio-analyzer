@@ -237,12 +237,26 @@ public abstract class Writer<T> {
     /**
      * Return the value as a string or an empty string if the column is hidden.
      *
-     * @param label column ID
-     * @param value cell value
-     * @return      the value or an empty string
+     * @param label             column ID
+     * @param cellValueAsObject cell value
+     * @return                  the value or an empty string
      */
-    protected String getCell(Label label, Object value) {
-        return columnsToHide.contains(label.getId()) ? "" : getStringValue(value).orElse("");
+    protected String getCell(Label label, Object cellValueAsObject) {
+        return getCell(label, cellValueAsObject, "");
+    }
+
+    /**
+     * Return the value as a string or an empty string if the column is hidden.
+     *
+     * @param label             column ID
+     * @param cellValueAsObject cell value
+     * @param separator         separator character used in the report
+     * @return                  the value or an empty string
+     */
+    protected String getCell(Label label, Object cellValueAsObject, String separator) {
+        return columnsToHide.contains(label.getId())
+                ? ""
+                : getStringValue(cellValueAsObject).map(value -> value + separator).orElse(separator);
     }
 
     /**

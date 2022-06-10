@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public class ProductPriceWriter extends Writer<ProductPrice> {
+public class PriceWriter extends Writer<ProductPrice> {
 
     /**
      * Builder that initializes a new writer instance.
@@ -37,7 +37,7 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
         ZoneIds.validate(arguments.getZone());
 
         //  initialize
-        Writer<ProductPrice> writer = new ProductPriceWriter();
+        Writer<ProductPrice> writer = new PriceWriter();
         writer.setLanguage(arguments.getLanguage());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
@@ -66,12 +66,12 @@ public class ProductPriceWriter extends Writer<ProductPrice> {
         productPrices
                 .stream()
                 .sorted(Sorter.productPriceComparator())
-                .forEach(productPrice -> {
-                    report.append(getCell(Label.TICKER, productPrice.getTicker())).append(csvSeparator);
-                    report.append(getCell(Label.PRICE, productPrice.getPrice())).append(csvSeparator);
-                    report.append(getCell(Label.DATE, productPrice.getDate())).append(csvSeparator);
-                    report.append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType())).append(NEW_LINE);
-                });
+                .forEach(productPrice -> report
+                    .append(getCell(Label.TICKER, productPrice.getTicker(), csvSeparator))
+                    .append(getCell(Label.PRICE, productPrice.getPrice(), csvSeparator))
+                    .append(getCell(Label.DATE, productPrice.getDate(), csvSeparator))
+                    .append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType()))
+                    .append(NEW_LINE));
 
         return report.toString();
     }

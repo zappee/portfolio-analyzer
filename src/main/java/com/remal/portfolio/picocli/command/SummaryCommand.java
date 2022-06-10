@@ -1,7 +1,8 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.generator.PortfolioGenerator;
+import com.remal.portfolio.generator.SummaryGenerator;
+import com.remal.portfolio.model.ProductSummaryCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
@@ -13,6 +14,8 @@ import com.remal.portfolio.writer.SummaryWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -78,12 +81,15 @@ public class SummaryCommand implements Callable<Integer> {
                 .toList();
 
         // generate the report
-        var generator = PortfolioGenerator.build(inputArgGroup, outputArgGroup);
+        var generator = SummaryGenerator.build(inputArgGroup, outputArgGroup);
         var summary = generator.generate(transactions);
 
         // writer
+        List<ProductSummaryCollection> summaries = new ArrayList<>();
+        summaries.add(summary);
+
         var writer = SummaryWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summary);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summaries);
         return CommandLine.ExitCode.OK;
     }
 }

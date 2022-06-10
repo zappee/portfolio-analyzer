@@ -8,7 +8,7 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
-import com.remal.portfolio.writer.ProductPriceWriter;
+import com.remal.portfolio.writer.PriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -115,7 +115,7 @@ public class PriceCommand implements Callable<Integer> {
                 outputArgGroup.getMultiplicity());
 
         // writer
-        Writer<ProductPrice> writer = ProductPriceWriter.build(outputArgGroup);
+        Writer<ProductPrice> writer = PriceWriter.build(outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), productPrices);
 
         return CommandLine.ExitCode.OK;
