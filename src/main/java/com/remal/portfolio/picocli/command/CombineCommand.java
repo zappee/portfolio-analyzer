@@ -71,7 +71,7 @@ public class CombineCommand implements Callable<Integer> {
         Logger.setSilentMode(quietMode);
 
         var overwrite = inputArgGroup.isOverwrite();
-        log.debug("overwrite mode: {}", overwrite ? "overwrite" : "skip if exist");
+        log.debug("< overwrite mode: {}", overwrite ? "overwrite" : "skip if exist");
         final List<Transaction> transactions = new ArrayList<>();
 
         // parser
