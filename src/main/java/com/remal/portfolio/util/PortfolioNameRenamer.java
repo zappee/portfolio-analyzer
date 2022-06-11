@@ -30,7 +30,7 @@ public class PortfolioNameRenamer {
             replaces.forEach(replace -> {
                 var from = replace.split(":")[0];
                 var to = replace.split(":")[1];
-                log.debug("output > renaming portfolio name from '{}' to '{}'...", from, to);
+                log.debug("> renaming portfolio name from '{}' to '{}'...", from, to);
                 portfolioNameToRename.put(from, to);
             });
 
