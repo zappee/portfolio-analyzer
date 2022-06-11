@@ -198,7 +198,7 @@ public class TransactionParser extends Parser<Transaction> {
         skipRows += (fileType == FileType.MARKDOWN && hasHeader) ? 1 : 0;
 
         if (skipRows != 0) {
-            log.debug("< skipping the first {} lines while reading the file...", skipRows);
+            log.info("< skipping the first {} lines while reading the file...", skipRows);
         }
         return skipRows;
     }
