@@ -1,7 +1,7 @@
 package com.remal.portfolio.downloader.yahoo;
 
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
@@ -55,18 +55,18 @@ public class YahooDownloader implements Downloader {
      * @return       the latest price
      */
     @Override
-    public Optional<ProductPrice> getPrice(String ticker) {
+    public Optional<Price> getPrice(String ticker) {
         log.debug("< getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
-        Optional<ProductPrice> marketPrice = Optional.empty();
+        Optional<Price> marketPrice = Optional.empty();
 
         try {
             Stock stock = YahooFinance.get(ticker);
             var price = stock.getQuote().getPrice();
             if (Objects.nonNull(price)) {
-                marketPrice = Optional.of(ProductPrice
+                marketPrice = Optional.of(Price
                         .builder()
                         .ticker(ticker)
-                        .price(price)
+                        .unitPrice(price)
                         .providerType(PROVIDER_TYPE)
                         .date(LocalDateTime.now())
                         .build());
@@ -90,11 +90,11 @@ public class YahooDownloader implements Downloader {
      * @return          the latest price
      */
     @Override
-    public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
+    public Optional<Price> getPrice(String ticker, Calendar timestamp) {
         var message = "< getting the price of '{}' at {}, provider: '{}'...";
         log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
-        Optional<ProductPrice> marketPrice = Optional.empty();
+        Optional<Price> marketPrice = Optional.empty();
         try {
             Stock stock = YahooFinance.get(ticker);
             List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, timestamp, Interval.DAILY);
@@ -102,10 +102,10 @@ public class YahooDownloader implements Downloader {
                 Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {
                 var historicalQuote = historicalQuotes.get(0);
-                marketPrice = Optional.of(ProductPrice
+                marketPrice = Optional.of(Price
                         .builder()
                         .ticker(ticker)
-                        .price(historicalQuote.getClose())
+                        .unitPrice(historicalQuote.getClose())
                         .providerType(PROVIDER_TYPE)
                         .date(LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(historicalQuote.getDate().getTimeInMillis()),
@@ -125,14 +125,14 @@ public class YahooDownloader implements Downloader {
     /**
      * Log the result of the price downloader task.
      *
-     * @param ticker      product name
-     * @param marketPrice the result
+     * @param ticker product name
+     * @param price  the result
      */
-    private void logResult(String ticker, ProductPrice marketPrice) {
-        if (Objects.isNull(marketPrice)) {
+    private void logResult(String ticker, Price price) {
+        if (Objects.isNull(price)) {
             Logger.logErrorAndExit("< invalid ticker: {}", ticker);
         } else {
-            log.info("< {}", marketPrice);
+            log.info("< {}", price);
         }
     }
 }

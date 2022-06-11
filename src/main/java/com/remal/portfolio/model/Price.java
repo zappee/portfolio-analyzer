@@ -25,7 +25,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @Slf4j
-public class ProductPrice {
+public class Price {
 
     /**
      * A ticker is an abbreviation used to uniquely identify publicly traded
@@ -36,7 +36,7 @@ public class ProductPrice {
     /**
      * The price for one unit.
      */
-    private BigDecimal price;
+    private BigDecimal unitPrice;
 
     /**
      * The data provider.
@@ -51,34 +51,31 @@ public class ProductPrice {
     /**
      * Add a new price to the list based on  the provided multiplicity.
      *
-     * @param productPrices the product price list
-     * @param productPrice  the current price to add to the list
+     * @param prices the product price list
+     * @param price  the current price to add to the list
      * @param multiplicity  controls how to add the price to the list
      */
-    public static void merge(List<ProductPrice> productPrices,
-                             ProductPrice productPrice,
-                             MultiplicityType multiplicity) {
-
-        if (Objects.nonNull(productPrice)) {
+    public static void merge(List<Price> prices, Price price, MultiplicityType multiplicity) {
+        if (Objects.nonNull(price)) {
             // avoid the overlapping of the intervals
             var correction = 1;
 
-            var intervalEnd = productPrice.getDate();
+            var intervalEnd = price.getDate();
             var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec() - correction);
-            var itemCount = productPrices
+            var itemCount = prices
                     .stream()
-                    .filter(x -> x.getTicker().equals(productPrice.getTicker()))
+                    .filter(x -> x.getTicker().equals(price.getTicker()))
                     .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getDate()))
                     .count();
 
             log.debug("> multiplicity: {}", multiplicity.name());
-            log.debug("> number of item within the range: {}, ticker: {}", itemCount, productPrice.getTicker());
+            log.debug("> number of item within the range: {}, ticker: {}", itemCount, price.getTicker());
 
             if (multiplicity == MultiplicityType.MANY || itemCount == 0) {
-                productPrices.add(productPrice);
+                prices.add(price);
             } else {
                 var message = "> {} price wont be added to the output because of the multiplicity setting";
-                log.warn(message, productPrice.getTicker());
+                log.warn(message, price.getTicker());
             }
         }
     }

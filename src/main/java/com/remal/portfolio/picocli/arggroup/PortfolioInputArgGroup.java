@@ -14,7 +14,7 @@ import picocli.CommandLine;
  */
 @Getter
 @Setter
-public class SummaryInputArgGroup extends InputArgGroup {
+public class PortfolioInputArgGroup extends InputArgGroup {
 
     /**
      * Set the file that contains the transactions.

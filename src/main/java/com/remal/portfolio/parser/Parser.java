@@ -1,7 +1,7 @@
 package com.remal.portfolio.parser;
 
 import com.remal.portfolio.model.Label;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.picocli.arggroup.InputArgGroup;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
@@ -146,9 +146,9 @@ public abstract class Parser<T> {
      * @param arguments input arguments
      * @return          the parser instance
      */
-    public static Parser<ProductPrice> build(PriceArgGroup.OutputArgGroup arguments) {
+    public static Parser<Price> build(PriceArgGroup.OutputArgGroup arguments) {
         var zoneId = ZoneId.of(arguments.getZone());
-        Parser<ProductPrice> parser = new ProductPriceParser();
+        Parser<Price> parser = new ProductPriceParser();
         parser.setDateTimePattern(arguments.getDateTimePattern());
         parser.setZone(zoneId);
         return parser;

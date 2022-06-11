@@ -2,7 +2,7 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
@@ -101,22 +101,19 @@ public class PriceCommand implements Callable<Integer> {
         productPrice.ifPresent(p -> p.setTicker(ticker));
 
         // read the history file
-        List<ProductPrice> productPrices = new ArrayList<>();
+        List<Price> prices = new ArrayList<>();
         var historyFile = outputArgGroup.getPriceHistoryFile();
         if (Objects.nonNull(historyFile)) {
-            Parser<ProductPrice> parser = Parser.build(outputArgGroup);
-            productPrices.addAll(parser.parse(historyFile));
+            Parser<Price> parser = Parser.build(outputArgGroup);
+            prices.addAll(parser.parse(historyFile));
         }
 
         // merge
-        ProductPrice.merge(
-                productPrices,
-                productPrice.orElse(null),
-                outputArgGroup.getMultiplicity());
+        Price.merge(prices, productPrice.orElse(null), outputArgGroup.getMultiplicity());
 
         // writer
-        Writer<ProductPrice> writer = PriceWriter.build(outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), productPrices);
+        Writer<Price> writer = PriceWriter.build(outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), prices);
 
         return CommandLine.ExitCode.OK;
     }
@@ -128,9 +125,7 @@ public class PriceCommand implements Callable<Integer> {
      * @param providerType trading data provider
      * @return             the market price of the company
      */
-    private Optional<ProductPrice> getPrice(String ticker,
-                                            ProviderType providerType) {
-
+    private Optional<Price> getPrice(String ticker, ProviderType providerType) {
         if (Objects.nonNull(providerType)) {
             var tradeDate = inputArgGroup.getTradeDate();
             var pattern = inputArgGroup.getDateTimePattern();

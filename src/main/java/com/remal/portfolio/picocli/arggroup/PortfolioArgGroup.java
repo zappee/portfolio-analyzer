@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class SummaryArgGroup {
+public class PortfolioArgGroup {
 
     /**
      * Output configuration.
@@ -157,7 +157,7 @@ public class SummaryArgGroup {
      *
      * @throws java.lang.UnsupportedOperationException if this method is called
      */
-    private SummaryArgGroup() {
+    private PortfolioArgGroup() {
         throw new UnsupportedOperationException();
     }
 }

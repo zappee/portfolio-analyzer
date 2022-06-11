@@ -24,12 +24,12 @@ import java.util.Objects;
 @Getter
 @Setter
 @Slf4j
-public class ProductSummary {
+public class Portfolio {
 
     /**
      * Portfolio name.
      */
-    private final String portfolio;
+    private final String name;
 
     /**
      * Product name.
@@ -101,11 +101,11 @@ public class ProductSummary {
     /**
      * Constructor.
      *
-     * @param portfolio portfolio name
+     * @param name   portfolio name
      * @param ticker product name
      */
-    public ProductSummary(String portfolio, String ticker) {
-        this.portfolio = portfolio;
+    public Portfolio(String name, String ticker) {
+        this.name = name;
         this.ticker = ticker;
     }
 

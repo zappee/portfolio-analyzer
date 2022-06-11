@@ -1,6 +1,6 @@
 package com.remal.portfolio.parser;
 
-import com.remal.portfolio.model.ProductSummaryCollection;
+import com.remal.portfolio.model.PortfolioCollection;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public class SummaryParser extends Parser<ProductSummaryCollection> {
+public class PortfolioParser extends Parser<PortfolioCollection> {
 
     /**
      * Process a CSV file.
@@ -22,7 +22,7 @@ public class SummaryParser extends Parser<ProductSummaryCollection> {
      * @return     the list of the parsed items
      */
     @Override
-    protected List<ProductSummaryCollection> parseCsvFile(String file) {
+    protected List<PortfolioCollection> parseCsvFile(String file) {
         return Collections.emptyList();
     }
 
@@ -33,7 +33,7 @@ public class SummaryParser extends Parser<ProductSummaryCollection> {
      * @return     the list of the parsed items
      */
     @Override
-    protected List<ProductSummaryCollection> parseExcelFile(String file) {
+    protected List<PortfolioCollection> parseExcelFile(String file) {
         return Collections.emptyList();
     }
 
@@ -44,7 +44,7 @@ public class SummaryParser extends Parser<ProductSummaryCollection> {
      * @return     the list of the parsed items
      */
     @Override
-    protected List<ProductSummaryCollection> parseMarkdownFile(String file) {
+    protected List<PortfolioCollection> parseMarkdownFile(String file) {
         return Collections.emptyList();
     }
 }

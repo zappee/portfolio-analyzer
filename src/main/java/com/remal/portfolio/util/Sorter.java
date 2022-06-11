@@ -1,6 +1,6 @@
 package com.remal.portfolio.util;
 
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.Transaction;
 
 import java.util.Comparator;
@@ -29,8 +29,8 @@ public class Sorter {
      *
      * @return the comparator instance
      */
-    public static Comparator<ProductPrice> productPriceComparator() {
-        return Comparator.comparing(ProductPrice::getTicker).thenComparing(ProductPrice::getDate);
+    public static Comparator<Price> priceComparator() {
+        return Comparator.comparing(Price::getTicker).thenComparing(Price::getDate);
     }
 
     /**

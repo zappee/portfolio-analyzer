@@ -1,7 +1,7 @@
 package com.remal.portfolio.parser;
 
 import com.remal.portfolio.model.Label;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class ProductPriceParser extends Parser<ProductPrice> {
+public class ProductPriceParser extends Parser<Price> {
 
     /**
      * Process a CSV file.
@@ -36,12 +36,12 @@ public class ProductPriceParser extends Parser<ProductPrice> {
      * @return the list of the parsed items
      */
     @Override
-    protected List<ProductPrice> parseCsvFile(String fileName) {
-        List<ProductPrice> productPrices = new ArrayList<>();
+    protected List<Price> parseCsvFile(String fileName) {
+        List<Price> prices = new ArrayList<>();
         try {
             var skipRows = 1;
             var firstColumn = 0;
-            productPrices.addAll(parseTextFile(skipRows, firstColumn, fileName, csvSeparator));
+            prices.addAll(parseTextFile(skipRows, firstColumn, fileName, csvSeparator));
 
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
@@ -49,9 +49,9 @@ public class ProductPriceParser extends Parser<ProductPrice> {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
         }
 
-        return productPrices
+        return prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .toList();
     }
 
@@ -62,8 +62,8 @@ public class ProductPriceParser extends Parser<ProductPrice> {
      * @return the list of the parsed items
      */
     @Override
-    protected List<ProductPrice> parseExcelFile(String fileName) {
-        List<ProductPrice> productPrices = new ArrayList<>();
+    protected List<Price> parseExcelFile(String fileName) {
+        List<Price> prices = new ArrayList<>();
         try (var xlsFile = new FileInputStream(fileName)) {
             var firstRow = 1;
             var workbook = new XSSFWorkbook(xlsFile);
@@ -73,13 +73,13 @@ public class ProductPriceParser extends Parser<ProductPrice> {
 
             IntStream.range(firstRow, lastRow).forEach(rowIndex -> {
                 var row = sheet.getRow(rowIndex);
-                var p = ProductPrice.builder();
+                var p = Price.builder();
 
                 p.ticker(getCellValueAsString(row, 0));
-                p.price(getCellValueAsBigDecimal(row, 1));
+                p.unitPrice(getCellValueAsBigDecimal(row, 1));
                 p.date(getCellValueAsLocalDateTime(row, 2));
                 p.providerType(ProviderType.valueOf(getCellValueAsString(row, 3)));
-                productPrices.add(p.build());
+                prices.add(p.build());
             });
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
@@ -87,9 +87,9 @@ public class ProductPriceParser extends Parser<ProductPrice> {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
         }
 
-        return productPrices
+        return prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .toList();
     }
 
@@ -100,12 +100,12 @@ public class ProductPriceParser extends Parser<ProductPrice> {
      * @return the list of the parsed items
      */
     @Override
-    protected List<ProductPrice> parseMarkdownFile(String fileName) {
-        List<ProductPrice> productPrices = new ArrayList<>();
+    protected List<Price> parseMarkdownFile(String fileName) {
+        List<Price> prices = new ArrayList<>();
         try {
             var skipRows = 2;
             var firstColumn = 1;
-            productPrices.addAll(parseTextFile(skipRows, firstColumn, fileName, markdownSeparator));
+            prices.addAll(parseTextFile(skipRows, firstColumn, fileName, markdownSeparator));
 
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
@@ -113,9 +113,9 @@ public class ProductPriceParser extends Parser<ProductPrice> {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
         }
 
-        return productPrices
+        return prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .toList();
     }
 
@@ -129,27 +129,27 @@ public class ProductPriceParser extends Parser<ProductPrice> {
      * @return the list of the transactions
      * @throws IOException in case of file not found
      */
-    private List<ProductPrice> parseTextFile(int skipRows, int firstColumn, String file, String separator)
+    private List<Price> parseTextFile(int skipRows, int firstColumn, String file, String separator)
             throws IOException {
 
-        List<ProductPrice> productPrices = new ArrayList<>();
+        List<Price> prices = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Path.of(file))) {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
                         var fields = line.split(separator, -1);
                         var index = new AtomicInteger(firstColumn);
-                        ProductPrice p = ProductPrice
+                        Price p = Price
                                 .builder()
                                 .ticker(getString(index, fields, Label.TICKER))
-                                .price(getBigDecimal(index, fields, Label.PRICE))
+                                .unitPrice(getBigDecimal(index, fields, Label.PRICE))
                                 .date(getLocalDateTime(index, fields))
                                 .providerType(getProviderType(index, fields))
                                 .build();
-                        productPrices.add(p);
+                        prices.add(p);
                     });
         }
-        return productPrices;
+        return prices;
     }
 
     /**

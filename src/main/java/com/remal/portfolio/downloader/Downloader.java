@@ -2,7 +2,7 @@ package com.remal.portfolio.downloader;
 
 import com.remal.portfolio.downloader.coinbasepro.CoinbaseProDownloader;
 import com.remal.portfolio.downloader.yahoo.YahooDownloader;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 
 import java.util.Calendar;
@@ -26,7 +26,7 @@ public interface Downloader {
      * @param ticker product name
      * @return       the latest price
      */
-    Optional<ProductPrice> getPrice(String ticker);
+    Optional<Price> getPrice(String ticker);
 
     /**
      * Downloads the price of a stock on a certain date in the past.
@@ -35,7 +35,7 @@ public interface Downloader {
      * @param timestamp date in the past
      * @return          the latest price
      */
-    Optional<ProductPrice> getPrice(String ticker, Calendar timestamp);
+    Optional<Price> getPrice(String ticker, Calendar timestamp);
 
     /**
      * Initialize the market price downloader instances.

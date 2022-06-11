@@ -2,7 +2,7 @@ package com.remal.portfolio.writer;
 
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Sorter;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-public class PriceWriter extends Writer<ProductPrice> {
+public class PriceWriter extends Writer<Price> {
 
     /**
      * Builder that initializes a new writer instance.
@@ -32,12 +32,12 @@ public class PriceWriter extends Writer<ProductPrice> {
      * @param arguments input arguments
      * @return          the writer instance
      */
-    public static Writer<ProductPrice> build(PriceArgGroup.OutputArgGroup arguments) {
+    public static Writer<Price> build(PriceArgGroup.OutputArgGroup arguments) {
         // validating the output params
         ZoneIds.validate(arguments.getZone());
 
         //  initialize
-        Writer<ProductPrice> writer = new PriceWriter();
+        Writer<Price> writer = new PriceWriter();
         writer.setLanguage(arguments.getLanguage());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
@@ -49,11 +49,11 @@ public class PriceWriter extends Writer<ProductPrice> {
     /**
      * Generate the CSV report.
      *
-     * @param productPrices list of the prices
-     * @return              the report content as a String
+     * @param prices list of the prices
+     * @return       the report content as a String
      */
     @Override
-    protected String buildCsvReport(List<ProductPrice> productPrices) {
+    protected String buildCsvReport(List<Price> prices) {
         var report = new StringBuilder();
 
         // table header
@@ -63,12 +63,12 @@ public class PriceWriter extends Writer<ProductPrice> {
         report.append(NEW_LINE);
 
         // data
-        productPrices
+        prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> report
                     .append(getCell(Label.TICKER, productPrice.getTicker(), csvSeparator))
-                    .append(getCell(Label.PRICE, productPrice.getPrice(), csvSeparator))
+                    .append(getCell(Label.PRICE, productPrice.getUnitPrice(), csvSeparator))
                     .append(getCell(Label.DATE, productPrice.getDate(), csvSeparator))
                     .append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType()))
                     .append(NEW_LINE));
@@ -79,11 +79,11 @@ public class PriceWriter extends Writer<ProductPrice> {
     /**
      * Generate the Excel report.
      *
-     * @param productPrices list of the prices
-     * @return              the report content as bytes
+     * @param prices list of the prices
+     * @return       the report content as bytes
      */
     @Override
-    protected byte[] buildExcelReport(List<ProductPrice> productPrices) {
+    protected byte[] buildExcelReport(List<Price> prices) {
         var workbook = new XSSFWorkbook();
         var sheet = workbook.createSheet(Label.LABEL_PRICE_HISTORY.getLabel(language));
 
@@ -98,15 +98,15 @@ public class PriceWriter extends Writer<ProductPrice> {
                 });
 
         // data
-        productPrices
+        prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> {
                     var dataRow = sheet.createRow(rowIndex.incrementAndGet());
                     var index = new AtomicInteger(-1);
 
                     skipIfNullOrSet(workbook, dataRow, index, productPrice.getTicker());
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getPrice());
+                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getUnitPrice());
                     skipIfNullOrSet(workbook, dataRow, index, productPrice.getDate());
                     skipIfNullOrSet(workbook, dataRow, index, Enums.enumToString(productPrice.getProviderType()));
                 });
@@ -117,16 +117,16 @@ public class PriceWriter extends Writer<ProductPrice> {
     /**
      * Generate the Text/Markdown report.
      *
-     * @param productPrices list of the prices
-     * @return              the report content as a String
+     * @param prices list of the prices
+     * @return       the report content as a String
      */
     @Override
-    protected String buildMarkdownReport(List<ProductPrice> productPrices) {
-        var widths = calculateColumnWidth(productPrices);
+    protected String buildMarkdownReport(List<Price> prices) {
+        var widths = calculateColumnWidth(prices);
         var report = new StringBuilder();
 
         // table header
-        if (!productPrices.isEmpty()) {
+        if (!prices.isEmpty()) {
             var header = new StringBuilder();
             var headerSeparator = new StringBuilder();
             LabelCollection.PRODUCT_PRICE_HEADERS
@@ -143,12 +143,12 @@ public class PriceWriter extends Writer<ProductPrice> {
         }
 
         // data
-        productPrices
+        prices
                 .stream()
-                .sorted(Sorter.productPriceComparator())
+                .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> {
                     report.append(getCell(Label.TICKER, productPrice.getTicker(), widths));
-                    report.append(getCell(Label.PRICE, productPrice.getPrice(), widths));
+                    report.append(getCell(Label.PRICE, productPrice.getUnitPrice(), widths));
                     report.append(getCell(Label.DATE, productPrice.getDate(), widths));
                     report.append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType(), widths));
                     report.append(markdownSeparator).append(NEW_LINE);
@@ -160,14 +160,14 @@ public class PriceWriter extends Writer<ProductPrice> {
     /**
      * Calculate the with of the columns that are shown in the report.
      *
-     * @param productPrices list of the prices
-     * @return              length of the columns
+     * @param prices list of the prices
+     * @return       length of the columns
      */
-    private Map<String, Integer> calculateColumnWidth(List<ProductPrice> productPrices) {
+    private Map<String, Integer> calculateColumnWidth(List<Price> prices) {
         Map<String, Integer> widths = new HashMap<>();
-        productPrices.forEach(productPrice -> {
+        prices.forEach(productPrice -> {
             updateWidth(widths, Label.TICKER, productPrice.getTicker());
-            updateWidth(widths, Label.PRICE, productPrice.getPrice());
+            updateWidth(widths, Label.PRICE, productPrice.getUnitPrice());
             updateWidth(widths, Label.DATE, productPrice.getDate());
             updateWidth(widths, Label.DATA_PROVIDER, productPrice.getProviderType());
         });

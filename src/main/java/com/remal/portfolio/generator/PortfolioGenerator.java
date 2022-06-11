@@ -3,16 +3,16 @@ package com.remal.portfolio.generator;
 import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.MultiplicityType;
-import com.remal.portfolio.model.ProductPrice;
-import com.remal.portfolio.model.ProductSummary;
-import com.remal.portfolio.model.ProductSummaryCollection;
+import com.remal.portfolio.model.Portfolio;
+import com.remal.portfolio.model.Price;
+import com.remal.portfolio.model.PortfolioCollection;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
-import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
-import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
+import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
+import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.FileWriter;
@@ -44,7 +44,7 @@ import java.util.Optional;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class SummaryGenerator {
+public class PortfolioGenerator {
 
     /**
      * The market price downloader instances.
@@ -110,11 +110,11 @@ public class SummaryGenerator {
      *
      * @param inputArgGroup  the input CLI group
      * @param outputArgGroup the output CLI group
-     * @return               the SummaryGenerator instance
+     * @return               the PortfolioGenerator instance
      */
-    public static SummaryGenerator build(SummaryInputArgGroup inputArgGroup,
-                                         SummaryArgGroup.OutputArgGroup outputArgGroup) {
-        SummaryGenerator generator = new SummaryGenerator();
+    public static PortfolioGenerator build(PortfolioInputArgGroup inputArgGroup,
+                                           PortfolioArgGroup.OutputArgGroup outputArgGroup) {
+        PortfolioGenerator generator = new PortfolioGenerator();
         generator.setProviderFile(inputArgGroup.getProviderFile());
         generator.setDateTimePattern(outputArgGroup.getDateTimePattern());
         generator.setLanguage(outputArgGroup.getLanguage());
@@ -131,10 +131,10 @@ public class SummaryGenerator {
      * Generates the portfolio summary.
      *
      * @param transactions list of the transactions
-     * @return             the portfolio summary data
+     * @return             the portfolio summary collection
      */
-    public ProductSummaryCollection generate(List<Transaction> transactions) {
-        List<List<ProductSummary>> portfolios = new ArrayList<>();
+    public PortfolioCollection generate(List<Transaction> transactions) {
+        List<List<Portfolio>> portfolios = new ArrayList<>();
         transactions.forEach(transaction -> addTransactionToPortfolio(portfolios, transaction));
 
         if (Objects.nonNull(providerFile)) {
@@ -142,38 +142,38 @@ public class SummaryGenerator {
         }
 
         // sort
-        portfolios.forEach(summaries -> summaries.sort(Comparator.comparing(ProductSummary::getTicker)));
+        portfolios.forEach(p -> p.sort(Comparator.comparing(Portfolio::getTicker)));
 
         var tradeDateAsDate = Objects.isNull(tradeDate)
                 ? LocalDateTime.now().atZone(zone).toLocalDateTime()
                 : LocalDateTimes.toLocalDateTime(zone, dateTimePattern, tradeDate);
-        return ProductSummaryCollection.builder().generated(tradeDateAsDate).portfolios(portfolios).build();
+        return PortfolioCollection.builder().generated(tradeDateAsDate).portfolios(portfolios).build();
     }
 
     /**
      * Update the market price and the market value.
      *
-     * @param summary the product summary instance
+     * @param portfolio the portfolio instance
      */
-    private void updateMarketValue(ProductSummary summary) {
-        var ticker = summary.getTicker();
-        var marketUnitPrice = CurrencyType.isValid(ticker) ? null : getProductMarketPrice(ticker);
+    private void updateMarketValue(Portfolio portfolio) {
+        var ticker = portfolio.getTicker();
+        var marketUnitPrice = CurrencyType.isValid(ticker) ? null : getMarketPrice(ticker);
         var marketValue = Optional
                 .ofNullable(marketUnitPrice)
-                .map(x -> x.multiply(summary.getTotalShares()));
+                .map(x -> x.multiply(portfolio.getTotalShares()));
         var investedAmount = Optional
-                .ofNullable(summary.getAveragePrice())
-                .map(x -> x.multiply(summary.getTotalShares()));
+                .ofNullable(portfolio.getAveragePrice())
+                .map(x -> x.multiply(portfolio.getTotalShares()));
         var profit = investedAmount.flatMap(x -> marketValue.map(y -> y.subtract(x)));
         var profitPercent = investedAmount.flatMap(x -> marketValue
                 .map(y -> y.divide(x, 4, RoundingMode.HALF_EVEN).movePointRight(2))
                 .map(z -> z.subtract(BigDecimal.valueOf(100))));
 
-        summary.setMarketUnitPrice(marketUnitPrice);
-        summary.setInvestedAmount(investedAmount.orElse(null));
-        summary.setMarketValue(marketValue.orElse(null));
-        summary.setProfitLoss(profit.orElse(null));
-        summary.setProfitLossPercent(profitPercent.orElse(null));
+        portfolio.setMarketUnitPrice(marketUnitPrice);
+        portfolio.setInvestedAmount(investedAmount.orElse(null));
+        portfolio.setMarketValue(marketValue.orElse(null));
+        portfolio.setProfitLoss(profit.orElse(null));
+        portfolio.setProfitLossPercent(profitPercent.orElse(null));
     }
 
     /**
@@ -182,29 +182,29 @@ public class SummaryGenerator {
      * @param ticker abbreviation used to uniquely identify the traded shares
      * @return       the market price
      */
-    private BigDecimal getProductMarketPrice(String ticker) {
+    private BigDecimal getMarketPrice(String ticker) {
         var providerType = ProviderType.getProvider(ticker, providerFile);
         if (Objects.isNull(providerType)) {
             Logger.logErrorAndExit("Market price data provider not defined in the {} file.", providerFile);
         }
 
         var tickerAlias = ProviderType.getTicker(ticker, providerFile);
-        var productPrice = Objects.isNull(tradeDate)
+        var price = Objects.isNull(tradeDate)
                 ? DOWNLOADER.get(providerType).getPrice(tickerAlias)
                 : DOWNLOADER.get(providerType).getPrice(tickerAlias, Calendars.fromString(tradeDate, dateTimePattern));
-        productPrice.ifPresent(p -> p.setTicker(ticker));
+        price.ifPresent(p -> p.setTicker(ticker));
 
-        saveMarketPrice(productPrice.orElse(null));
-        return productPrice.map(ProductPrice::getPrice).orElse(null);
+        saveMarketPrice(price.orElse(null));
+        return price.map(Price::getUnitPrice).orElse(null);
     }
 
     /**
      * Save market price to file.
      *
-     * @param productPrice the downloaded market price
+     * @param price the downloaded market price
      */
-    private void saveMarketPrice(ProductPrice productPrice) {
-        if (Objects.nonNull(priceHistoryFile) && Objects.nonNull(productPrice)) {
+    private void saveMarketPrice(Price price) {
+        if (Objects.nonNull(priceHistoryFile) && Objects.nonNull(price)) {
             // read the history file
             PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
             outputArgGroup.setDateTimePattern(dateTimePattern);
@@ -212,15 +212,15 @@ public class SummaryGenerator {
             outputArgGroup.setDecimalFormat(decimalFormat);
             outputArgGroup.setZone(zone.getId());
 
-            Parser<ProductPrice> parser = Parser.build(outputArgGroup);
-            List<ProductPrice> productPrices = new ArrayList<>(parser.parse(priceHistoryFile));
+            Parser<Price> parser = Parser.build(outputArgGroup);
+            List<Price> prices = new ArrayList<>(parser.parse(priceHistoryFile));
 
             // merge
-            ProductPrice.merge(productPrices, productPrice, multiplicity);
+            Price.merge(prices, price, multiplicity);
 
             // writer
-            Writer<ProductPrice> writer = PriceWriter.build(outputArgGroup);
-            writer.write(writeMode, priceHistoryFile, productPrices);
+            Writer<Price> writer = PriceWriter.build(outputArgGroup);
+            writer.write(writeMode, priceHistoryFile, prices);
         }
     }
 
@@ -230,7 +230,7 @@ public class SummaryGenerator {
      * @param portfolios  the product summary
      * @param transaction transaction to be added to the summary
      */
-    private void addTransactionToPortfolio(List<List<ProductSummary>> portfolios, Transaction transaction) {
+    private void addTransactionToPortfolio(List<List<Portfolio>> portfolios, Transaction transaction) {
         var portfolio = transaction.getPortfolio();
         var ticker = transaction.getTicker();
         var productSummary = getProductSummary(portfolios, portfolio, ticker);
@@ -263,34 +263,34 @@ public class SummaryGenerator {
     }
 
     /**
-     * Returns with a ProductSummary instance. If the belonging instance does not exist
+     * Returns with a Portfolio instance. If the belonging instance does not exist
      * then it will be generated as an empty but initialized object.
      *
-     * @param portfolios the collection of the ProductSummary items
+     * @param portfolios the collection of the Portfolio
      * @param portfolio  name of the portfolio
      * @param ticker     name of the product
-     * @return           the ProductSummary instances that represents the data for the report
+     * @return           the Portfolio instances that represents the data for the report
      */
-    private ProductSummary getProductSummary(List<List<ProductSummary>> portfolios, String portfolio, String ticker) {
+    private Portfolio getProductSummary(List<List<Portfolio>> portfolios, String portfolio, String ticker) {
         var selectedPortfolio = portfolios
                 .stream()
                 .filter(productSummaries ->
                         productSummaries
                                 .stream()
-                                .anyMatch(productSummary -> productSummary.getPortfolio().equals(portfolio)))
+                                .anyMatch(productSummary -> productSummary.getName().equals(portfolio)))
                 .findFirst()
                 .orElseGet(() -> {
-                    var productSummaries = new ArrayList<ProductSummary>();
-                    portfolios.add(productSummaries);
-                    return productSummaries;
+                    var ps = new ArrayList<Portfolio>();
+                    portfolios.add(ps);
+                    return ps;
                 });
 
         return selectedPortfolio
                 .stream()
-                .filter(actualProductSummary -> actualProductSummary.getTicker().equals(ticker))
+                .filter(p -> p.getTicker().equals(ticker))
                 .findFirst()
                 .orElseGet(() -> {
-                    var p = new ProductSummary(portfolio, ticker);
+                    var p = new Portfolio(portfolio, ticker);
                     selectedPortfolio.add(p);
                     return p;
                 });

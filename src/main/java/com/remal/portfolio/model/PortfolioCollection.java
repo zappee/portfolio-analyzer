@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Getter
 @Builder
-public class ProductSummaryCollection {
+public class PortfolioCollection {
 
     /**
      * The date when the report is generated.
@@ -26,5 +26,5 @@ public class ProductSummaryCollection {
     /**
      * The report itself.
      */
-    private List<List<ProductSummary>> portfolios;
+    private List<List<Portfolio>> portfolios;
 }

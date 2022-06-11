@@ -1,16 +1,16 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.generator.SummaryGenerator;
-import com.remal.portfolio.model.ProductSummaryCollection;
+import com.remal.portfolio.generator.PortfolioGenerator;
+import com.remal.portfolio.model.PortfolioCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
-import com.remal.portfolio.picocli.arggroup.SummaryArgGroup;
-import com.remal.portfolio.picocli.arggroup.SummaryInputArgGroup;
+import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
+import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
-import com.remal.portfolio.writer.SummaryWriter;
+import com.remal.portfolio.writer.PortfolioWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
  * @author arnold.somogyi@gmail.comm
  */
 @CommandLine.Command(
-        name = "summary",
+        name = "portfolio",
         sortOptions = false,
         usageHelpAutoWidth = true,
         description = "Generates portfolio summary report.",
@@ -36,7 +36,7 @@ import java.util.concurrent.Callable;
         footerHeading = Main.FOOTER_HEADING,
         footer = Main.FOOTER)
 @Slf4j
-public class SummaryCommand implements Callable<Integer> {
+public class PortfolioCommand implements Callable<Integer> {
 
     /**
      * In this mode the log file won't be written to the standard output.
@@ -52,7 +52,7 @@ public class SummaryCommand implements Callable<Integer> {
             exclusive = false,
             multiplicity = "1",
             heading = "%nInput:%n")
-    private final SummaryInputArgGroup inputArgGroup = new SummaryInputArgGroup();
+    private final PortfolioInputArgGroup inputArgGroup = new PortfolioInputArgGroup();
 
     /**
      * An argument group definition for the output.
@@ -60,7 +60,7 @@ public class SummaryCommand implements Callable<Integer> {
     @CommandLine.ArgGroup(
             heading = "%nOutput:%n",
             exclusive = false)
-    final SummaryArgGroup.OutputArgGroup outputArgGroup = new SummaryArgGroup.OutputArgGroup();
+    final PortfolioArgGroup.OutputArgGroup outputArgGroup = new PortfolioArgGroup.OutputArgGroup();
 
     /**
      * Execute the command and computes a result.
@@ -81,15 +81,15 @@ public class SummaryCommand implements Callable<Integer> {
                 .toList();
 
         // generate the report
-        var generator = SummaryGenerator.build(inputArgGroup, outputArgGroup);
+        var generator = PortfolioGenerator.build(inputArgGroup, outputArgGroup);
         var summary = generator.generate(transactions);
 
         // writer
-        List<ProductSummaryCollection> summaries = new ArrayList<>();
-        summaries.add(summary);
+        List<PortfolioCollection> portfolioCollections = new ArrayList<>();
+        portfolioCollections.add(summary);
 
-        var writer = SummaryWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), summaries);
+        var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
+        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), portfolioCollections);
         return CommandLine.ExitCode.OK;
     }
 }

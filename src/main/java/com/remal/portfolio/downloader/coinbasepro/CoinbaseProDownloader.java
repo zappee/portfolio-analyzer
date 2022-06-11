@@ -1,7 +1,7 @@
 package com.remal.portfolio.downloader.coinbasepro;
 
 import com.remal.portfolio.downloader.Downloader;
-import com.remal.portfolio.model.ProductPrice;
+import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
@@ -65,12 +65,12 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      * @return       the latest price
      */
     @Override
-    public Optional<ProductPrice> getPrice(String ticker) {
+    public Optional<Price> getPrice(String ticker) {
         log.debug("< getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
 
         var apiUrl = "https://api.coinbase.com/v2/prices/%s/spot";
         var uri = String.format(apiUrl, ticker);
-        Optional<ProductPrice> marketPrice = Optional.empty();
+        Optional<Price> price = Optional.empty();
 
         try {
             var httpClient = HttpClient.newBuilder().build();
@@ -92,10 +92,10 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
                     Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
                 } else {
                     var amountAsString = (String) data.get("amount");
-                    marketPrice = Optional.of(ProductPrice
+                    price = Optional.of(Price
                             .builder()
                             .ticker(ticker)
-                            .price(BigDecimals.valueOf(amountAsString))
+                            .unitPrice(BigDecimals.valueOf(amountAsString))
                             .providerType(PROVIDER_TYPE)
                             .date(LocalDateTime.now())
                             .build());
@@ -108,8 +108,8 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         }
 
-        logResult(ticker, marketPrice.orElse(null));
-        return marketPrice;
+        logResult(ticker, price.orElse(null));
+        return price;
     }
 
     /**
@@ -120,7 +120,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      * @return          the latest price
      */
     @Override
-    public Optional<ProductPrice> getPrice(String ticker, Calendar timestamp) {
+    public Optional<Price> getPrice(String ticker, Calendar timestamp) {
         var message = "< getting the price of '{}' at {}, provider: '{}'...";
         log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
@@ -133,7 +133,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
                 .GET()
                 .build();
         var httpClient = HttpClient.newBuilder().build();
-        Optional<ProductPrice> marketPrice = Optional.empty();
+        Optional<Price> price = Optional.empty();
 
         try {
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -149,10 +149,10 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
 
                 // split and trim in one shot
                 var fields = bucket.split("\\s*,\\s*");
-                marketPrice = Optional.of(ProductPrice
+                price = Optional.of(Price
                         .builder()
                         .ticker(ticker)
-                        .price(BigDecimals.valueOf(fields[4]))
+                        .unitPrice(BigDecimals.valueOf(fields[4]))
                         .providerType(PROVIDER_TYPE)
                         .date(LocalDateTime.ofInstant(
                                 Instant.ofEpochSecond(Long.parseLong(fields[0])),
@@ -166,21 +166,21 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         }
 
-        logResult(ticker, marketPrice.orElse(null));
-        return marketPrice;
+        logResult(ticker, price.orElse(null));
+        return price;
     }
 
     /**
      * Log the result of the price downloader task.
      *
-     * @param ticker      product name
-     * @param marketPrice the result
+     * @param ticker product name
+     * @param price  the result
      */
-    private void logResult(String ticker, ProductPrice marketPrice) {
-        if (Objects.isNull(marketPrice)) {
+    private void logResult(String ticker, Price price) {
+        if (Objects.isNull(price)) {
             Logger.logErrorAndExit("< invalid ticker: {}", ticker);
         } else {
-            log.info("< {}", marketPrice);
+            log.info("< {}", price);
         }
     }
 }
