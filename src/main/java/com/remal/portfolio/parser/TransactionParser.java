@@ -129,8 +129,9 @@ public class TransactionParser extends Parser<Transaction> {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
         } catch (IllegalArgumentException e) {
             Logger.logErrorAndExit("An error occurs when trying to parse the {} file. "
-                    + "For better result, consider using the combination of '--has-title' or '--has-header' options.",
-                    fileName);
+                    + "Consider using the combination of '--has-title' or '--has-header' options. Details: {}",
+                    fileName,
+                    e.getMessage());
         } catch (Exception e) {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
         }
