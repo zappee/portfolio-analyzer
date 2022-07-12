@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the 'show' command.
@@ -75,7 +76,7 @@ public class ShowCommand implements Callable<Integer> {
                 .stream()
                 .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
                 .filter(t -> Filter.tickerFilter(inputArgGroup.getTickers(), t))
-                .toList();
+                .collect(Collectors.toList());
 
         // writer
         var writer = TransactionWriter.build(outputArgGroup);

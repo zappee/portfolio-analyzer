@@ -1,5 +1,6 @@
 package com.remal.portfolio.parser;
 
+import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
@@ -9,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * @author arnold.somogyi@gmail.comm
  */
 @Slf4j
-public class ProductPriceParser extends Parser<Price> {
+public class PriceParser extends Parser<Price> {
 
     /**
      * Process a CSV file.
@@ -37,22 +37,7 @@ public class ProductPriceParser extends Parser<Price> {
      */
     @Override
     protected List<Price> parseCsvFile(String fileName) {
-        List<Price> prices = new ArrayList<>();
-        try {
-            var skipRows = 1;
-            var firstColumn = 0;
-            prices.addAll(parseTextFile(skipRows, firstColumn, fileName, csvSeparator));
-
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
-        } catch (Exception e) {
-            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
-        }
-
-        return prices
-                .stream()
-                .sorted(Sorter.priceComparator())
-                .toList();
+        return parseTextFile(fileName, csvSeparator);
     }
 
     /**
@@ -101,44 +86,45 @@ public class ProductPriceParser extends Parser<Price> {
      */
     @Override
     protected List<Price> parseMarkdownFile(String fileName) {
-        List<Price> prices = new ArrayList<>();
-        try {
-            var skipRows = 2;
-            var firstColumn = 1;
-            prices.addAll(parseTextFile(skipRows, firstColumn, fileName, markdownSeparator));
+        return parseTextFile(fileName, markdownSeparator);
+    }
 
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
-        } catch (Exception e) {
-            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
+    /**
+     * Calculate the id of the first data row based on the title and header info.
+     *
+     * @param fileType file type
+     * @return         the first line that contains data
+     */
+    @Override
+    protected int getFirstDataRow(FileType fileType) {
+        var skipRows = switch (fileType) {
+            case MARKDOWN -> 2;
+            case CSV -> 1;
+            default -> 0;
+        };
+        if (skipRows != 0) {
+            log.info("< skipping the first {} lines while reading the file...", skipRows);
         }
-
-        return prices
-                .stream()
-                .sorted(Sorter.priceComparator())
-                .toList();
+        return skipRows;
     }
 
     /**
      * Parse the Markdown and CSV file.
      *
-     * @param skipRows number of the lines that must be skip while parsing the file
-     * @param firstColumn index from here starts to read the columns
-     * @param file the input file
+     * @param file      the input file
      * @param separator separator char used in the input file
-     * @return the list of the transactions
-     * @throws IOException in case of file not found
+     * @return          the list of the transactions
      */
-    private List<Price> parseTextFile(int skipRows, int firstColumn, String file, String separator)
-            throws IOException {
-
+    private List<Price> parseTextFile(String file, String separator) {
         List<Price> prices = new ArrayList<>();
+
         try (Stream<String> stream = Files.lines(Path.of(file))) {
+            var skipRows = getFirstDataRow(com.remal.portfolio.util.Files.getFileType(file));
             stream
                     .skip(skipRows)
                     .forEach(line -> {
                         var fields = line.split(separator, -1);
-                        var index = new AtomicInteger(firstColumn);
+                        var index = new AtomicInteger(0);
                         Price p = Price
                                 .builder()
                                 .ticker(getString(index, fields, Label.TICKER))
@@ -148,8 +134,16 @@ public class ProductPriceParser extends Parser<Price> {
                                 .build();
                         prices.add(p);
                     });
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, file, e.getMessage());
+        } catch (Exception e) {
+            Logger.logErrorAndExit(LOG_ERROR_GENERAL, file, e.toString());
         }
-        return prices;
+
+        return prices
+                .stream()
+                .sorted(Sorter.priceComparator())
+                .toList();
     }
 
     /**

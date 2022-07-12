@@ -78,7 +78,7 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.classic.version}</version>
         </dependency>
-        <!-- excel file reader/writer -->
+        <!-- Excel file reader/writer -->
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>

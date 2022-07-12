@@ -22,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
@@ -121,6 +122,11 @@ public abstract class Writer<T> {
     protected LocalDateTime to;
 
     /**
+     * File write mode.
+     */
+    protected FileWriter.WriteMode writeMode;
+
+    /**
      * Generate the CSV report.
      *
      * @param items data
@@ -145,43 +151,46 @@ public abstract class Writer<T> {
     protected abstract String buildMarkdownReport(List<T> items);
 
     /**
+     * Get the history data from file.
+     *
+     * @param filename data file name
+     */
+    protected abstract List<T> getHistoryFromFile(String filename);
+
+    /**
      * Write the report to the output. The output can be a file ot the
      * standard output.
      *
      * @param writeMode        control the way of open the file
      * @param fileNameTemplate the report file name, can contain date/time patterns too
-     * @param items            source of the report
+     * @param items            the report
      */
     public void write(FileWriter.WriteMode writeMode, String fileNameTemplate, List<T> items) {
-        byte[] reportAsBytes;
-        String filename;
+        this.writeMode = writeMode;
         var fileType = Files.getFileType(fileNameTemplate);
+        var filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
+
+        if (java.nio.file.Files.exists(Path.of(filename)) && writeMode == FileWriter.WriteMode.APPEND) {
+            items.addAll(getHistoryFromFile(fileNameTemplate));
+        }
 
         showConfiguration();
         switch (fileType) {
             case CSV -> {
                 log.debug("> generating the CSV report...");
-                reportAsBytes = buildCsvReport(items).getBytes();
-                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
+                byte[] reportAsBytes = buildCsvReport(items).getBytes();
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case EXCEL -> {
-                if (writeMode == FileWriter.WriteMode.APPEND) {
-                    var message = "The {} file mode is not supported in case of Excel output file format.";
-                    Logger.logErrorAndExit(message, FileWriter.WriteMode.APPEND);
-                }
-
                 log.debug("> generating the Excel report...");
-                reportAsBytes = buildExcelReport(items);
-                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
+                byte[] reportAsBytes = buildExcelReport(items);
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }
             case MARKDOWN -> {
                 log.debug("> generating the Markdown report...");
-                reportAsBytes = buildMarkdownReport(items).getBytes();
-                filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
+                byte[] reportAsBytes = buildMarkdownReport(items).getBytes();
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
             }

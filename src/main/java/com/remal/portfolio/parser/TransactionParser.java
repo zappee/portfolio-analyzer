@@ -186,25 +186,6 @@ public class TransactionParser extends Parser<Transaction> {
     }
 
     /**
-     * Calculate the id of the first data row based on the title and header info.
-     *
-     * @param fileType file type
-     * @return         the first line that contains data
-     */
-    private int getFirstDataRow(FileType fileType) {
-        var titleRows = 2;
-        var headerRows = 2;
-        var skipRows = hasTitle ? titleRows : 0;
-        skipRows += hasHeader ? headerRows : 0;
-        skipRows += (fileType == FileType.MARKDOWN && hasHeader) ? 1 : 0;
-
-        if (skipRows != 0) {
-            log.info("< skipping the first {} lines while reading the file...", skipRows);
-        }
-        return skipRows;
-    }
-
-    /**
      * Find the ticker.
      * When the ticker is null then the currency will be used as a ticker. That happens
      * in case of deposits and withdrawals of a company's stock.

@@ -22,7 +22,7 @@ import java.util.Optional;
 
 /**
  * Product price downloader implementation for Yahoo Finance data providerType.
- * API information: https://financequotes-api.com
+ * API information: <a href="https://financequotes-api.com">financequotes-api.com</a>
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed

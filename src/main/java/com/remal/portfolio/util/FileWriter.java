@@ -2,9 +2,7 @@ package com.remal.portfolio.util;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -56,43 +54,14 @@ public class FileWriter {
         try {
             var path = Path.of(filename);
             log.debug("> writing the report to '{}', write-mode: {}...", filename, writeMode);
-
-            switch (writeMode) {
-                case OVERWRITE -> Files.write(path, content);
-                case APPEND -> {
-                    if ((new File(filename)).createNewFile()) {
-                        log.debug("The '{}' file has been created successfully.", filename);
-                    }
-                    if (!isEmptyOrEndsWithNewline(filename)) {
-                        Files.write(path, System.lineSeparator().getBytes(), StandardOpenOption.APPEND);
-                    }
-                    Files.write(path, content, StandardOpenOption.APPEND);
-                }
-                default -> Files.write(path, content, StandardOpenOption.CREATE_NEW);
+            if (writeMode == WriteMode.STOP_IF_EXIST) {
+                Files.write(path, content, StandardOpenOption.CREATE_NEW);
+            } else {
+                Files.write(path, content);
             }
         } catch (IOException e) {
             var message = "An unexpected error has occurred while writing to '{}' file. Error: {}";
             Logger.logErrorAndExit(message, filename, e.toString());
-        }
-    }
-
-    /**
-     * Check how the file ends.
-     *
-     * @param pathToFile   path to the file
-     * @return             true if the file ends with a new line character
-     * @throws IOException case of error
-     */
-    private static boolean isEmptyOrEndsWithNewline(String pathToFile) throws IOException {
-        File file = new File(pathToFile);
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r")) {
-            if (randomAccessFile.length() == 0) {
-                return true;
-            } else {
-                randomAccessFile.seek(file.length() - 1);
-                byte b = randomAccessFile.readByte();
-                return b == '\n' || b == '\r';
-            }
         }
     }
 

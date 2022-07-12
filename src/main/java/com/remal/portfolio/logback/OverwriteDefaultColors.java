@@ -10,42 +10,37 @@ import ch.qos.logback.core.pattern.color.ForegroundCompositeConverterBase;
  * level. One problem with this is that the default color scheme is too dark
  * to read on a black/dark console. Here is a converter allowing you to
  * customize the color scheme.
+ * More info: <a href="https://misc.flogisoft.com/bash/tip_colors_and_formatting">colors and formatting</a>
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-@SuppressWarnings("java:S110")
 public class OverwriteDefaultColors extends ForegroundCompositeConverterBase<ILoggingEvent> {
 
     /**
      * ANSI color definition.
-     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
      */
     private static final String LIGHT_BOLD_RED = "1;91";
 
     /**
      * ANSI color definition.
-     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
      */
     private static final String LIGHT_RED = "91";
 
     /**
      * ANSI color definition.
-     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
      */
     private static final String LIGHT_YELLOW = "93";
 
     /**
      * ANSI color definition.
-     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
      */
     private static final String LIGHT_GREEN = "92";
 
     /**
      * ANSI color definition.
-     * info: https://misc.flogisoft.com/bash/tip_colors_and_formatting
      */
     private static final String LIGHT_CYAN = "96";
 

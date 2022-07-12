@@ -25,7 +25,7 @@ import java.util.Optional;
 
 /**
  * Product price downloader for Coinbase Pro data provider.
- * API information: https://docs.cloud.coinbase.com/exchange/docs
+ * API information: <a href="https://docs.cloud.coinbase.com/exchange/docs">Coinbase</a>
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed

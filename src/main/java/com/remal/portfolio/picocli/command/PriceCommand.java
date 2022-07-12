@@ -4,7 +4,6 @@ import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
-import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
@@ -97,19 +96,13 @@ public class PriceCommand implements Callable<Integer> {
                 .findFirst()
                 .orElse(null);
         var tickerAlias = ProviderType.getTicker(ticker, providerFile);
-        var productPrice = getPrice(tickerAlias, provider);
-        productPrice.ifPresent(p -> p.setTicker(ticker));
+        var price = getPrice(tickerAlias, provider);
 
-        // read the history file
         List<Price> prices = new ArrayList<>();
-        var historyFile = outputArgGroup.getPriceHistoryFile();
-        if (Objects.nonNull(historyFile)) {
-            Parser<Price> parser = Parser.build(outputArgGroup);
-            prices.addAll(parser.parse(historyFile));
-        }
-
-        // merge
-        Price.merge(prices, productPrice.orElse(null), outputArgGroup.getMultiplicity());
+        price.ifPresent(p -> {
+            p.setTicker(ticker);
+            prices.add(p);
+        });
 
         // writer
         Writer<Price> writer = PriceWriter.build(outputArgGroup);

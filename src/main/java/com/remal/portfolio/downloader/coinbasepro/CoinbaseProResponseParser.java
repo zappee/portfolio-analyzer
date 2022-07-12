@@ -20,11 +20,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
  * Transaction downloader that downloads trades via Coinbase Pro API.
- * API information: https://docs.cloud.coinbase.com/exchange/docs
+ * API information: <a href="https://docs.cloud.coinbase.com/exchange/docs">Coinbase</a>
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
@@ -121,7 +122,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                 .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
                 .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**

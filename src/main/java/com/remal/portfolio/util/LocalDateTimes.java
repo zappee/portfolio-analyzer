@@ -88,7 +88,7 @@ public class LocalDateTimes {
      * @return the date/time as a string at the provided timezone
      */
     public static String toString(ZoneId zone, String dateTimePattern, LocalDateTime timestamp) {
-        if (Objects.nonNull(timestamp)) {
+        if (Objects.nonNull(timestamp) && Objects.nonNull(dateTimePattern)) {
             try {
                 var timestampAtLocalZone = timestamp.atZone(ZoneId.systemDefault());
                 var formatter = DateTimeFormatter.ofPattern(dateTimePattern);
@@ -99,7 +99,7 @@ public class LocalDateTimes {
             } catch (IllegalArgumentException e) {
                 Logger.logErrorAndExit(
                         "An error has occurred while converting date to string. "
-                        + "Wrap the output filename with quotas (e.g. \"'tmp/'yyyy-MM-dd'_report.md'\") can help. "
+                        + "Wrap the filename with quotas may help, e.g. \"'tmp/'yyyy-MM-dd'_report.md'\"."
                         + "Pattern '{}', Error: {}",
                         dateTimePattern,
                         e.getMessage());

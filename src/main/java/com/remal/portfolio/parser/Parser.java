@@ -1,5 +1,6 @@
 package com.remal.portfolio.parser;
 
+import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.Transaction;
@@ -148,7 +149,7 @@ public abstract class Parser<T> {
      */
     public static Parser<Price> build(PriceArgGroup.OutputArgGroup arguments) {
         var zoneId = ZoneId.of(arguments.getZone());
-        Parser<Price> parser = new ProductPriceParser();
+        Parser<Price> parser = new PriceParser();
         parser.setDateTimePattern(arguments.getDateTimePattern());
         parser.setZone(zoneId);
         return parser;
@@ -212,6 +213,32 @@ public abstract class Parser<T> {
      * @return     the list of the parsed items
      */
     protected abstract List<T> parseMarkdownFile(String file);
+
+    /**
+     * Calculate the id of the first data row based on the title and header info.
+     *
+     * @param fileType file type
+     * @return         the first line that contains data
+     */
+    protected int getFirstDataRow(FileType fileType) {
+        var titleRows = switch (fileType) {
+            case CSV, EXCEL -> hasTitle ? 1 : 0;
+            case MARKDOWN -> hasTitle ? 3 : 0;
+            default -> 0;
+        };
+
+        var headerRows = switch (fileType) {
+            case CSV, EXCEL -> hasHeader ? 1 : 0;
+            case MARKDOWN -> hasHeader ? 2 : 0;
+            default -> 0;
+        };
+
+        var skipRows = titleRows + headerRows;
+        if (skipRows != 0) {
+            log.info("< skipping the first {} lines while reading the file...", skipRows);
+        }
+        return skipRows;
+    }
 
     /**
      * Get the value based on the missing/hidden columns.

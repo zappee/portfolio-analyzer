@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Implementation of the 'combine' command.
@@ -93,32 +94,36 @@ public class CombineCommand implements Callable<Integer> {
      *
      * @param source source transactions
      * @param target target transactions
-     * @param overwrite set it to true if you want to overwrite the target transactions
+     * @param overwrite set it to true if you want to overwrite the existing transactions in the target side
      */
     private void combine(List<Transaction> source, List<Transaction> target, boolean overwrite) {
-        source.forEach(sourceTr -> {
-            Optional<Transaction> targetTr = target
+        var overwritten = new AtomicLong();
+        source.forEach(sourceCurrent -> {
+            Optional<Transaction> found = target
                     .stream()
-                    .filter(actual -> Filter.transactionIdFilter(sourceTr, actual))
+                    .filter(targetCurrent -> Filter.transactionIdFilter(sourceCurrent, targetCurrent))
                     .filter(actual -> Filter.tickerFilter(inputArgGroup.getTickers(), actual))
                     .findAny();
 
-            if (targetTr.isPresent() && overwrite) {
-                var tr = targetTr.get();
-                tr.setPortfolio(sourceTr.getPortfolio());
-                tr.setType(sourceTr.getType());
-                tr.setTradeDate(sourceTr.getTradeDate());
-                tr.setQuantity(sourceTr.getQuantity());
-                tr.setPrice(sourceTr.getPrice());
-                tr.setFee(sourceTr.getFee());
-                tr.setCurrency(sourceTr.getCurrency());
-                tr.setTicker(sourceTr.getTicker());
-                tr.setTransferId(sourceTr.getTransferId());
-                tr.setTradeId(sourceTr.getTradeId());
-                tr.setOrderId(sourceTr.getOrderId());
-            } else if (targetTr.isEmpty()) {
-                target.add(sourceTr);
+            if (found.isPresent() && overwrite) {
+                overwritten.incrementAndGet();
+                var tr = found.get();
+                tr.setPortfolio(sourceCurrent.getPortfolio());
+                tr.setType(sourceCurrent.getType());
+                tr.setTradeDate(sourceCurrent.getTradeDate());
+                tr.setQuantity(sourceCurrent.getQuantity());
+                tr.setPrice(sourceCurrent.getPrice());
+                tr.setFee(sourceCurrent.getFee());
+                tr.setCurrency(sourceCurrent.getCurrency());
+                tr.setTicker(sourceCurrent.getTicker());
+                tr.setTransferId(sourceCurrent.getTransferId());
+                tr.setTradeId(sourceCurrent.getTradeId());
+                tr.setOrderId(sourceCurrent.getOrderId());
+            } else if (found.isEmpty()) {
+                target.add(sourceCurrent);
             }
         });
+
+        log.info("> number of overwritten transactions: {}", overwritten.get());
     }
 }

@@ -3,7 +3,9 @@ package com.remal.portfolio.writer;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Transaction;
+import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
+import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
@@ -253,6 +255,25 @@ public class TransactionWriter extends Writer<Transaction> {
                 });
 
         return report.toString();
+    }
+
+    /**
+     * Get the history data from file.
+     *
+     * @param filename data file name
+     */
+    @Override
+    protected List<Transaction> getHistoryFromFile(String filename) {
+        TransactionParserInputArgGroup inputArgGroup = new TransactionParserInputArgGroup();
+        inputArgGroup.setFile(filename);
+        inputArgGroup.setDateTimePattern(dateTimePattern);
+        inputArgGroup.setZone(zone.getId());
+        inputArgGroup.setMissingColumns(columnsToHide);
+        inputArgGroup.hasTitle(!hideTitle);
+        inputArgGroup.hasHeader(!hideHeader);
+
+        var parser = Parser.build(inputArgGroup);
+        return parser.parse(inputArgGroup.getFile());
     }
 
     /**
