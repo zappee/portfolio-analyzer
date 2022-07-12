@@ -141,7 +141,6 @@ public class PortfolioGenerator {
             portfolios.forEach(productSummaries -> productSummaries.forEach(this::updateMarketValue));
         }
 
-        // sort
         portfolios.forEach(p -> p.sort(Comparator.comparing(Portfolio::getTicker)));
 
         var tradeDateAsDate = Objects.isNull(tradeDate)
@@ -215,8 +214,8 @@ public class PortfolioGenerator {
             Parser<Price> parser = Parser.build(outputArgGroup);
             List<Price> prices = new ArrayList<>(parser.parse(priceHistoryFile));
 
-            // merge
-            Price.merge(prices, price, multiplicity);
+            // TODO: merge
+            //Price.merge(prices, price, multiplicity);
 
             // writer
             Writer<Price> writer = PriceWriter.build(outputArgGroup);

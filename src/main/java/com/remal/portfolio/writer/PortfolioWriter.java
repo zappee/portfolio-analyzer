@@ -159,6 +159,17 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     }
 
     /**
+     * Get history data from file.
+     *
+     * @param filename data file name
+     */
+    @Override
+    protected List<PortfolioCollection> getHistoryFromFile(String filename) {
+        // TODO  missing implementation
+        return new ArrayList<>();
+    }
+
+    /**
      * Generate the table header.
      *
      * @param items data
