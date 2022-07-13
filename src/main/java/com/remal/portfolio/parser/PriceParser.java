@@ -124,7 +124,7 @@ public class PriceParser extends Parser<Price> {
                     .skip(skipRows)
                     .forEach(line -> {
                         var fields = line.split(separator, -1);
-                        var index = new AtomicInteger(0);
+                        var index = new AtomicInteger(1);
                         Price p = Price
                                 .builder()
                                 .ticker(getString(index, fields, Label.TICKER))

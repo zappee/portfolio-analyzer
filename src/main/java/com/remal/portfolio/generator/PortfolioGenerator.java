@@ -25,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -203,24 +205,36 @@ public class PortfolioGenerator {
      * @param price the downloaded market price
      */
     private void saveMarketPrice(Price price) {
-        if (Objects.nonNull(priceHistoryFile) && Objects.nonNull(price)) {
+        if (Objects.nonNull(price)) {
+
+            List<Price> prices = new ArrayList<>();
+            prices.add(price);
+
             // read the history file
-            PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
-            outputArgGroup.setDateTimePattern(dateTimePattern);
-            outputArgGroup.setLanguage(language);
-            outputArgGroup.setDecimalFormat(decimalFormat);
-            outputArgGroup.setZone(zone.getId());
-
-            Parser<Price> parser = Parser.build(outputArgGroup);
-            List<Price> prices = new ArrayList<>(parser.parse(priceHistoryFile));
-
-            // TODO: merge
-            //Price.merge(prices, price, multiplicity);
+            if (Files.exists(Path.of(priceHistoryFile))) {
+                Parser<Price> parser = Parser.build(buildOutputArgGroup());
+                prices.addAll(parser.parse(priceHistoryFile));
+            }
 
             // writer
-            Writer<Price> writer = PriceWriter.build(outputArgGroup);
+            Writer<Price> writer = PriceWriter.build(buildOutputArgGroup());
             writer.write(writeMode, priceHistoryFile, prices);
         }
+    }
+
+    /**
+     * Builds an OutputArgGroup.
+     *
+     * @return the argument group instance
+     */
+    private PriceArgGroup.OutputArgGroup buildOutputArgGroup() {
+        PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
+        outputArgGroup.setZone(zone.getId());
+        outputArgGroup.setDateTimePattern(dateTimePattern);
+        outputArgGroup.setLanguage(language);
+        outputArgGroup.setDecimalFormat(decimalFormat);
+        outputArgGroup.setMultiplicity(multiplicity);
+        return outputArgGroup;
     }
 
     /**
