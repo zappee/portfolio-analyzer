@@ -141,7 +141,6 @@ public class PriceWriter extends Writer<Price> {
         reduceBasedOnMultiplicity(prices, multiplicity);
 
         var widths = calculateColumnWidth(prices);
-        var report = new StringBuilder();
 
         // table header
         var header = new StringBuilder();
@@ -155,6 +154,8 @@ public class PriceWriter extends Writer<Price> {
                 });
         header.append(markdownSeparator).append(NEW_LINE);
         headerSeparator.append(markdownSeparator).append(NEW_LINE);
+
+        var report = new StringBuilder();
         report.append(header).append(headerSeparator);
 
         // data

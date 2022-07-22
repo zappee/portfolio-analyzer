@@ -14,6 +14,7 @@ import com.remal.portfolio.util.Strings;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 
 /**
  * Portfolio summary writer.
@@ -85,7 +87,6 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                     .forEach(summary -> report.append(buildReportItem(summary))));
         });
         report.setLength(report.length() - csvSeparator.length());
-
         return report.toString();
     }
 
@@ -143,7 +144,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                                     .append(getCell(Label.INVESTED_AMOUNT, p.getInvestedAmount(), widths))
                                     .append(getCell(Label.MARKET_UNIT_PRICE, p.getMarketUnitPrice(), widths))
                                     .append(getCell(Label.MARKET_VALUE, p.getMarketValue(), widths))
-                                    .append(getCell(Label.PROFIT_LOSS, p.getProfitLoss(), widths))
+                                    .append(getCell(Label.PROFIT_LOSS, p.getProfitAndLoss(), widths))
                                     .append(getCell(Label.PROFIT_LOSS_PERCENT, p.getProfitLossPercent(), widths))
                                     .append(getCell(Label.COST_TOTAL, p.getCostTotal(), widths))
                                     .append(getCell(Label.DEPOSIT_TOTAL, p.getDepositTotal(), widths))
@@ -154,7 +155,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                         })
                 )
         );
-
+        report.append(buildTableFooter(items));
         return report.toString();
     }
 
@@ -165,7 +166,6 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      */
     @Override
     protected List<PortfolioCollection> getHistoryFromFile(String filename) {
-        // TODO  missing implementation
         return new ArrayList<>();
     }
 
@@ -203,6 +203,40 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     }
 
     /**
+     * Generate the table footer.
+     *
+     * @param items data
+     * @return      the table headers as a string
+     */
+    private StringBuilder buildTableFooter(List<PortfolioCollection> items) {
+        var totals = new BigDecimal[4];
+        IntStream.range(0, totals.length).forEach(index -> totals[index] = BigDecimal.ZERO);
+
+        var depositTotalIndex = 0;
+        var marketValueIndex = 1;
+        var investedAmountIndex = 2;
+        var profitAndLossIndex = 3;
+
+        Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
+
+        items.forEach(portfolio -> {
+            totals[depositTotalIndex] = totals[depositTotalIndex].add(portfolio.getDepositTotal());
+            totals[marketValueIndex] = totals[marketValueIndex].add(portfolio.getMarketValue());
+            totals[investedAmountIndex] = totals[investedAmountIndex].add(portfolio.getInvestedAmount());
+            totals[profitAndLossIndex] = totals[profitAndLossIndex].add(portfolio.getProfitAndLoss());
+            portfolio.getCashInPortfolio().forEach((key, value) -> cashInPortfolio.merge(key, value, BigDecimal::add));
+        });
+
+        var sb = new StringBuilder()
+                .append(NEW_LINE).append("deposit: ").append(totals[depositTotalIndex])
+                .append(NEW_LINE).append("market value: ").append(totals[marketValueIndex])
+                .append(NEW_LINE).append("invested: ").append(totals[investedAmountIndex])
+                .append(NEW_LINE).append("P/L: ").append(totals[profitAndLossIndex]);
+        cashInPortfolio.forEach((key, value) -> sb.append(NEW_LINE).append(key).append(": ").append(value));
+        return sb;
+    }
+
+    /**
      * Generate the report item.
      *
      * @param portfolio product portfolio summary
@@ -217,7 +251,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                 .append(getCell(Label.INVESTED_AMOUNT, portfolio.getInvestedAmount(), csvSeparator))
                 .append(getCell(Label.MARKET_UNIT_PRICE, portfolio.getMarketUnitPrice(), csvSeparator))
                 .append(getCell(Label.MARKET_VALUE, portfolio.getMarketValue(), csvSeparator))
-                .append(getCell(Label.PROFIT_LOSS, portfolio.getProfitLoss(), csvSeparator))
+                .append(getCell(Label.PROFIT_LOSS, portfolio.getProfitAndLoss(), csvSeparator))
                 .append(getCell(Label.PROFIT_LOSS_PERCENT, portfolio.getProfitLossPercent(), csvSeparator))
                 .append(getCell(Label.COST_TOTAL, portfolio.getCostTotal(), csvSeparator))
                 .append(getCell(Label.DEPOSIT_TOTAL, portfolio.getDepositTotal(), csvSeparator))
@@ -292,7 +326,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                                 updateWidth(widths, Label.INVESTED_AMOUNT, p.getInvestedAmount());
                                 updateWidth(widths, Label.MARKET_UNIT_PRICE, p.getMarketUnitPrice());
                                 updateWidth(widths, Label.MARKET_VALUE, p.getMarketValue());
-                                updateWidth(widths, Label.PROFIT_LOSS, p.getProfitLoss());
+                                updateWidth(widths, Label.PROFIT_LOSS, p.getProfitAndLoss());
                                 updateWidth(widths, Label.PROFIT_LOSS_PERCENT, p.getProfitLossPercent());
                                 updateWidth(widths, Label.COST_TOTAL, p.getCostTotal());
                                 updateWidth(widths, Label.DEPOSIT_TOTAL, p.getDepositTotal());

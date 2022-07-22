@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -148,7 +149,49 @@ public class PortfolioGenerator {
         var tradeDateAsDate = Objects.isNull(tradeDate)
                 ? LocalDateTime.now().atZone(zone).toLocalDateTime()
                 : LocalDateTimes.toLocalDateTime(zone, dateTimePattern, tradeDate);
-        return PortfolioCollection.builder().generated(tradeDateAsDate).portfolios(portfolios).build();
+
+        var portfolioCollection = PortfolioCollection
+                .builder()
+                .generated(tradeDateAsDate)
+                .portfolios(portfolios)
+                .build();
+
+        updateTotals(portfolioCollection);
+        return portfolioCollection;
+    }
+
+    /**
+     * Updates the value of the totals.
+     *
+     * @param portfolioCollection the portfolio
+     */
+    private void updateTotals(PortfolioCollection portfolioCollection) {
+        portfolioCollection.setDepositTotal(BigDecimal.ZERO);
+        portfolioCollection.setMarketValue(BigDecimal.ZERO);
+        portfolioCollection.setInvestedAmount(BigDecimal.ZERO);
+        portfolioCollection.setProfitAndLoss(BigDecimal.ZERO);
+        portfolioCollection.setCashInPortfolio(new HashMap<>());
+
+        portfolioCollection.getPortfolios().forEach(portfolio -> portfolio.forEach(product -> {
+            portfolioCollection.setDepositTotal(
+                    portfolioCollection.getDepositTotal().add(BigDecimals.zeroIfNull(product.getDepositTotal())));
+
+            portfolioCollection.setMarketValue(
+                    portfolioCollection.getMarketValue().add(BigDecimals.zeroIfNull(product.getMarketValue())));
+
+            portfolioCollection.setInvestedAmount(
+                    portfolioCollection.getInvestedAmount().add(BigDecimals.zeroIfNull(product.getInvestedAmount())));
+
+            portfolioCollection.setProfitAndLoss(
+                    portfolioCollection.getProfitAndLoss().add(BigDecimals.zeroIfNull(product.getProfitAndLoss())));
+
+            if (CurrencyType.isValid(product.getTicker())) {
+                var key = product.getTicker();
+                var map = portfolioCollection.getCashInPortfolio();
+                map.putIfAbsent(key, BigDecimal.ZERO);
+                map.put(key, map.get(key).add(product.getTotalShares()));
+            }
+        }));
     }
 
     /**
@@ -173,7 +216,7 @@ public class PortfolioGenerator {
         portfolio.setMarketUnitPrice(marketUnitPrice);
         portfolio.setInvestedAmount(investedAmount.orElse(null));
         portfolio.setMarketValue(marketValue.orElse(null));
-        portfolio.setProfitLoss(profit.orElse(null));
+        portfolio.setProfitAndLoss(profit.orElse(null));
         portfolio.setProfitLossPercent(profitPercent.orElse(null));
     }
 

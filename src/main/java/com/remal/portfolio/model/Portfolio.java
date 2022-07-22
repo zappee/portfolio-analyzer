@@ -91,7 +91,7 @@ public class Portfolio {
     /**
      * The profit/loss value in currency.
      */
-    private BigDecimal profitLoss;
+    private BigDecimal profitAndLoss;
 
     /**
      * The profit/loss value in percent.

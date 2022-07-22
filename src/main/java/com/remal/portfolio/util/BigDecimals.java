@@ -103,6 +103,16 @@ public class BigDecimals {
     }
 
     /**
+     * Returns a default value if the object passed is {@code null}.
+     *
+     * @param object  the value to test, may be {@code null}
+     * @return {@code object} if it is not {@code null}, zero otherwise
+     */
+    public static BigDecimal zeroIfNull(final BigDecimal object) {
+        return object != null ? object : BigDecimal.ZERO;
+    }
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws java.lang.UnsupportedOperationException if this method is called
