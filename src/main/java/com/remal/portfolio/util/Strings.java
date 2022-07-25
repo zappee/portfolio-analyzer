@@ -46,6 +46,16 @@ public class Strings {
     }
 
     /**
+     * Generate a fixed length space.
+     *
+     * @param size size of the space
+     * @return the space
+     */
+    public static String space(final int size) {
+        return leftPad(null, size);
+    }
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws java.lang.UnsupportedOperationException if this method is called

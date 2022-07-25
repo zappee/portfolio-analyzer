@@ -18,11 +18,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
 
 /**
  * Portfolio summary writer.
@@ -40,6 +40,31 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      */
     @Setter
     private List<String> tickers = new ArrayList<>();
+
+    /**
+     * The total invested amount.
+     */
+    private BigDecimal depositTotal = BigDecimal.ZERO;
+
+    /**
+     * Portfolio market value
+     */
+    private BigDecimal marketValue = BigDecimal.ZERO;
+
+    /**
+     * Invested amount.
+     */
+    private BigDecimal investedAmount = BigDecimal.ZERO;
+
+    /**
+     * P/L on portfolio.
+     */
+    private BigDecimal profitAndLoss = BigDecimal.ZERO;
+
+    /**
+     * Cash in portfolio.
+     */
+    private final Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
 
     /**
      * Builder that initializes a new writer instance.
@@ -155,7 +180,11 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                         })
                 )
         );
-        report.append(buildTableFooter(items));
+
+        // footer
+        updateTotals(items);
+        report.append(generateCsvFooter());
+
         return report.toString();
     }
 
@@ -203,37 +232,81 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     }
 
     /**
-     * Generate the table footer.
+     * Updates the value of the totals.
      *
-     * @param items data
-     * @return      the table headers as a string
+     * @param items the portfolio collection
      */
-    private StringBuilder buildTableFooter(List<PortfolioCollection> items) {
-        var totals = new BigDecimal[4];
-        IntStream.range(0, totals.length).forEach(index -> totals[index] = BigDecimal.ZERO);
-
-        var depositTotalIndex = 0;
-        var marketValueIndex = 1;
-        var investedAmountIndex = 2;
-        var profitAndLossIndex = 3;
-
-        Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
+    private void updateTotals(List<PortfolioCollection> items) {
+        depositTotal = BigDecimal.ZERO;
+        marketValue = BigDecimal.ZERO;
+        investedAmount = BigDecimal.ZERO;
+        profitAndLoss = BigDecimal.ZERO;
+        cashInPortfolio.clear();
 
         items.forEach(portfolio -> {
-            totals[depositTotalIndex] = totals[depositTotalIndex].add(portfolio.getDepositTotal());
-            totals[marketValueIndex] = totals[marketValueIndex].add(portfolio.getMarketValue());
-            totals[investedAmountIndex] = totals[investedAmountIndex].add(portfolio.getInvestedAmount());
-            totals[profitAndLossIndex] = totals[profitAndLossIndex].add(portfolio.getProfitAndLoss());
+            depositTotal = depositTotal.add(portfolio.getDepositTotal());
+            marketValue = marketValue.add(portfolio.getMarketValue());
+            investedAmount = investedAmount.add(portfolio.getInvestedAmount());
+            profitAndLoss = profitAndLoss.add(portfolio.getProfitAndLoss());
             portfolio.getCashInPortfolio().forEach((key, value) -> cashInPortfolio.merge(key, value, BigDecimal::add));
         });
+    }
+
+    /**
+     * Generate the CSV table footer.
+     *
+     * @return the table headers as a string
+     */
+    private StringBuilder generateCsvFooter() {
+        var longestLabelLength = getLongestLabel(Arrays.asList(
+                Label.LABEL_DEPOSIT.getLabel(language),
+                Label.LABEL_MARKET_VALUE.getLabel(language),
+                Label.LABEL_INVESTMENT.getLabel(language),
+                Label.LABEL_PROFIT_LOSS.getLabel(language),
+                Label.LABEL_CASH.getLabel(language)));
 
         var sb = new StringBuilder()
-                .append(NEW_LINE).append("deposit: ").append(totals[depositTotalIndex])
-                .append(NEW_LINE).append("market value: ").append(totals[marketValueIndex])
-                .append(NEW_LINE).append("invested: ").append(totals[investedAmountIndex])
-                .append(NEW_LINE).append("P/L: ").append(totals[profitAndLossIndex]);
-        cashInPortfolio.forEach((key, value) -> sb.append(NEW_LINE).append(key).append(": ").append(value));
+                .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), longestLabelLength, depositTotal))
+                .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), longestLabelLength, marketValue))
+                .append(showTotal(Label.LABEL_INVESTMENT.getLabel(language), longestLabelLength, investedAmount))
+                .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), longestLabelLength, profitAndLoss));
+
+        cashInPortfolio.forEach((key, value) -> sb.append(
+                showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), longestLabelLength, value))
+        );
         return sb;
+    }
+
+    /**
+     * Generates a formatted total line.
+     *
+     * @param label  the label
+     * @param length the length of the label
+     * @param value  the total value
+     * @return       the formatted total value
+     */
+    private String showTotal(String label, int length, BigDecimal value) {
+        return NEW_LINE
+                + label
+                + ": "
+                + Strings.space(length - label.length())
+                + value;
+    }
+
+    /**
+     * Calculate the maximum length of the labels.
+     *
+     * @param labels   the labels
+     * @return maximum length
+     */
+    private int getLongestLabel(List<String> labels) {
+        int[] length = { 0 };
+        labels.forEach(label -> {
+            if (length[0] < label.length()) {
+                length[0] = label.length();
+            }
+        });
+        return length[0];
     }
 
     /**

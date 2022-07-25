@@ -292,7 +292,7 @@ public abstract class Writer<T> {
             var parts = partsOfBigDecimal(x);
             var spaces = (Objects.isNull(fractionalWidth) || fractionalWidth == 0)
                     ? ""
-                    : " ".repeat(fractionalWidth + 1);
+                    : Strings.space(fractionalWidth + 1);
             var valueAsFormattedString = parts[1].isEmpty()
                     ? Strings.rightPad(parts[0], wholeWidth) + spaces
                     : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);

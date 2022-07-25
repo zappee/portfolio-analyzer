@@ -265,6 +265,46 @@ public class Label {
             .build();
 
     /**
+     * A simple text.
+     */
+    public static final Label LABEL_CASH = Label.builder()
+            .id("LABEL_CASH")
+            .key("label.total.cash")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_DEPOSIT = Label.builder()
+            .id("LABEL_DEPOSIT")
+            .key("label.total.deposit")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_INVESTMENT = Label.builder()
+            .id("LABEL_INVESTMENT")
+            .key("label.total.investment")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_MARKET_VALUE = Label.builder()
+            .id("LABEL_MARKET_VALUE")
+            .key("label.total.market-value")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_PROFIT_LOSS = Label.builder()
+            .id("LABEL_PROFIT_LOSS")
+            .key("label.total.profit-loss")
+            .build();
+
+    /**
      * The id of the label.
      */
     private String id;
