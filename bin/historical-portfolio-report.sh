@@ -14,29 +14,23 @@
 #  since 2011 Jun
 # ##############################################################################
 
-start="2019-01-01"
-end="2019-01-05"
-transactionReport="'tmp/transactions-report_2022-05-30.md'"
+start="2018-01-18"
+end="2018-02-05"
+transactionReport="'tmp/transactions-report_2022-07-12.md'"
 dataProvidersRegistry="tmp/provider.properties"
-priceHistory="'tmp/price-history.md'"
 portfolioAnalyzer="target/portfolio-analyzer-0.1.13.jar"
 
-while [ "$start" != "$end" ]; do
+while [ $(date -d $start +%s) -le $(date -d $end +%s) ]; do
     echo "Trade date: $start"
     java \
-        -jar "$portfolioAnalyzer" summary \
+        -jar "$portfolioAnalyzer" portfolio \
         -i "$transactionReport" \
-        -l "$dataProvidersRegistry" \
-        -t "$start 00:00:00" \
         -e \
         -a \
+        -l "$dataProvidersRegistry" \
+        -t "$start 23:59:59" \
         -L EN \
-        -C "COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL, INVESTED_AMOUNT" \
-        -P "$priceHistory" \
-        -M OVERWRITE \
-        -U ONE_DAY \
-        -Z GMT \
-        -q
-
+        -O "'tmp/portfolio/portfolio-report_$start.md'" \
+        -M OVERWRITE
     start=$(date -I -d "$start + 1 day")
 done
