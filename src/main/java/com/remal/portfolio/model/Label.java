@@ -201,6 +201,14 @@ public class Label {
             .build();
 
     /**
+     * An empty label that is used to format BigDecimal number without having a label.
+     */
+    public static final Label EMPTY = Label.builder()
+            .id("EMPTY")
+            .key("label.empty")
+            .build();
+
+    /**
      * A simple text.
      */
     public static final Label LABEL_PRICE_HISTORY = Label.builder()

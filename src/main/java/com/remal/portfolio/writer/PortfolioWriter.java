@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Portfolio summary writer.
@@ -258,21 +259,27 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      * @return the table headers as a string
      */
     private StringBuilder generateCsvFooter() {
-        var longestLabelLength = getLongestLabel(Arrays.asList(
+        var labelWith = getLongestLabel(Arrays.asList(
                 Label.LABEL_DEPOSIT.getLabel(language),
                 Label.LABEL_MARKET_VALUE.getLabel(language),
                 Label.LABEL_INVESTMENT.getLabel(language),
                 Label.LABEL_PROFIT_LOSS.getLabel(language),
                 Label.LABEL_CASH.getLabel(language)));
 
+        var totalWholeSize = getTotalsWholeSize();
+        var emptyLabel = Label.EMPTY;
+        Map<String, Integer> widths = new HashMap<>();
+        widths.put(getWholeWidthKey(emptyLabel), totalWholeSize);
+        widths.put(getFractionalWidthKey(emptyLabel), 2);
+
         var sb = new StringBuilder()
-                .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), longestLabelLength, depositTotal))
-                .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), longestLabelLength, marketValue))
-                .append(showTotal(Label.LABEL_INVESTMENT.getLabel(language), longestLabelLength, investedAmount))
-                .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), longestLabelLength, profitAndLoss));
+                .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), labelWith, depositTotal, widths))
+                .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), labelWith, marketValue, widths))
+                .append(showTotal(Label.LABEL_INVESTMENT.getLabel(language), labelWith, investedAmount, widths))
+                .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), labelWith, profitAndLoss, widths));
 
         cashInPortfolio.forEach((key, value) -> sb.append(
-                showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), longestLabelLength, value))
+                showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), labelWith, value, widths))
         );
         return sb;
     }
@@ -280,17 +287,39 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     /**
      * Generates a formatted total line.
      *
-     * @param label  the label
-     * @param length the length of the label
-     * @param value  the total value
-     * @return       the formatted total value
+     * @param label the  label
+     * @param labelWidth width of the formatted value
+     * @param value      the value to show
+     * @return           the formatted total value
      */
-    private String showTotal(String label, int length, BigDecimal value) {
+    private String showTotal(String label, int labelWidth, BigDecimal value, Map<String, Integer> widths) {
+        setDecimalFormat("###,###,###,###,###,###.##");
+        setMarkdownSeparator("");
+
+        var valueAsString = getCell(Label.EMPTY, value, widths);
         return NEW_LINE
                 + label
                 + ": "
-                + Strings.space(length - label.length())
-                + value;
+                + Strings.space(labelWidth - label.length())
+                + valueAsString;
+    }
+
+    /**
+     * Calculates the length of the totals.
+     *
+     * @return the biggest length of the totals
+     */
+    private int getTotalsWholeSize() {
+        var biggestTotal = Objects.isNull(depositTotal) ? BigDecimal.ZERO : depositTotal;
+        biggestTotal = biggestTotal.max(Objects.isNull(marketValue) ? BigDecimal.ZERO : marketValue);
+        biggestTotal = biggestTotal.max(Objects.isNull(investedAmount) ? BigDecimal.ZERO : investedAmount);
+        biggestTotal = biggestTotal.max(Objects.isNull(profitAndLoss) ? BigDecimal.ZERO : profitAndLoss);
+
+        for (var entry : cashInPortfolio.entrySet()) {
+            biggestTotal = biggestTotal.max(entry.getValue());
+        }
+
+        return String.valueOf(biggestTotal.intValue()).length();
     }
 
     /**

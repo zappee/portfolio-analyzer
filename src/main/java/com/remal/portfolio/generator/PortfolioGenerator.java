@@ -253,15 +253,15 @@ public class PortfolioGenerator {
             List<Price> prices = new ArrayList<>();
             prices.add(price);
 
-            // read the history file
-            if (Files.exists(Path.of(priceHistoryFile))) {
+            if (Objects.nonNull(priceHistoryFile) && Files.exists(Path.of(priceHistoryFile))) {
+                // read the price history file
                 Parser<Price> parser = Parser.build(buildOutputArgGroup());
                 prices.addAll(parser.parse(priceHistoryFile));
-            }
 
-            // writer
-            Writer<Price> writer = PriceWriter.build(buildOutputArgGroup());
-            writer.write(writeMode, priceHistoryFile, prices);
+                // write price to the history file
+                Writer<Price> writer = PriceWriter.build(buildOutputArgGroup());
+                writer.write(writeMode, priceHistoryFile, prices);
+            }
         }
     }
 
@@ -309,7 +309,7 @@ public class PortfolioGenerator {
             productSummary = getProductSummary(portfolios, portfolio, ticker);
             var clonedTransaction = transaction
                     .toBuilder()
-                    .type(TransactionType.FEE)//getTypeForAdditionalTransaction(transaction.getType()))
+                    .type(TransactionType.FEE)
                     .fee(null)
                     .ticker(transaction.getCurrency().name())
                     .quantity(transaction.getFee())

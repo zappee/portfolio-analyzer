@@ -304,6 +304,28 @@ public abstract class Writer<T> {
     }
 
     /**
+     * Generate a string that is used as a key in the Map that keeps the length of
+     * BigDecimal fields.
+     *
+     * @param  label the column ID
+     * @return the key for the Map
+     */
+    protected String getWholeWidthKey(Label label) {
+        return label.getId() + "-W";
+    }
+
+    /**
+     * Generate a string that is used as a key in the Map that keeps the length of
+     * BigDecimal fields.
+     *
+     * @param label the column ID
+     * @return      the key for the Map
+     */
+    protected String getFractionalWidthKey(Label label) {
+        return label.getId() + "-F";
+    }
+
+    /**
      * Convert an object to String.
      *
      * @param value the value
@@ -341,28 +363,6 @@ public abstract class Writer<T> {
         }
 
         return stringValue;
-    }
-
-    /**
-     * Generate a string that is used as a key in the Map that keeps the length of
-     * BigDecimal fields.
-     *
-     * @param  label the column ID
-     * @return the key for the Map
-     */
-    private String getWholeWidthKey(Label label) {
-        return label.getId() + "-W";
-    }
-
-    /**
-     * Generate a string that is used as a key in the Map that keeps the length of
-     * BigDecimal fields.
-     *
-     * @param label the column ID
-     * @return      the key for the Map
-     */
-    private String getFractionalWidthKey(Label label) {
-        return label.getId() + "-F";
     }
 
     /**

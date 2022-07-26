@@ -12,6 +12,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -138,8 +139,21 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         try {
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
-            if (Objects.isNull(json) || json.isEmpty()) {
+            if (Objects.isNull(json)) {
                 Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+            } else if (json.equals("[]")) {
+                var marketPrice = BigDecimal.ONE;
+                log.warn("the '{}' ticker exists at '{}' provider, but the price of the stock on {} does not exist",
+                        ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
+                log.info("the price of the '{}' does not exist thus market price has been set to {}",
+                        ticker, marketPrice);
+                return Optional.of(Price
+                        .builder()
+                        .unitPrice(marketPrice)
+                        .ticker(ticker)
+                        .date(LocalDateTime.now())
+                        .providerType(PROVIDER_TYPE)
+                        .build());
             } else {
                 if (json.toLowerCase().contains("notfound")) {
                     Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
