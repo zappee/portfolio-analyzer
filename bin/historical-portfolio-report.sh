@@ -36,4 +36,5 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         -U ONE_DAY \
         -O "'tmp/portfolio/portfolio-report_$start.md'"
     start=$(date -I -d "$start + 1 day")
+    # read -r -p "Press enter to continue"
 done
