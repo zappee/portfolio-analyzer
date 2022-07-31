@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -77,8 +78,8 @@ public class PortfolioCommand implements Callable<Integer> {
         // parser
         Parser<Transaction> parser = Parser.build(inputArgGroup);
         var zone = ZoneId.of(inputArgGroup.getZone());
-        var filename = LocalDateTimes.toString(zone, inputArgGroup.getFile(), LocalDateTime.now());
-        var transactions = parser.parse(filename);
+        var transactionsFile = LocalDateTimes.toString(zone, inputArgGroup.getFile(), LocalDateTime.now());
+        var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
                 .stream()
@@ -93,8 +94,12 @@ public class PortfolioCommand implements Callable<Integer> {
         List<PortfolioCollection> portfolioCollections = new ArrayList<>();
         portfolioCollections.add(summary);
 
+        var outFilenameTemplate = outputArgGroup.getOutputFile();
+        var outFilename = Objects.isNull(outFilenameTemplate)
+                ? null
+                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), portfolioCollections);
+        writer.write(outputArgGroup.getWriteMode(), outFilename, portfolioCollections);
         return CommandLine.ExitCode.OK;
     }
 }

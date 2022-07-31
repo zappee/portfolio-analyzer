@@ -99,8 +99,8 @@ public class LocalDateTimes {
             } catch (IllegalArgumentException e) {
                 Logger.logErrorAndExit(
                         "An error has occurred while converting date to string. "
-                        + "Wrap the filename with quotas may help, e.g. \"'tmp/'yyyy-MM-dd'_report.md'\". "
-                        + "Pattern '{}', Error: {}",
+                        + "Wrap the filename with quotas may help, e.g. \"'dir/'yyyy-MM-dd'_report.md'\". "
+                        + "Pattern \"{}\", Error: {}",
                         dateTimePattern,
                         e.getMessage());
             }

@@ -176,7 +176,7 @@ public abstract class Writer<T> {
 
             // add the new items if not exist
             itemContainer.addAll(items.stream()
-                    .filter(item -> !items.contains(item))
+                    .filter(item -> !itemContainer.contains(item))
                     .toList());
         } else {
             itemContainer.addAll(items);
@@ -207,7 +207,7 @@ public abstract class Writer<T> {
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
                 StdoutWriter.write(reportAsString);
             }
-            default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", filename);
+            default -> Logger.logErrorAndExit("Unsupported output file type: \"{}\"", filename);
         }
     }
 

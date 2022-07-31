@@ -53,7 +53,7 @@ public class FileWriter {
     public static void write(FileWriter.WriteMode writeMode, String filename, byte[] content) {
         try {
             var path = Path.of(filename);
-            log.debug("> writing the report to '{}', write-mode: {}...", filename, writeMode);
+            log.debug("> writing the report to \"{}\", write-mode: {}...", filename, writeMode);
             if (writeMode == WriteMode.STOP_IF_EXIST) {
                 Files.write(path, content, StandardOpenOption.CREATE_NEW);
             } else {
