@@ -166,18 +166,18 @@ public class TransactionParser extends Parser<Transaction> {
                         var index = new AtomicInteger(firstColumn);
                         Transaction t = Transaction
                                 .builder()
-                                .portfolio(getString(index, fields, Label.PORTFOLIO))
-                                .ticker(getString(index, fields, Label.TICKER))
+                                .portfolio(getString(index, fields, Label.HEADER_PORTFOLIO))
+                                .ticker(getString(index, fields, Label.HEADER_TICKER))
                                 .type(getTransactionType(index, fields))
                                 .inventoryValuation(getInventoryValuationType(index, fields))
                                 .tradeDate(getLocalDateTime(index, fields))
-                                .quantity(getBigDecimal(index, fields, Label.QUANTITY))
-                                .price(getBigDecimal(index, fields, Label.PRICE))
-                                .fee(getBigDecimal(index, fields, Label.FEE))
+                                .quantity(getBigDecimal(index, fields, Label.HEADER_QUANTITY))
+                                .price(getBigDecimal(index, fields, Label.HEADER_PRICE))
+                                .fee(getBigDecimal(index, fields, Label.HEADER_FEE))
                                 .currency(getCurrencyType(index, fields))
-                                .orderId(getString(index, fields, Label.ORDER_ID))
-                                .tradeId(getString(index, fields, Label.TRADE_DATE))
-                                .transferId(getString(index, fields, Label.TRANSFER_ID))
+                                .orderId(getString(index, fields, Label.HEADER_ORDER_ID))
+                                .tradeId(getString(index, fields, Label.HEADER_TRADE_DATE))
+                                .transferId(getString(index, fields, Label.HEADER_TRANSFER_ID))
                                 .build();
                         transactions.add(t);
                     });
@@ -210,7 +210,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return       next index value
      */
     private TransactionType getTransactionType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.TYPE.getId())) {
+        if (missingColumns.contains(Label.HEADER_TYPE.getId())) {
             return null;
         } else {
             return TransactionType.getEnum(fields[index.getAndIncrement()].trim());
@@ -225,7 +225,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return       next index value
      */
     private InventoryValuationType getInventoryValuationType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.VALUATION.getId())) {
+        if (missingColumns.contains(Label.HEADER_VALUATION.getId())) {
             return null;
         } else {
             return InventoryValuationType.getEnum(fields[index.getAndIncrement()].trim());
@@ -240,7 +240,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return       next index value
      */
     private CurrencyType getCurrencyType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.CURRENCY.getId())) {
+        if (missingColumns.contains(Label.HEADER_CURRENCY.getId())) {
             return null;
         } else {
             return CurrencyType.getEnum(fields[index.getAndIncrement()].trim());

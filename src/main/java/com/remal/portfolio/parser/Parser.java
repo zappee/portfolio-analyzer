@@ -280,7 +280,7 @@ public abstract class Parser<T> {
      * @return       the next index value
      */
     protected LocalDateTime getLocalDateTime(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.TRADE_DATE.getId())) {
+        if (missingColumns.contains(Label.HEADER_TRADE_DATE.getId())) {
             return null;
         } else {
             return LocalDateTimes.toLocalDateTime(zone, dateTimePattern, fields[index.getAndIncrement()].trim());

@@ -101,18 +101,18 @@ public class TransactionWriter extends Writer<Transaction> {
                 .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> report
-                        .append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), csvSeparator))
-                        .append(getCell(Label.TICKER, transaction.getTicker(), csvSeparator))
-                        .append(getCell(Label.TYPE, transaction.getType(), csvSeparator))
-                        .append(getCell(Label.VALUATION, transaction.getInventoryValuation(), csvSeparator))
-                        .append(getCell(Label.TRADE_DATE, transaction.getTradeDate(), csvSeparator))
-                        .append(getCell(Label.QUANTITY, transaction.getQuantity(), csvSeparator))
-                        .append(getCell(Label.PRICE, transaction.getPrice(), csvSeparator))
-                        .append(getCell(Label.FEE, transaction.getFee(), csvSeparator))
-                        .append(getCell(Label.CURRENCY, transaction.getCurrency(), csvSeparator))
-                        .append(getCell(Label.ORDER_ID, transaction.getOrderId(), csvSeparator))
-                        .append(getCell(Label.TRADE_ID, transaction.getTradeId(), csvSeparator))
-                        .append(getCell(Label.TRANSFER_ID, transaction.getTransferId()))
+                        .append(getCell(Label.HEADER_PORTFOLIO, transaction.getPortfolio(), csvSeparator))
+                        .append(getCell(Label.HEADER_TICKER, transaction.getTicker(), csvSeparator))
+                        .append(getCell(Label.HEADER_TYPE, transaction.getType(), csvSeparator))
+                        .append(getCell(Label.HEADER_VALUATION, transaction.getInventoryValuation(), csvSeparator))
+                        .append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), csvSeparator))
+                        .append(getCell(Label.HEADER_QUANTITY, transaction.getQuantity(), csvSeparator))
+                        .append(getCell(Label.HEADER_PRICE, transaction.getPrice(), csvSeparator))
+                        .append(getCell(Label.HEADER_FEE, transaction.getFee(), csvSeparator))
+                        .append(getCell(Label.HEADER_CURRENCY, transaction.getCurrency(), csvSeparator))
+                        .append(getCell(Label.HEADER_ORDER_ID, transaction.getOrderId(), csvSeparator))
+                        .append(getCell(Label.HEADER_TRADE_ID, transaction.getTradeId(), csvSeparator))
+                        .append(getCell(Label.HEADER_TRANSFER_ID, transaction.getTransferId()))
                         .append(NEW_LINE));
         return report.toString();
     }
@@ -239,18 +239,18 @@ public class TransactionWriter extends Writer<Transaction> {
                 .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> {
-                    report.append(getCell(Label.PORTFOLIO, transaction.getPortfolio(), widths));
-                    report.append(getCell(Label.TICKER, transaction.getTicker(), widths));
-                    report.append(getCell(Label.TYPE, transaction.getType(), widths));
-                    report.append(getCell(Label.VALUATION, transaction.getInventoryValuation(), widths));
-                    report.append(getCell(Label.TRADE_DATE, transaction.getTradeDate(), widths));
-                    report.append(getCell(Label.QUANTITY, transaction.getQuantity(), widths));
-                    report.append(getCell(Label.PRICE, transaction.getPrice(), widths));
-                    report.append(getCell(Label.FEE, transaction.getFee(), widths));
-                    report.append(getCell(Label.CURRENCY, transaction.getCurrency(), widths));
-                    report.append(getCell(Label.ORDER_ID, transaction.getOrderId(), widths));
-                    report.append(getCell(Label.TRADE_ID, transaction.getTradeId(), widths));
-                    report.append(getCell(Label.TRANSFER_ID, transaction.getTransferId(), widths));
+                    report.append(getCell(Label.HEADER_PORTFOLIO, transaction.getPortfolio(), widths));
+                    report.append(getCell(Label.HEADER_TICKER, transaction.getTicker(), widths));
+                    report.append(getCell(Label.HEADER_TYPE, transaction.getType(), widths));
+                    report.append(getCell(Label.HEADER_VALUATION, transaction.getInventoryValuation(), widths));
+                    report.append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), widths));
+                    report.append(getCell(Label.HEADER_QUANTITY, transaction.getQuantity(), widths));
+                    report.append(getCell(Label.HEADER_PRICE, transaction.getPrice(), widths));
+                    report.append(getCell(Label.HEADER_FEE, transaction.getFee(), widths));
+                    report.append(getCell(Label.HEADER_CURRENCY, transaction.getCurrency(), widths));
+                    report.append(getCell(Label.HEADER_ORDER_ID, transaction.getOrderId(), widths));
+                    report.append(getCell(Label.HEADER_TRADE_ID, transaction.getTradeId(), widths));
+                    report.append(getCell(Label.HEADER_TRANSFER_ID, transaction.getTransferId(), widths));
                     report.append(markdownSeparator).append(NEW_LINE);
                 });
 
@@ -285,18 +285,18 @@ public class TransactionWriter extends Writer<Transaction> {
     private Map<String, Integer> calculateColumnWidth(List<Transaction> transactions) {
         Map<String, Integer> widths = new HashMap<>();
         transactions.forEach(transaction -> {
-            updateWidth(widths, Label.PORTFOLIO, transaction.getPortfolio());
-            updateWidth(widths, Label.TYPE, transaction.getType());
-            updateWidth(widths, Label.VALUATION, transaction.getInventoryValuation());
-            updateWidth(widths, Label.TRADE_DATE, transaction.getTradeDate());
-            updateWidth(widths, Label.QUANTITY, transaction.getQuantity());
-            updateWidth(widths, Label.PRICE, transaction.getPrice());
-            updateWidth(widths, Label.FEE, transaction.getFee());
-            updateWidth(widths, Label.CURRENCY, transaction.getCurrency());
-            updateWidth(widths, Label.TICKER, transaction.getTicker());
-            updateWidth(widths, Label.TRANSFER_ID, transaction.getTransferId());
-            updateWidth(widths, Label.TRADE_ID, transaction.getTradeId());
-            updateWidth(widths, Label.ORDER_ID, transaction.getOrderId());
+            updateWidth(widths, Label.HEADER_PORTFOLIO, transaction.getPortfolio());
+            updateWidth(widths, Label.HEADER_TYPE, transaction.getType());
+            updateWidth(widths, Label.HEADER_VALUATION, transaction.getInventoryValuation());
+            updateWidth(widths, Label.HEADER_TRADE_DATE, transaction.getTradeDate());
+            updateWidth(widths, Label.HEADER_QUANTITY, transaction.getQuantity());
+            updateWidth(widths, Label.HEADER_PRICE, transaction.getPrice());
+            updateWidth(widths, Label.HEADER_FEE, transaction.getFee());
+            updateWidth(widths, Label.HEADER_CURRENCY, transaction.getCurrency());
+            updateWidth(widths, Label.HEADER_TICKER, transaction.getTicker());
+            updateWidth(widths, Label.HEADER_TRANSFER_ID, transaction.getTransferId());
+            updateWidth(widths, Label.HEADER_TRADE_ID, transaction.getTradeId());
+            updateWidth(widths, Label.HEADER_ORDER_ID, transaction.getOrderId());
         });
         return widths;
     }

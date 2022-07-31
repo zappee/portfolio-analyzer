@@ -47,6 +47,12 @@ import java.util.Optional;
 public class PortfolioGenerator {
 
     /**
+     * The currency of the portfolio report.
+     */
+    @Setter
+    private CurrencyType baseCurrency;
+
+    /**
      * The market price downloader instances.
      */
     private static final Map<ProviderType, Downloader> DOWNLOADER = Downloader.initializeDownloader();
@@ -115,16 +121,20 @@ public class PortfolioGenerator {
     public static PortfolioGenerator build(PortfolioInputArgGroup inputArgGroup,
                                            PortfolioArgGroup.OutputArgGroup outputArgGroup) {
         var zone = ZoneId.of(outputArgGroup.getZone());
-        var priceHistoryFile = LocalDateTimes.toString(zone, outputArgGroup.getPriceHistoryFile(), LocalDateTime.now());
+        var priceHistoryFilenameTemplate = outputArgGroup.getPriceHistoryFile();
+        var priceHistoryFilename = Objects.isNull(priceHistoryFilenameTemplate)
+                ? null
+                : LocalDateTimes.toString(zone, priceHistoryFilenameTemplate, LocalDateTime.now());
         var providerFile = LocalDateTimes.toString(zone, inputArgGroup.getProviderFile(), LocalDateTime.now());
 
         PortfolioGenerator generator = new PortfolioGenerator();
+        generator.setBaseCurrency(CurrencyType.getEnum(outputArgGroup.getBaseCurrency()));
         generator.setProviderFile(providerFile);
         generator.setDateTimePattern(outputArgGroup.getDateTimePattern());
         generator.setLanguage(outputArgGroup.getLanguage());
         generator.setDecimalFormat(outputArgGroup.getDecimalFormat());
         generator.setZone(zone);
-        generator.setPriceHistoryFile(priceHistoryFile);
+        generator.setPriceHistoryFile(priceHistoryFilename);
         generator.setMultiplicity(outputArgGroup.getMultiplicity());
         generator.setWriteMode(outputArgGroup.getWriteMode());
         generator.setTradeDate(inputArgGroup.getTo());
@@ -158,6 +168,7 @@ public class PortfolioGenerator {
                 .build();
 
         updateTotals(portfolioCollection);
+        updateTotalEquity(portfolioCollection);
         return portfolioCollection;
     }
 
@@ -193,6 +204,27 @@ public class PortfolioGenerator {
                 map.put(key, map.get(key).add(product.getTotalShares()));
             }
         }));
+    }
+
+    /**
+     * Updates the value of the Total Equity.
+     *
+     * @param portfolioCollection the portfolio
+     */
+    private void updateTotalEquity(PortfolioCollection portfolioCollection) {
+        portfolioCollection.setTotalEquity(BigDecimal.ZERO);
+
+        portfolioCollection.getCashInPortfolio().forEach((currency, value) -> {
+            if (currency.equals(baseCurrency.name())) {
+                portfolioCollection.setTotalEquity(portfolioCollection.getTotalEquity().add(value));
+            } else {
+                // exchange the cash to base currency
+                // ticker: USDEUR=X: 0.9778
+                var ticker = currency + "/" + baseCurrency.name();
+                var price = getMarketPrice(ticker);
+                portfolioCollection.setTotalEquity(portfolioCollection.getTotalEquity().add(value.multiply(price)));
+            }
+        });
     }
 
     /**

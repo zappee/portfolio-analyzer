@@ -81,10 +81,10 @@ public class PriceWriter extends Writer<Price> {
                 .stream()
                 .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> report
-                    .append(getCell(Label.TICKER, productPrice.getTicker(), csvSeparator))
-                    .append(getCell(Label.PRICE, productPrice.getUnitPrice(), csvSeparator))
-                    .append(getCell(Label.DATE, productPrice.getDate(), csvSeparator))
-                    .append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType()))
+                    .append(getCell(Label.HEADER_TICKER, productPrice.getTicker(), csvSeparator))
+                    .append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), csvSeparator))
+                    .append(getCell(Label.HEADER_DATE, productPrice.getDate(), csvSeparator))
+                    .append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getProviderType()))
                     .append(NEW_LINE));
 
         return report.toString();
@@ -163,10 +163,10 @@ public class PriceWriter extends Writer<Price> {
                 .stream()
                 .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> {
-                    report.append(getCell(Label.TICKER, productPrice.getTicker(), widths));
-                    report.append(getCell(Label.PRICE, productPrice.getUnitPrice(), widths));
-                    report.append(getCell(Label.DATE, productPrice.getDate(), widths));
-                    report.append(getCell(Label.DATA_PROVIDER, productPrice.getProviderType(), widths));
+                    report.append(getCell(Label.HEADER_TICKER, productPrice.getTicker(), widths));
+                    report.append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), widths));
+                    report.append(getCell(Label.HEADER_DATE, productPrice.getDate(), widths));
+                    report.append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getProviderType(), widths));
                     report.append(markdownSeparator).append(NEW_LINE);
                 });
 
@@ -197,10 +197,10 @@ public class PriceWriter extends Writer<Price> {
     private Map<String, Integer> calculateColumnWidth(List<Price> prices) {
         Map<String, Integer> widths = new HashMap<>();
         prices.forEach(productPrice -> {
-            updateWidth(widths, Label.TICKER, productPrice.getTicker());
-            updateWidth(widths, Label.PRICE, productPrice.getUnitPrice());
-            updateWidth(widths, Label.DATE, productPrice.getDate());
-            updateWidth(widths, Label.DATA_PROVIDER, productPrice.getProviderType());
+            updateWidth(widths, Label.HEADER_TICKER, productPrice.getTicker());
+            updateWidth(widths, Label.HEADER_PRICE, productPrice.getUnitPrice());
+            updateWidth(widths, Label.HEADER_DATE, productPrice.getDate());
+            updateWidth(widths, Label.HEADER_DATA_PROVIDER, productPrice.getProviderType());
         });
         return widths;
     }

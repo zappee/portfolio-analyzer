@@ -30,6 +30,17 @@ public class PortfolioArgGroup {
     public static class OutputArgGroup {
 
         /**
+         * Set the ISO 4217 currency code that Coinbase
+         * registered for you.
+         */
+        @CommandLine.Option(
+                names = {"-B", "--base-currency"},
+                description = "The currency of the portfolio report, e.g. \"EUR\", etc. "
+                        + "Default: \"${DEFAULT-VALUE}\"",
+                defaultValue = "EUR")
+        private String baseCurrency;
+
+        /**
          * Set the output file name.
          */
         @CommandLine.Option(

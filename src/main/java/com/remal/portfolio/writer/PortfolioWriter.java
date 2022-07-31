@@ -1,5 +1,6 @@
 package com.remal.portfolio.writer;
 
+import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Portfolio;
@@ -37,6 +38,12 @@ import java.util.Objects;
 public class PortfolioWriter extends Writer<PortfolioCollection> {
 
     /**
+     * The currency of the portfolio report.
+     */
+    @Setter
+    private CurrencyType baseCurrency;
+
+    /**
      * Set the product name filter.
      */
     @Setter
@@ -45,27 +52,34 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     /**
      * The total invested amount.
      */
-    private BigDecimal depositTotal = BigDecimal.ZERO;
+    private BigDecimal depositTotal;
 
     /**
      * Portfolio market value
      */
-    private BigDecimal marketValue = BigDecimal.ZERO;
+    private BigDecimal marketValue;
 
     /**
      * Invested amount.
      */
-    private BigDecimal investedAmount = BigDecimal.ZERO;
+    private BigDecimal investedAmount;
 
     /**
      * P/L on portfolio.
      */
-    private BigDecimal profitAndLoss = BigDecimal.ZERO;
+    private BigDecimal profitAndLoss;
 
     /**
      * Cash in portfolio.
      */
     private final Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
+
+    /**
+     * The account value, also known as total equity, is the total dollar value of all
+     * the holdings of the trading account, not just the securities, but the cash as
+     * well.
+     */
+    private BigDecimal totalEquity;
 
     /**
      * Builder that initializes a new writer instance.
@@ -78,8 +92,8 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                                         PortfolioArgGroup.OutputArgGroup outputArgGroup) {
 
         var writer = new PortfolioWriter();
+        writer.setBaseCurrency(CurrencyType.getEnum(outputArgGroup.getBaseCurrency()));
         writer.setTickers(inputArgGroup.getTickers());
-
         writer.setHideTitle(outputArgGroup.isHideTitle());
         writer.setHideHeader(outputArgGroup.isHideHeader());
         writer.setLanguage(outputArgGroup.getLanguage());
@@ -162,18 +176,18 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                         .forEach(p -> {
                             if (BigDecimals.isNotZero(p.getTotalShares())) {
                                 report
-                                    .append(getCell(Label.PORTFOLIO, p.getName(), widths))
-                                    .append(getCell(Label.TICKER, p.getTicker(), widths))
-                                    .append(getCell(Label.QUANTITY, p.getTotalShares(), widths))
-                                    .append(getCell(Label.AVG_PRICE, p.getAveragePrice(), widths))
-                                    .append(getCell(Label.INVESTED_AMOUNT, p.getInvestedAmount(), widths))
-                                    .append(getCell(Label.MARKET_UNIT_PRICE, p.getMarketUnitPrice(), widths))
-                                    .append(getCell(Label.MARKET_VALUE, p.getMarketValue(), widths))
-                                    .append(getCell(Label.PROFIT_LOSS, p.getProfitAndLoss(), widths))
-                                    .append(getCell(Label.PROFIT_LOSS_PERCENT, p.getProfitLossPercent(), widths))
-                                    .append(getCell(Label.COST_TOTAL, p.getCostTotal(), widths))
-                                    .append(getCell(Label.DEPOSIT_TOTAL, p.getDepositTotal(), widths))
-                                    .append(getCell(Label.WITHDRAWAL_TOTAL, p.getWithdrawalTotal(), widths))
+                                    .append(getCell(Label.HEADER_PORTFOLIO, p.getName(), widths))
+                                    .append(getCell(Label.HEADER_TICKER, p.getTicker(), widths))
+                                    .append(getCell(Label.HEADER_QUANTITY, p.getTotalShares(), widths))
+                                    .append(getCell(Label.HEADER_AVG_PRICE, p.getAveragePrice(), widths))
+                                    .append(getCell(Label.HEADER_INVESTED_AMOUNT, p.getInvestedAmount(), widths))
+                                    .append(getCell(Label.HEADER_MARKET_UNIT_PRICE, p.getMarketUnitPrice(), widths))
+                                    .append(getCell(Label.HEADER_MARKET_VALUE, p.getMarketValue(), widths))
+                                    .append(getCell(Label.HEADER_PROFIT_LOSS, p.getProfitAndLoss(), widths))
+                                    .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, p.getProfitLossPercent(), widths))
+                                    .append(getCell(Label.HEADER_COST_TOTAL, p.getCostTotal(), widths))
+                                    .append(getCell(Label.HEADER_DEPOSIT_TOTAL, p.getDepositTotal(), widths))
+                                    .append(getCell(Label.HEADER_WITHDRAWAL_TOTAL, p.getWithdrawalTotal(), widths))
                                     .append(markdownSeparator)
                                     .append(NEW_LINE);
                             }
@@ -183,7 +197,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
 
         // footer
         updateTotals(items);
-        report.append(generateCsvFooter());
+        report.append(generateMarkdownFooter());
 
         return report.toString();
     }
@@ -206,7 +220,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      */
     private StringBuilder buildTableHeader(List<PortfolioCollection> items) {
         var sb = new StringBuilder();
-        sb.append(Label.DATE.getLabel(language)).append(csvSeparator);
+        sb.append(Label.HEADER_DATE.getLabel(language)).append(csvSeparator);
         items.forEach(summaries ->
                 summaries.getPortfolios().forEach(portfolio ->
                         portfolio
@@ -241,6 +255,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
         marketValue = BigDecimal.ZERO;
         investedAmount = BigDecimal.ZERO;
         profitAndLoss = BigDecimal.ZERO;
+        totalEquity = BigDecimal.ZERO;
         cashInPortfolio.clear();
 
         items.forEach(portfolio -> {
@@ -248,6 +263,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
             marketValue = marketValue.add(portfolio.getMarketValue());
             investedAmount = investedAmount.add(portfolio.getInvestedAmount());
             profitAndLoss = profitAndLoss.add(portfolio.getProfitAndLoss());
+            totalEquity = totalEquity.add(portfolio.getTotalEquity());
             portfolio.getCashInPortfolio().forEach((key, value) -> cashInPortfolio.merge(key, value, BigDecimal::add));
         });
     }
@@ -257,19 +273,21 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      *
      * @return the table headers as a string
      */
-    private StringBuilder generateCsvFooter() {
+    private StringBuilder generateMarkdownFooter() {
         var labelWith = getLongestLabel(Arrays.asList(
                 Label.LABEL_DEPOSIT.getLabel(language),
                 Label.LABEL_MARKET_VALUE.getLabel(language),
                 Label.LABEL_INVESTMENT.getLabel(language),
                 Label.LABEL_PROFIT_LOSS.getLabel(language),
-                Label.LABEL_CASH.getLabel(language)));
+                Label.LABEL_CASH.getLabel(language),
+                Label.LABEL_TOTAL_EQUITY.getLabel(language)));
 
         var totalWholeSize = getTotalsWholeSize();
-        var emptyLabel = Label.EMPTY;
+        var fractionalSize = 2;
+        var emptyLabel = Label.HEADER_EMPTY;
         Map<String, Integer> widths = new HashMap<>();
         widths.put(getWholeWidthKey(emptyLabel), totalWholeSize);
-        widths.put(getFractionalWidthKey(emptyLabel), 2);
+        widths.put(getFractionalWidthKey(emptyLabel), fractionalSize);
 
         var sb = new StringBuilder()
                 .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), labelWith, depositTotal, widths))
@@ -280,6 +298,16 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
         cashInPortfolio.forEach((key, value) -> sb.append(
                 showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), labelWith, value, widths))
         );
+
+        var horizontalLineWidth = labelWith + ": ".length() + totalWholeSize + ".".length() + fractionalSize;
+        horizontalLineWidth += totalWholeSize / 3; // extra space for the decimal separators
+        sb
+                .append(NEW_LINE).append("_".repeat(horizontalLineWidth)).append(NEW_LINE)
+                .append(showTotal(
+                        Label.LABEL_TOTAL_EQUITY.getLabel(language).replace("{1}", baseCurrency.name()),
+                        labelWith,
+                        totalEquity,
+                        widths));
         return sb;
     }
 
@@ -295,7 +323,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
         setDecimalFormat("###,###,###,###,###,###.##");
         setMarkdownSeparator("");
 
-        var valueAsString = getCell(Label.EMPTY, value, widths);
+        var valueAsString = getCell(Label.HEADER_EMPTY, value, widths);
         return NEW_LINE
                 + label
                 + ": "
@@ -345,18 +373,18 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      */
     private StringBuilder buildReportItem(Portfolio portfolio) {
         return new StringBuilder()
-                .append(getCell(Label.PORTFOLIO, portfolio.getName(), csvSeparator))
-                .append(getCell(Label.TICKER, portfolio.getTicker(), csvSeparator))
-                .append(getCell(Label.QUANTITY, portfolio.getTotalShares(), csvSeparator))
-                .append(getCell(Label.AVG_PRICE, portfolio.getAveragePrice(), csvSeparator))
-                .append(getCell(Label.INVESTED_AMOUNT, portfolio.getInvestedAmount(), csvSeparator))
-                .append(getCell(Label.MARKET_UNIT_PRICE, portfolio.getMarketUnitPrice(), csvSeparator))
-                .append(getCell(Label.MARKET_VALUE, portfolio.getMarketValue(), csvSeparator))
-                .append(getCell(Label.PROFIT_LOSS, portfolio.getProfitAndLoss(), csvSeparator))
-                .append(getCell(Label.PROFIT_LOSS_PERCENT, portfolio.getProfitLossPercent(), csvSeparator))
-                .append(getCell(Label.COST_TOTAL, portfolio.getCostTotal(), csvSeparator))
-                .append(getCell(Label.DEPOSIT_TOTAL, portfolio.getDepositTotal(), csvSeparator))
-                .append(getCell(Label.WITHDRAWAL_TOTAL, portfolio.getWithdrawalTotal(), csvSeparator));
+                .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), csvSeparator))
+                .append(getCell(Label.HEADER_TICKER, portfolio.getTicker(), csvSeparator))
+                .append(getCell(Label.HEADER_QUANTITY, portfolio.getTotalShares(), csvSeparator))
+                .append(getCell(Label.HEADER_AVG_PRICE, portfolio.getAveragePrice(), csvSeparator))
+                .append(getCell(Label.HEADER_INVESTED_AMOUNT, portfolio.getInvestedAmount(), csvSeparator))
+                .append(getCell(Label.HEADER_MARKET_UNIT_PRICE, portfolio.getMarketUnitPrice(), csvSeparator))
+                .append(getCell(Label.HEADER_MARKET_VALUE, portfolio.getMarketValue(), csvSeparator))
+                .append(getCell(Label.HEADER_PROFIT_LOSS, portfolio.getProfitAndLoss(), csvSeparator))
+                .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, portfolio.getProfitLossPercent(), csvSeparator))
+                .append(getCell(Label.HEADER_COST_TOTAL, portfolio.getCostTotal(), csvSeparator))
+                .append(getCell(Label.HEADER_DEPOSIT_TOTAL, portfolio.getDepositTotal(), csvSeparator))
+                .append(getCell(Label.HEADER_WITHDRAWAL_TOTAL, portfolio.getWithdrawalTotal(), csvSeparator));
     }
 
     /*
@@ -420,18 +448,18 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                 productSummary.getPortfolios().forEach(portfolio ->
                         portfolio.forEach(p -> {
                             if (BigDecimals.isNotZero(p.getTotalShares())) {
-                                updateWidth(widths, Label.PORTFOLIO, p.getName());
-                                updateWidth(widths, Label.TICKER, p.getTicker());
-                                updateWidth(widths, Label.QUANTITY, p.getTotalShares());
-                                updateWidth(widths, Label.AVG_PRICE, p.getAveragePrice());
-                                updateWidth(widths, Label.INVESTED_AMOUNT, p.getInvestedAmount());
-                                updateWidth(widths, Label.MARKET_UNIT_PRICE, p.getMarketUnitPrice());
-                                updateWidth(widths, Label.MARKET_VALUE, p.getMarketValue());
-                                updateWidth(widths, Label.PROFIT_LOSS, p.getProfitAndLoss());
-                                updateWidth(widths, Label.PROFIT_LOSS_PERCENT, p.getProfitLossPercent());
-                                updateWidth(widths, Label.COST_TOTAL, p.getCostTotal());
-                                updateWidth(widths, Label.DEPOSIT_TOTAL, p.getDepositTotal());
-                                updateWidth(widths, Label.WITHDRAWAL_TOTAL, p.getWithdrawalTotal());
+                                updateWidth(widths, Label.HEADER_PORTFOLIO, p.getName());
+                                updateWidth(widths, Label.HEADER_TICKER, p.getTicker());
+                                updateWidth(widths, Label.HEADER_QUANTITY, p.getTotalShares());
+                                updateWidth(widths, Label.HEADER_AVG_PRICE, p.getAveragePrice());
+                                updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, p.getInvestedAmount());
+                                updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, p.getMarketUnitPrice());
+                                updateWidth(widths, Label.HEADER_MARKET_VALUE, p.getMarketValue());
+                                updateWidth(widths, Label.HEADER_PROFIT_LOSS, p.getProfitAndLoss());
+                                updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, p.getProfitLossPercent());
+                                updateWidth(widths, Label.HEADER_COST_TOTAL, p.getCostTotal());
+                                updateWidth(widths, Label.HEADER_DEPOSIT_TOTAL, p.getDepositTotal());
+                                updateWidth(widths, Label.HEADER_WITHDRAWAL_TOTAL, p.getWithdrawalTotal());
                             }
                         })
                 )

@@ -97,7 +97,7 @@ public class YahooDownloader implements Downloader {
         Optional<Price> marketPrice = Optional.empty();
         try {
             Stock stock = YahooFinance.get(ticker);
-            List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, timestamp, Interval.DAILY);
+            List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, Interval.DAILY);
             if (historicalQuotes.isEmpty()) {
                 Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else {

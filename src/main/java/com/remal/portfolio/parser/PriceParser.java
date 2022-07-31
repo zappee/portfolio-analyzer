@@ -127,8 +127,8 @@ public class PriceParser extends Parser<Price> {
                         var index = new AtomicInteger(1);
                         Price p = Price
                                 .builder()
-                                .ticker(getString(index, fields, Label.TICKER))
-                                .unitPrice(getBigDecimal(index, fields, Label.PRICE))
+                                .ticker(getString(index, fields, Label.HEADER_TICKER))
+                                .unitPrice(getBigDecimal(index, fields, Label.HEADER_PRICE))
                                 .date(getLocalDateTime(index, fields))
                                 .providerType(getProviderType(index, fields))
                                 .build();
@@ -154,7 +154,7 @@ public class PriceParser extends Parser<Price> {
      * @return the next index value
      */
     private ProviderType getProviderType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.CURRENCY.getId())) {
+        if (missingColumns.contains(Label.HEADER_CURRENCY.getId())) {
             return null;
         } else {
             return ProviderType.getEnum(fields[index.getAndIncrement()].trim());

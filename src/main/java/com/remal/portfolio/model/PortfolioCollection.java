@@ -56,4 +56,11 @@ public class PortfolioCollection {
      * Cash in portfolio.
      */
     private Map<String, BigDecimal> cashInPortfolio;
+
+    /**
+     * The account value, also known as total equity, is the total dollar value of all
+     * the holdings of the trading account, not just the securities, but the cash as
+     * well.
+     */
+    private BigDecimal totalEquity;
 }
