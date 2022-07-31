@@ -7,6 +7,9 @@
 #  you can extend the file with the daily data by running the same command
 #  from i.e. Linux cron scheduler.
 #
+#  Determine how long this bash script takes to run:
+#     time historical-portfolio-report.sh
+#
 #  Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
 #  BSD (2-clause) licensed
 #
@@ -15,7 +18,7 @@
 # ##############################################################################
 
 start="2018-01-18"
-end="2018-02-05"
+end="2022-08-01"
 transactionReport="'tmp/transactions-report_2022-07-12.md'"
 dataProvidersRegistry="'tmp/provider.properties'"
 priceHistory="'tmp/price-history.md'"
