@@ -113,6 +113,48 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         return price;
     }
 
+
+    /**
+     * Downloads the market price of a product at a specific date in the past.
+     * If the price does not exist for the requested date then we are trying to move
+     * back in time a little for the first available price.
+     *
+     * @param ticker the product
+     * @param requestedTradeDate the trade date where we need the market price
+     * @return the market price
+     */
+    @Override
+    public Optional<Price> getPrice(String ticker, Calendar requestedTradeDate) {
+        var maxRepetitions = 20;
+        var repetitions = 0;
+
+        var actualTradeDate = (Calendar) requestedTradeDate.clone();
+        var price = download(ticker, actualTradeDate);
+
+        while (price.isEmpty() && repetitions < maxRepetitions) {
+            actualTradeDate.add(Calendar.MINUTE, -1);
+            price = download(ticker, actualTradeDate);
+            repetitions++;
+        }
+
+        if (price.isEmpty()) {
+            var marketPrice = new BigDecimal(-1);
+            log.info("the price of the '{}' does not exist thus market price has been set to {}", ticker, marketPrice);
+            price = Optional.of(Price
+                    .builder()
+                    .unitPrice(marketPrice)
+                    .ticker(ticker)
+                    .date(Calendars.toLocalDateTime(requestedTradeDate))
+                    .providerType(PROVIDER_TYPE)
+                    .build());
+        } else {
+            price.get().setDate(Calendars.toLocalDateTime(requestedTradeDate));
+        }
+
+        logResult(ticker, price.orElse(null));
+        return price;
+    }
+
     /**
      * Downloads the price of a stock on a certain date in the past.
      *
@@ -120,8 +162,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      * @param timestamp date in the past
      * @return          the latest price
      */
-    @Override
-    public Optional<Price> getPrice(String ticker, Calendar timestamp) {
+    private Optional<Price> download(String ticker, Calendar timestamp) {
         var message = "< getting the price of '{}' at {}, provider: '{}'...";
         log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
 
@@ -142,18 +183,8 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             if (Objects.isNull(json)) {
                 Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
             } else if (json.equals("[]")) {
-                var marketPrice = BigDecimal.ONE;
                 log.warn("the '{}' ticker exists at '{}' provider, but the price of the stock on {} does not exist",
                         ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
-                log.info("the price of the '{}' does not exist thus market price has been set to {}",
-                        ticker, marketPrice);
-                return Optional.of(Price
-                        .builder()
-                        .unitPrice(marketPrice)
-                        .ticker(ticker)
-                        .date(Calendars.toLocalDateTime(timestamp))
-                        .providerType(PROVIDER_TYPE)
-                        .build());
             } else {
                 if (json.toLowerCase().contains("notfound")) {
                     Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
@@ -180,7 +211,6 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
         }
 
-        logResult(ticker, price.orElse(null));
         return price;
     }
 
