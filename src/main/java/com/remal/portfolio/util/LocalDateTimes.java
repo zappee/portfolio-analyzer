@@ -54,7 +54,7 @@ public class LocalDateTimes {
             }
         } catch (DateTimeParseException e) {
             Logger.logErrorAndExit(
-                    "Error while parsing the '{}' string to datetime, pattern: '{}'.",
+                    "Error while parsing the \"{}\" string to datetime, pattern: \"{}\".",
                     dateTimeAsString,
                     dateTimePattern);
         }

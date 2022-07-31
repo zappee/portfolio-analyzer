@@ -13,6 +13,9 @@ import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -79,8 +82,14 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
         var transactions = parser.parse();
 
         // output
+        var outFilenameTemplate = outputArgGroup.getOutputFile();
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var outFilename = Objects.isNull(outFilenameTemplate)
+                ? null
+                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
+
         Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
+        writer.write(outputArgGroup.getWriteMode(), outFilename, transactions);
         return CommandLine.ExitCode.OK;
     }
 }

@@ -6,14 +6,18 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.CombineInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.TransactionWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -76,16 +80,21 @@ public class CombineCommand implements Callable<Integer> {
         final List<Transaction> transactions = new ArrayList<>();
 
         // parser
+        var zone = ZoneId.of(outputArgGroup.getZone());
         var parser = Parser.build(inputArgGroup);
-        inputArgGroup.getFiles().forEach(file -> combine(
-                parser.parse(file),
-                transactions,
-                overwrite)
-        );
+        inputArgGroup.getFiles().forEach(filenameTemplate -> {
+            var filename = LocalDateTimes.toString(zone, filenameTemplate, LocalDateTime.now());
+            combine(parser.parse(filename), transactions, overwrite);
+        });
 
         // writer
+        var outFilenameTemplate = outputArgGroup.getOutputFile();
+        var outFilename = Objects.isNull(outFilenameTemplate)
+                ? null
+                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
+
         Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
+        writer.write(outputArgGroup.getWriteMode(), outFilename, transactions);
         return CommandLine.ExitCode.OK;
     }
 

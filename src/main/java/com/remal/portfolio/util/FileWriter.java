@@ -60,7 +60,7 @@ public class FileWriter {
                 Files.write(path, content);
             }
         } catch (IOException e) {
-            var message = "An unexpected error has occurred while writing to '{}' file. Error: {}";
+            var message = "An unexpected error has occurred while writing to \"{}\" file. Error: {}";
             Logger.logErrorAndExit(message, filename, e.toString());
         }
     }

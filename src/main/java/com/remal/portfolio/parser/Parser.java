@@ -50,18 +50,18 @@ public abstract class Parser<T> {
     /**
      * Log message.
      */
-    protected static final String LOG_ERROR_GENERAL = "Error while parsing the '{}' file. Error: {}";
+    protected static final String LOG_ERROR_GENERAL = "Error while parsing the \"{}\" file. Error: {}";
 
     /**
      * Log message.
      */
-    protected static final String LOG_ERROR_ARRAY_INDEX = "Error while parsing the '{}' file. "
+    protected static final String LOG_ERROR_ARRAY_INDEX = "Error while parsing the \"{}\" file. "
             + "Can be consider to use '--has-title' and '--has-header' options. Error: {}";
 
     /**
      * Log message.
      */
-    private static final String LOG_BEFORE_EXECUTION = "< reading the '{}' {} file...";
+    private static final String LOG_BEFORE_EXECUTION = "< reading the \"{}\" {} file...";
 
     /**
      *  Use it if the input report file does not contain title.
