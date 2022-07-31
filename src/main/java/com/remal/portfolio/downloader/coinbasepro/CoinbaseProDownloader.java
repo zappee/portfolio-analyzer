@@ -131,6 +131,14 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
         var price = download(ticker, actualTradeDate);
 
+        // reset the second and try it again
+        if (price.isEmpty()) {
+            actualTradeDate.set(Calendar.SECOND, 0);
+            actualTradeDate.set(Calendar.MILLISECOND, 0);
+            price = download(ticker, actualTradeDate);
+        }
+
+        // trying to move back in time a little for the first available price
         while (price.isEmpty() && repetitions < maxRepetitions) {
             actualTradeDate.add(Calendar.MINUTE, -1);
             price = download(ticker, actualTradeDate);
