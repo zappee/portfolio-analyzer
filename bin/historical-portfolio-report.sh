@@ -8,7 +8,7 @@
 #  from i.e. Linux cron scheduler.
 #
 #  Determine how long this bash script takes to run:
-#     time historical-portfolio-report.sh
+#     time bin/historical-portfolio-report.sh
 #
 #  Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
 #  BSD (2-clause) licensed
