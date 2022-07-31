@@ -8,12 +8,15 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
 import com.remal.portfolio.writer.PortfolioWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -73,7 +76,9 @@ public class PortfolioCommand implements Callable<Integer> {
 
         // parser
         Parser<Transaction> parser = Parser.build(inputArgGroup);
-        var transactions = parser.parse(inputArgGroup.getFile());
+        var zone = ZoneId.of(inputArgGroup.getZone());
+        var filename = LocalDateTimes.toString(zone, inputArgGroup.getFile(), LocalDateTime.now());
+        var transactions = parser.parse(filename);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
                 .stream()

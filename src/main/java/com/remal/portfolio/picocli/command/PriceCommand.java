@@ -6,12 +6,15 @@ import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.PriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +90,9 @@ public class PriceCommand implements Callable<Integer> {
         Logger.setSilentMode(quietMode);
 
         var ticker = inputArgGroup.getTicker();
-        var providerFile = inputArgGroup.getProviderArgGroup().getProviderFile();
+        var providerFileTemplate = inputArgGroup.getProviderArgGroup().getProviderFile();
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var providerFile = LocalDateTimes.toString(zone, providerFileTemplate, LocalDateTime.now());
         var provider = Stream.<Supplier<ProviderType>>of(
                         () -> inputArgGroup.getProviderArgGroup().getProviderType(),
                         () -> ProviderType.getProvider(ticker, providerFile))
@@ -97,7 +102,6 @@ public class PriceCommand implements Callable<Integer> {
                 .orElse(null);
         var tickerAlias = ProviderType.getTicker(ticker, providerFile);
         var price = getPrice(tickerAlias, provider);
-
         List<Price> prices = new ArrayList<>();
         price.ifPresent(p -> {
             p.setTicker(ticker);

@@ -151,7 +151,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
                         .builder()
                         .unitPrice(marketPrice)
                         .ticker(ticker)
-                        .date(LocalDateTime.now())
+                        .date(Calendars.toLocalDateTime(timestamp))
                         .providerType(PROVIDER_TYPE)
                         .build());
             } else {

@@ -135,7 +135,6 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      */
     @Override
     protected String buildMarkdownReport(List<PortfolioCollection> items) {
-        items.addAll((new PortfolioParser()).parse("'filename.md'"));
         items.sort(Comparator.comparing(PortfolioCollection::getGenerated));
 
         var widths = calculateColumnWidth(items);

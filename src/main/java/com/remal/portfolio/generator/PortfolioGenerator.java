@@ -9,7 +9,6 @@ import com.remal.portfolio.model.Price;
 import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
-import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
@@ -25,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -117,13 +114,17 @@ public class PortfolioGenerator {
      */
     public static PortfolioGenerator build(PortfolioInputArgGroup inputArgGroup,
                                            PortfolioArgGroup.OutputArgGroup outputArgGroup) {
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var priceHistoryFile = LocalDateTimes.toString(zone, outputArgGroup.getPriceHistoryFile(), LocalDateTime.now());
+        var providerFile = LocalDateTimes.toString(zone, inputArgGroup.getProviderFile(), LocalDateTime.now());
+
         PortfolioGenerator generator = new PortfolioGenerator();
-        generator.setProviderFile(inputArgGroup.getProviderFile());
+        generator.setProviderFile(providerFile);
         generator.setDateTimePattern(outputArgGroup.getDateTimePattern());
         generator.setLanguage(outputArgGroup.getLanguage());
         generator.setDecimalFormat(outputArgGroup.getDecimalFormat());
-        generator.setZone(ZoneId.of(outputArgGroup.getZone()));
-        generator.setPriceHistoryFile(outputArgGroup.getPriceHistoryFile());
+        generator.setZone(zone);
+        generator.setPriceHistoryFile(priceHistoryFile);
         generator.setMultiplicity(outputArgGroup.getMultiplicity());
         generator.setWriteMode(outputArgGroup.getWriteMode());
         generator.setTradeDate(inputArgGroup.getTo());
@@ -249,16 +250,11 @@ public class PortfolioGenerator {
      */
     private void saveMarketPrice(Price price) {
         if (Objects.nonNull(price)) {
-
             List<Price> prices = new ArrayList<>();
             prices.add(price);
 
-            if (Objects.nonNull(priceHistoryFile) && Files.exists(Path.of(priceHistoryFile))) {
-                // read the price history file
-                Parser<Price> parser = Parser.build(buildOutputArgGroup());
-                prices.addAll(parser.parse(priceHistoryFile));
-
-                // write price to the history file
+            // write price to the history file
+            if (Objects.nonNull(priceHistoryFile)) {
                 Writer<Price> writer = PriceWriter.build(buildOutputArgGroup());
                 writer.write(writeMode, priceHistoryFile, prices);
             }

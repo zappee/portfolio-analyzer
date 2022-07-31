@@ -7,7 +7,6 @@ import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.FileWriter;
-import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Strings;
@@ -22,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -161,45 +161,53 @@ public abstract class Writer<T> {
      * Write the report to the output. The output can be a file ot the
      * standard output.
      *
-     * @param writeMode        control the way of open the file
-     * @param fileNameTemplate the report file name, can contain date/time patterns too
-     * @param items            the report
+     * @param writeMode control the way of open the file
+     * @param filename  the report file name, can contain date/time patterns too
+     * @param items     the report data
      */
-    public void write(FileWriter.WriteMode writeMode, String fileNameTemplate, List<T> items) {
+    public void write(FileWriter.WriteMode writeMode, String filename, List<T> items) {
         this.writeMode = writeMode;
-        var fileType = Files.getFileType(fileNameTemplate);
-        var filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
+        var fileType = com.remal.portfolio.util.Files.getFileType(filename);
+        List<T> itemContainer = new ArrayList<>();
 
-        if (java.nio.file.Files.exists(Path.of(filename)) && writeMode == FileWriter.WriteMode.APPEND) {
-            items.addAll(getHistoryFromFile(fileNameTemplate));
+        if (Objects.nonNull(filename) && Files.exists(Path.of(filename)) && writeMode == FileWriter.WriteMode.APPEND) {
+            // keep the items from the history file
+            itemContainer.addAll(getHistoryFromFile(filename));
+
+            // add the new items if not exist
+            itemContainer.addAll(items.stream()
+                    .filter(item -> !items.contains(item))
+                    .toList());
+        } else {
+            itemContainer.addAll(items);
         }
 
         showConfiguration();
         switch (fileType) {
             case CSV -> {
                 log.debug("> generating the CSV report...");
-                byte[] reportAsBytes = buildCsvReport(items).getBytes();
+                byte[] reportAsBytes = buildCsvReport(itemContainer).getBytes();
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
             }
             case EXCEL -> {
                 log.debug("> generating the Excel report...");
-                byte[] reportAsBytes = buildExcelReport(items);
+                byte[] reportAsBytes = buildExcelReport(itemContainer);
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
             }
             case MARKDOWN -> {
                 log.debug("> generating the Markdown report...");
-                byte[] reportAsBytes = buildMarkdownReport(items).getBytes();
+                byte[] reportAsBytes = buildMarkdownReport(itemContainer).getBytes();
                 FileWriter.write(writeMode, filename, reportAsBytes);
-                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
             }
             case NOT_DEFINED -> {
-                var reportAsString = buildMarkdownReport(items);
-                log.debug(ITEMS_HAS_BEEN_PROCESSED, items.size());
+                var reportAsString = buildMarkdownReport(itemContainer);
+                log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
                 StdoutWriter.write(reportAsString);
             }
-            default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", fileNameTemplate);
+            default -> Logger.logErrorAndExit("Unsupported output file type: '{}'", filename);
         }
     }
 

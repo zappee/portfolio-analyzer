@@ -158,12 +158,11 @@ public abstract class Parser<T> {
     /**
      * Parse the file.
      *
-     * @param fileNameTemplate path to the data file
-     * @return                 the list of the parsed items
+     * @param filename path to the data file
+     * @return         the list of the parsed items
      */
-    public List<T> parse(String fileNameTemplate) {
+    public List<T> parse(String filename) {
         List<T> items;
-        var filename = LocalDateTimes.toString(zone, fileNameTemplate, LocalDateTime.now());
         var fileType = Files.getFileType(filename);
 
         showConfiguration();

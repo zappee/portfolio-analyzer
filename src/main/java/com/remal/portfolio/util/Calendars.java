@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -54,6 +56,16 @@ public class Calendars {
         } else {
             return calendar.toInstant().toString();
         }
+    }
+
+    /**
+     * Converts Calendar to LocalDateTime using the system timezone.
+     *
+     * @param calendar calendar to convert
+     * @return the LocalDateTime instance
+     */
+    public static LocalDateTime toLocalDateTime(Calendar calendar) {
+        return LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
     }
 
     /**
