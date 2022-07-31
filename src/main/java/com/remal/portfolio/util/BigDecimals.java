@@ -1,6 +1,7 @@
 package com.remal.portfolio.util;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Objects;
@@ -110,6 +111,21 @@ public class BigDecimals {
      */
     public static BigDecimal zeroIfNull(final BigDecimal object) {
         return object != null ? object : BigDecimal.ZERO;
+    }
+
+    /**
+     * Compute of the percent of the given two decimals.
+     *
+     * @param d1 first decimal value
+     * @param d2 second decimal value
+     * @param scale scale of the result
+     * @return the result in percent
+     */
+    public static BigDecimal percentOf(BigDecimal d1, BigDecimal d2, int scale) {
+        var hundred = new BigDecimal(100);
+        return BigDecimals.isNullOrZero(d1)
+                ? null
+                : hundred.multiply(d1).divide(d2, scale, RoundingMode.CEILING).subtract(hundred);
     }
 
     /**

@@ -289,11 +289,16 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
         widths.put(getWholeWidthKey(emptyLabel), totalWholeSize);
         widths.put(getFractionalWidthKey(emptyLabel), fractionalSize);
 
+        var scale = 2;
+        var profitLossPercent = BigDecimals.percentOf(marketValue, investedAmount, scale);
+        var profitLossPercentString = Objects.isNull(profitLossPercent) ? "" : " (" + profitLossPercent + "%)";
+
         var sb = new StringBuilder()
                 .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), labelWith, depositTotal, widths))
                 .append(showTotal(Label.LABEL_INVESTMENT.getLabel(language), labelWith, investedAmount, widths))
                 .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), labelWith, marketValue, widths))
-                .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), labelWith, profitAndLoss, widths));
+                .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), labelWith, profitAndLoss, widths))
+                .append(profitLossPercentString);
 
         cashInPortfolio.forEach((key, value) -> sb.append(
                 showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), labelWith, value, widths))
