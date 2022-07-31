@@ -20,7 +20,7 @@
 start="2018-01-18"
 end="2022-08-01"
 transactionReport="'tmp/transactions-report_2022-07-12.md'"
-dataProvidersRegistry="'tmp/provider.properties'"
+dataProvidersRegistry="'docs/provider.properties'"
 priceHistory="'tmp/price-history.md'"
 jar="target/portfolio-analyzer-0.1.13.jar"
 
