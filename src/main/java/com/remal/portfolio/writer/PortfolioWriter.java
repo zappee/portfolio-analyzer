@@ -291,8 +291,8 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
 
         var sb = new StringBuilder()
                 .append(showTotal(Label.LABEL_DEPOSIT.getLabel(language), labelWith, depositTotal, widths))
-                .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), labelWith, marketValue, widths))
                 .append(showTotal(Label.LABEL_INVESTMENT.getLabel(language), labelWith, investedAmount, widths))
+                .append(showTotal(Label.LABEL_MARKET_VALUE.getLabel(language), labelWith, marketValue, widths))
                 .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), labelWith, profitAndLoss, widths));
 
         cashInPortfolio.forEach((key, value) -> sb.append(

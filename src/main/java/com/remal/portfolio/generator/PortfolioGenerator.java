@@ -212,7 +212,7 @@ public class PortfolioGenerator {
      * @param portfolioCollection the portfolio
      */
     private void updateTotalEquity(PortfolioCollection portfolioCollection) {
-        portfolioCollection.setTotalEquity(BigDecimal.ZERO);
+        portfolioCollection.setTotalEquity(portfolioCollection.getMarketValue());
 
         portfolioCollection.getCashInPortfolio().forEach((currency, value) -> {
             if (currency.equals(baseCurrency.name())) {
