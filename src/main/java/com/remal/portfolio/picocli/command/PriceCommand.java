@@ -100,7 +100,9 @@ public class PriceCommand implements Callable<Integer> {
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
-        var tickerAlias = ProviderType.getTicker(ticker, providerFile);
+        var tickerAlias = Objects.nonNull(providerFileTemplate)
+                ? ProviderType.getTicker(ticker, providerFile)
+                : ticker;
         var price = getPrice(tickerAlias, provider);
         List<Price> prices = new ArrayList<>();
         price.ifPresent(p -> {
