@@ -62,3 +62,9 @@ java \
     -M OVERWRITE \
     -U ONE_HOUR \
     -O "'tmp/summary.csv'"
+
+cash value:
+The cash value, also referred to as the cash balance value, is the total amount of actual
+money — the most liquid of funds — in the account. This figure is the amount that is
+available for immediate withdrawal or the total amount available to purchase securities
+in a cash account.

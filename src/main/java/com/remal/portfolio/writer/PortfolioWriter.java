@@ -303,9 +303,15 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                 .append(showTotal(Label.LABEL_PROFIT_LOSS.getLabel(language), labelWith, profitAndLoss, widths))
                 .append(profitLossPercentString);
 
-        cashInPortfolio.forEach((key, value) -> sb.append(
-                showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), labelWith, value, widths))
-        );
+        cashInPortfolio.forEach((key, value) -> {
+            if (BigDecimals.isNotNullAndNotZero(value)) {
+                sb.append(showTotal(
+                        Label.LABEL_CASH.getLabel(language).replace("{1}", key),
+                        labelWith,
+                        value,
+                        widths));
+            }
+        });
 
         var decimalSeparatorsNumber = totalWholeSize / 3;
         var horizontalLineWidth = labelWith + ": ".length() + totalWholeSize + ".".length() + fractionalSize;
