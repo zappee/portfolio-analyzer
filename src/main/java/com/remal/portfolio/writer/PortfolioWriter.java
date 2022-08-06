@@ -388,11 +388,16 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      * @return the biggest length of the totals
      */
     private int getTotalsWholeSize() {
-        var biggestTotal = Collections.max(depositTotal.entrySet(), Map.Entry.comparingByValue()).getValue();
+        var biggestTotal = depositTotal.isEmpty()
+                ? BigDecimal.ZERO
+                : Collections.max(depositTotal.entrySet(), Map.Entry.comparingByValue()).getValue();
+
         biggestTotal = biggestTotal.max(Objects.isNull(marketValue) ? BigDecimal.ZERO : marketValue);
         biggestTotal = biggestTotal.max(Objects.isNull(investedAmount) ? BigDecimal.ZERO : investedAmount);
         biggestTotal = biggestTotal.max(Objects.isNull(profitAndLoss) ? BigDecimal.ZERO : profitAndLoss);
-        biggestTotal = biggestTotal.max(Collections.max(cashInPortfolio.entrySet(), Map.Entry.comparingByValue()).getValue());
+        biggestTotal = depositTotal.isEmpty()
+                ? BigDecimal.ZERO
+                : biggestTotal.max(Collections.max(cashInPortfolio.entrySet(), Map.Entry.comparingByValue()).getValue());
 
         return String.valueOf(biggestTotal.intValue()).length();
     }
