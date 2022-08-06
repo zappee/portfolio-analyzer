@@ -33,9 +33,9 @@ public class PortfolioCollection {
     private LocalDateTime generated;
 
     /**
-     * The total invested amount.
+     * The total invested amounts per currency.
      */
-    private BigDecimal depositTotal;
+    private Map<String, BigDecimal> depositTotal;
 
     /**
      * Portfolio market value
@@ -53,7 +53,7 @@ public class PortfolioCollection {
     private BigDecimal profitAndLoss;
 
     /**
-     * Cash in portfolio.
+     * Cash in portfolio per currency.
      */
     private Map<String, BigDecimal> cashInPortfolio;
 

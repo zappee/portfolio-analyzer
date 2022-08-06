@@ -3,7 +3,6 @@ package com.remal.portfolio.picocli.command;
 import com.remal.portfolio.Main;
 import com.remal.portfolio.generator.PortfolioGenerator;
 import com.remal.portfolio.model.CurrencyType;
-import com.remal.portfolio.model.PortfolioCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
@@ -18,8 +17,7 @@ import picocli.CommandLine;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 
@@ -95,15 +93,12 @@ public class PortfolioCommand implements Callable<Integer> {
         var summary = generator.generate(transactions);
 
         // writer
-        List<PortfolioCollection> portfolioCollections = new ArrayList<>();
-        portfolioCollections.add(summary);
-
         var outFilenameTemplate = outputArgGroup.getOutputFile();
         var outFilename = Objects.isNull(outFilenameTemplate)
                 ? null
                 : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outFilename, portfolioCollections);
+        writer.write(outputArgGroup.getWriteMode(), outFilename, Collections.singletonList(summary));
         return CommandLine.ExitCode.OK;
     }
 }

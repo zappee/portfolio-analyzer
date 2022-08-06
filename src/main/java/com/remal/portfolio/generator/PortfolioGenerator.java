@@ -17,6 +17,7 @@ import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.Maps;
 import com.remal.portfolio.writer.PriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.Setter;
@@ -178,15 +179,14 @@ public class PortfolioGenerator {
      * @param portfolioCollection the portfolio
      */
     private void updateTotals(PortfolioCollection portfolioCollection) {
-        portfolioCollection.setDepositTotal(BigDecimal.ZERO);
         portfolioCollection.setMarketValue(BigDecimal.ZERO);
         portfolioCollection.setInvestedAmount(BigDecimal.ZERO);
         portfolioCollection.setProfitAndLoss(BigDecimal.ZERO);
+        portfolioCollection.setDepositTotal(new HashMap<>());
         portfolioCollection.setCashInPortfolio(new HashMap<>());
 
         portfolioCollection.getPortfolios().forEach(portfolio -> portfolio.forEach(product -> {
-            portfolioCollection.setDepositTotal(
-                    portfolioCollection.getDepositTotal().add(BigDecimals.zeroIfNull(product.getDepositTotal())));
+            Maps.updateMapValue(portfolioCollection.getDepositTotal(), product.getTicker(), product.getDepositTotal());
 
             portfolioCollection.setMarketValue(
                     portfolioCollection.getMarketValue().add(BigDecimals.zeroIfNull(product.getMarketValue())));

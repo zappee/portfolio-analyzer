@@ -4,6 +4,8 @@ import com.remal.portfolio.util.I18n;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Objects;
+
 /**
  * Constants for labels that appear in the reports.
  * <p>
@@ -331,6 +333,21 @@ public class Label {
     private String key;
 
     /**
+     * The translated value of the label.
+     * Used only when the value must be overwritten.
+     */
+    private String i18n;
+
+    /**
+     * Setter method.
+     *
+     * @param i18n the label value
+     */
+    public void setLabel(String i18n) {
+        this.i18n = i18n;
+    }
+
+    /**
      * Translation resolver that reads the belonging translation from
      * the property file.
      *
@@ -338,7 +355,7 @@ public class Label {
      * @return the translation text
      */
     public String getLabel(String language) {
-        return I18n.get(language, key);
+        return Objects.isNull(i18n) ? I18n.get(language, key) : this.i18n;
     }
 
     /**

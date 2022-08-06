@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     /**
      * The total invested amount.
      */
-    private BigDecimal depositTotal;
+    private final Map<String, BigDecimal> depositTotal = new HashMap<>();
 
     /**
      * Portfolio market value
@@ -251,20 +252,22 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
      * @param items the portfolio collection
      */
     private void updateTotals(List<PortfolioCollection> items) {
-        depositTotal = BigDecimal.ZERO;
         marketValue = BigDecimal.ZERO;
         investedAmount = BigDecimal.ZERO;
         profitAndLoss = BigDecimal.ZERO;
         totalEquity = BigDecimal.ZERO;
+        depositTotal.clear();
         cashInPortfolio.clear();
 
-        items.forEach(portfolio -> {
-            depositTotal = depositTotal.add(portfolio.getDepositTotal());
-            marketValue = marketValue.add(portfolio.getMarketValue());
-            investedAmount = investedAmount.add(portfolio.getInvestedAmount());
-            profitAndLoss = profitAndLoss.add(portfolio.getProfitAndLoss());
-            totalEquity = totalEquity.add(portfolio.getTotalEquity());
-            portfolio.getCashInPortfolio().forEach((key, value) -> cashInPortfolio.merge(key, value, BigDecimal::add));
+        items.forEach(collection -> {
+            // merge collection.getDepositTotal into this.depositTotal
+            collection.getDepositTotal().forEach((k, v) -> depositTotal.merge(k, v, BigDecimal::add));
+
+            marketValue = marketValue.add(collection.getMarketValue());
+            investedAmount = investedAmount.add(collection.getInvestedAmount());
+            profitAndLoss = profitAndLoss.add(collection.getProfitAndLoss());
+            totalEquity = totalEquity.add(collection.getTotalEquity());
+            collection.getCashInPortfolio().forEach((key, value) -> cashInPortfolio.merge(key, value, BigDecimal::add));
         });
     }
 
@@ -304,8 +307,9 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
                 showTotal(Label.LABEL_CASH.getLabel(language).replace("{1}", key), labelWith, value, widths))
         );
 
+        var decimalSeparatorsNumber = totalWholeSize / 3;
         var horizontalLineWidth = labelWith + ": ".length() + totalWholeSize + ".".length() + fractionalSize;
-        horizontalLineWidth += totalWholeSize / 3; // extra space for the decimal separators
+        horizontalLineWidth += decimalSeparatorsNumber;
         sb
                 .append(NEW_LINE).append("_".repeat(horizontalLineWidth)).append(NEW_LINE)
                 .append(showTotal(
@@ -319,16 +323,38 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     /**
      * Generates a formatted total line.
      *
-     * @param label the  label
-     * @param labelWidth width of the formatted value
-     * @param value      the value to show
-     * @return           the formatted total value
+     * @param label     label of the value
+     * @param labelWith length where the label will be aligned to
+     * @param values    values to show
+     * @param widths    with collection
+     * @return          the formatted total value
+     */
+    private StringBuilder showTotal(String label, int labelWith, Map<String, BigDecimal> values, Map<String, Integer> widths) {
+        var sb = new StringBuilder();
+        values.forEach((k, v) -> sb.append(showTotal(label.replace("{1}", k), labelWith, v, widths)));
+        return sb;
+    }
+
+    /**
+     * Generates a formatted total line.
+     *
+     * @param label      label of the value
+     * @param labelWidth length where the label will be aligned to
+     * @param value      value to show
+     * @param widths     with collection
+     * @return           the formatted value
      */
     private String showTotal(String label, int labelWidth, BigDecimal value, Map<String, Integer> widths) {
-        setDecimalFormat("###,###,###,###,###,###.##");
-        setMarkdownSeparator("");
+        var originalDecimalFormat = decimalFormat;
+        var originalMarkdownSeparator = markdownSeparator;
+        decimalFormat = "###,###,###,###,###,###.##";
+        markdownSeparator = "";
 
-        var valueAsString = getCell(Label.HEADER_EMPTY, value, widths);
+        var labelWithDynamicValue = generateLabelWithDynamicValue(widths);
+        var valueAsString = getCell(labelWithDynamicValue, value, widths);
+        decimalFormat = originalDecimalFormat;
+        markdownSeparator = originalMarkdownSeparator;
+
         return NEW_LINE
                 + label
                 + ": "
@@ -337,19 +363,36 @@ public class PortfolioWriter extends Writer<PortfolioCollection> {
     }
 
     /**
+     * Generates a fake label with dynamic value.
+     *
+     * @param widths with collection
+     * @return       a label with a specific value
+     */
+    private Label generateLabelWithDynamicValue(Map<String, Integer> widths) {
+        var label = Label.HEADER_EMPTY;
+        var wholeSize = widths.get(getWholeWidthKey(label));
+        var decimalSeparatorsNumber = wholeSize / 3;
+        var labelValue = Strings.space(wholeSize + decimalSeparatorsNumber);
+        var fractionalLength = widths.get(getFractionalWidthKey(label));
+
+        if (Objects.nonNull(fractionalLength) && fractionalLength > 0) {
+            labelValue = labelValue + "." + Strings.space(fractionalLength);
+        }
+        label.setLabel(labelValue);
+        return label;
+    }
+
+    /**
      * Calculates the length of the totals.
      *
      * @return the biggest length of the totals
      */
     private int getTotalsWholeSize() {
-        var biggestTotal = Objects.isNull(depositTotal) ? BigDecimal.ZERO : depositTotal;
+        var biggestTotal = Collections.max(depositTotal.entrySet(), Map.Entry.comparingByValue()).getValue();
         biggestTotal = biggestTotal.max(Objects.isNull(marketValue) ? BigDecimal.ZERO : marketValue);
         biggestTotal = biggestTotal.max(Objects.isNull(investedAmount) ? BigDecimal.ZERO : investedAmount);
         biggestTotal = biggestTotal.max(Objects.isNull(profitAndLoss) ? BigDecimal.ZERO : profitAndLoss);
-
-        for (var entry : cashInPortfolio.entrySet()) {
-            biggestTotal = biggestTotal.max(entry.getValue());
-        }
+        biggestTotal = biggestTotal.max(Collections.max(cashInPortfolio.entrySet(), Map.Entry.comparingByValue()).getValue());
 
         return String.valueOf(biggestTotal.intValue()).length();
     }
