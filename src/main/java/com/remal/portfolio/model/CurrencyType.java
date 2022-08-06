@@ -52,7 +52,7 @@ public enum CurrencyType {
      */
     public static void abortIfInvalid(String currency) {
         if (!isValid(currency)) {
-            Logger.logErrorAndExit("Invalid base currency.");
+            Logger.logErrorAndExit("Invalid base currency: \"{}\".", currency);
         }
     }
 }

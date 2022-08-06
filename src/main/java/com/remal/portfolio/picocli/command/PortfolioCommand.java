@@ -2,6 +2,7 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.generator.PortfolioGenerator;
+import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.PortfolioCollection;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
@@ -74,6 +75,9 @@ public class PortfolioCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+
+        // validating the inputs
+        CurrencyType.abortIfInvalid(outputArgGroup.getBaseCurrency());
 
         // parser
         Parser<Transaction> parser = Parser.build(inputArgGroup);
