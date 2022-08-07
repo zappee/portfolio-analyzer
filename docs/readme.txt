@@ -68,3 +68,9 @@ The cash value, also referred to as the cash balance value, is the total amount 
 money — the most liquid of funds — in the account. This figure is the amount that is
 available for immediate withdrawal or the total amount available to purchase securities
 in a cash account.
+
+account value:
+The account value, also known as total equity, is the total value of all the holdings of
+the trading account. Not just the securities, but the cash as well. This figure is
+calculated by adding the total amount of cash in the account and the current market value
+of all the securities and then subtracting the market value of any stocks that are shorted.
