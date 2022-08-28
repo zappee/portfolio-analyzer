@@ -47,20 +47,24 @@ public class FileWriter {
      * Write the content to a file.
      *
      * @param writeMode how to open the file
-     * @param filename  the file to write the content to
-     * @param content   content that wil be written to the file
+     * @param filename the file to write the content to
+     * @param content content that wil be written to the file
      */
     public static void write(FileWriter.WriteMode writeMode, String filename, byte[] content) {
         try {
-            var path = Path.of(filename);
             log.debug("> writing the report to \"{}\", write-mode: {}...", filename, writeMode);
+            var pathToFile = Path.of(filename);
             if (writeMode == WriteMode.STOP_IF_EXIST) {
-                Files.write(path, content, StandardOpenOption.CREATE_NEW);
+                var parentDir = pathToFile.toAbsolutePath().getParent();
+                if (!Files.exists(parentDir)) {
+                    Logger.logErrorAndExit("The directory does not exist: {}", parentDir);
+                }
+                Files.write(pathToFile, content, StandardOpenOption.CREATE_NEW);
             } else {
-                Files.write(path, content);
+                Files.write(pathToFile, content);
             }
         } catch (IOException e) {
-            var message = "An unexpected error has occurred while writing to \"{}\" file. Error: {}";
+            var message = "An error has occurred while writing to \"{}\" file. {}";
             Logger.logErrorAndExit(message, filename, e.toString());
         }
     }

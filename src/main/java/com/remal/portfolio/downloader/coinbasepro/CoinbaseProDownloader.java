@@ -1,11 +1,10 @@
 package com.remal.portfolio.downloader.coinbasepro;
 
 import com.remal.portfolio.downloader.Downloader;
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
-import com.remal.portfolio.util.Logger;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -39,17 +38,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     /**
      * The ID of this provider.
      */
-    private static final ProviderType PROVIDER_TYPE = ProviderType.COINBASE_PRO;
-
-    /**
-     * Error log message template.
-     */
-    private static final String PRICE_NOT_FOUND = "ticker '{}' not found, provider: '{}'";
-
-    /**
-     * Error log message template.
-     */
-    private static final String DOWNLOAD_ERROR = "error while downloading the price of '{}', provider: '{}', error: {}";
+    private static final DataProviderType DATA_PROVIDER = DataProviderType.COINBASE_PRO;
 
     /**
      * Constructor.
@@ -62,16 +51,16 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      * Downloads the latest price of a stock.
      * It uses the Coinbase PRO REST API to get the actual price.
      *
-     * @param ticker product name
-     * @return       the latest price
+     * @param symbol product name
+     * @return the latest price
      */
     @Override
-    public Optional<Price> getPrice(String ticker) {
-        log.debug("< getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
+    public Optional<Price> getPrice(String symbol) {
+        log.debug("< getting the latest price of '{}', provider: '{}'...", symbol, DATA_PROVIDER);
 
         var apiUrl = "https://api.coinbase.com/v2/prices/%s/spot";
-        var uri = String.format(apiUrl, ticker);
-        Optional<Price> price = Optional.empty();
+        var uri = String.format(apiUrl, symbol);
+        Optional<Price> marketPrice = Optional.empty();
 
         try {
             var httpClient = HttpClient.newBuilder().build();
@@ -83,100 +72,104 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json) || json.isEmpty()) {
-                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
                 var jsonObject = (JSONObject) new JSONParser().parse(json);
                 var data = (JSONObject) jsonObject.get("data");
                 var errors = jsonObject.get("errors");
 
                 if (Objects.nonNull(errors)) {
-                    Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                    log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
                 } else {
                     var amountAsString = (String) data.get("amount");
-                    price = Optional.of(Price
+                    var now = LocalDateTime.now();
+                    marketPrice = Optional.of(Price
                             .builder()
-                            .ticker(ticker)
+                            .symbol(symbol)
                             .unitPrice(BigDecimals.valueOf(amountAsString))
-                            .providerType(PROVIDER_TYPE)
-                            .date(LocalDateTime.now())
+                            .dataProvider(DATA_PROVIDER)
+                            .tradeDate(now)
+                            .requestDate(now)
                             .build());
                 }
             }
         } catch (IOException | ParseException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         }
 
-        logResult(ticker, price.orElse(null));
-        return price;
+        marketPrice.ifPresent(price -> log.info("< {}", price));
+        return marketPrice;
     }
-
 
     /**
      * Downloads the market price of a product at a specific date in the past.
      * If the price does not exist for the requested date then we are trying to move
      * back in time a little for the first available price.
      *
-     * @param ticker the product
+     * @param symbol the product
      * @param requestedTradeDate the trade date where we need the market price
      * @return the market price
      */
     @Override
-    public Optional<Price> getPrice(String ticker, Calendar requestedTradeDate) {
+    public Optional<Price> getPrice(final String symbol, final Calendar requestedTradeDate) {
         var maxRepetitions = 20;
         var repetitions = 0;
 
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
-        var price = download(ticker, actualTradeDate);
+        var marketPrice = download(symbol, actualTradeDate);
 
         // reset the second and try it again
-        if (price.isEmpty()) {
+        if (marketPrice.isEmpty()) {
             actualTradeDate.set(Calendar.SECOND, 0);
             actualTradeDate.set(Calendar.MILLISECOND, 0);
-            price = download(ticker, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate);
         }
 
         // trying to move back in time a little for the first available price
-        while (price.isEmpty() && repetitions < maxRepetitions) {
+        while (marketPrice.isEmpty() && repetitions < maxRepetitions) {
             actualTradeDate.add(Calendar.MINUTE, -1);
-            price = download(ticker, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate);
             repetitions++;
         }
 
-        if (price.isEmpty()) {
-            var marketPrice = new BigDecimal(-1);
-            log.info("the price of the '{}' does not exist thus market price has been set to {}", ticker, marketPrice);
-            price = Optional.of(Price
+        if (marketPrice.isEmpty()) {
+            var minusOne = new BigDecimal(-1);
+            log.info("the price of the '{}' does not exist thus market price has been set to {}", symbol, minusOne);
+            marketPrice = Optional.of(Price
                     .builder()
-                    .unitPrice(marketPrice)
-                    .ticker(ticker)
-                    .date(Calendars.toLocalDateTime(requestedTradeDate))
-                    .providerType(PROVIDER_TYPE)
+                    .unitPrice(minusOne)
+                    .symbol(symbol)
+                    .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
+                    .dataProvider(DATA_PROVIDER)
                     .build());
         } else {
-            price.get().setDate(Calendars.toLocalDateTime(requestedTradeDate));
+            marketPrice.get().setRequestDate(Calendars.toLocalDateTime(requestedTradeDate));
         }
 
-        logResult(ticker, price.orElse(null));
-        return price;
+        marketPrice.ifPresent(price -> log.info("< {}", price));
+        return marketPrice;
     }
 
     /**
      * Downloads the price of a stock on a certain date in the past.
      *
-     * @param ticker    product name
-     * @param timestamp date in the past
-     * @return          the latest price
+     * @param symbol product name
+     * @param requestedTradeDate trade date in the past
+     * @return the product's market price
      */
-    private Optional<Price> download(String ticker, Calendar timestamp) {
-        var message = "< getting the price of '{}' at {}, provider: '{}'...";
-        log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
+    private Optional<Price> download(final String symbol, final Calendar requestedTradeDate) {
+        log.debug(
+                "< getting the price of \"{}\" on {}, provider: \"{}\"...",
+                symbol,
+                Calendars.toUtcString(requestedTradeDate),
+                DATA_PROVIDER);
 
-        var timestampAsString = Calendars.toString(timestamp);
+        var timestampAsString = Calendars.toIsoString(requestedTradeDate);
         var apiUrl = "https://api.pro.coinbase.com/products/%s/candles?start=%s&end=%s&granularity=60";
-        var uri = String.format(apiUrl, ticker, timestampAsString, timestampAsString);
+        var uri = String.format(apiUrl, symbol, timestampAsString, timestampAsString);
         var request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
                 .header("Accept", "application/json")
@@ -189,13 +182,13 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
             if (Objects.isNull(json)) {
-                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else if (json.equals("[]")) {
-                log.warn("the '{}' ticker exists at '{}' provider, but the price of the stock on {} does not exist",
-                        ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
+                var message = "< the price of the \"{}\" on {} does not exist";
+                log.warn(message, symbol, Calendars.toUtcString(requestedTradeDate));
             } else {
                 if (json.toLowerCase().contains("notfound")) {
-                    Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                    log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
                 }
                 var bucket = json.replace("[", "");
                 bucket = bucket.replace("]", "");
@@ -204,35 +197,22 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
                 var fields = bucket.split("\\s*,\\s*");
                 price = Optional.of(Price
                         .builder()
-                        .ticker(ticker)
+                        .symbol(symbol)
                         .unitPrice(BigDecimals.valueOf(fields[4]))
-                        .providerType(PROVIDER_TYPE)
-                        .date(LocalDateTime.ofInstant(
+                        .dataProvider(DATA_PROVIDER)
+                        .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
+                        .tradeDate(LocalDateTime.ofInstant(
                                 Instant.ofEpochSecond(Long.parseLong(fields[0])),
                                 ZoneId.systemDefault()))
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         }
 
         return price;
-    }
-
-    /**
-     * Log the result of the price downloader task.
-     *
-     * @param ticker product name
-     * @param price  the result
-     */
-    private void logResult(String ticker, Price price) {
-        if (Objects.isNull(price)) {
-            Logger.logErrorAndExit("< invalid ticker: {}", ticker);
-        } else {
-            log.info("< {}", price);
-        }
     }
 }

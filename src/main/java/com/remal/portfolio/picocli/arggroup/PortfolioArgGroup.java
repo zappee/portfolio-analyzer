@@ -60,15 +60,6 @@ public class PortfolioArgGroup {
         private FileWriter.WriteMode writeMode;
 
         /**
-         * Set the price history file.
-         */
-        @CommandLine.Option(
-                names = {"-P", "--price-history"},
-                description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
-                        + "Accepted extensions: .txt, .md, .csv and .xlsx")
-        private String priceHistoryFile;
-
-        /**
          * Controls the price export to file.
          */
         @CommandLine.Option(
@@ -157,7 +148,7 @@ public class PortfolioArgGroup {
         @CommandLine.Option(
                 names = {"-C", "--columns-to-hide"},
                 description = "Comma separated list of column names that won't be displayed in the report. "
-                        + "Candidates: PORTFOLIO, TICKER, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, "
+                        + "Candidates: PORTFOLIO, SYMBOL, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, "
                         + "MARKET_VALUE, PROFIT_LOSS, PROFIT_LOSS_PERCENT, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL",
                 converter = StringToListConverter.class)
         private final List<String> columnsToHide = new ArrayList<>();

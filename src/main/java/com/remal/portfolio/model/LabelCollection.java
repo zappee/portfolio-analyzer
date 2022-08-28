@@ -17,7 +17,7 @@ public class LabelCollection {
      */
     public static final List<Label> TRANSACTION_TABLE_HEADERS = List.of(
             Label.HEADER_PORTFOLIO,
-            Label.HEADER_TICKER,
+            Label.HEADER_SYMBOL,
             Label.HEADER_TYPE,
             Label.HEADER_VALUATION,
             Label.HEADER_TRADE_DATE,
@@ -32,13 +32,13 @@ public class LabelCollection {
     /**
      * List of the column headers in portfolio summary report.
      */
-    public static final List<Label> SUMMARY_TABLE_HEADERS = List.of(
+    public static final List<Label> PORTFOLIO_TABLE_HEADERS = List.of(
             Label.HEADER_PORTFOLIO,
-            Label.HEADER_TICKER,
+            Label.HEADER_SYMBOL,
             Label.HEADER_QUANTITY,
             Label.HEADER_AVG_PRICE,
-            Label.HEADER_INVESTED_AMOUNT,
             Label.HEADER_MARKET_UNIT_PRICE,
+            Label.HEADER_INVESTED_AMOUNT,
             Label.HEADER_MARKET_VALUE,
             Label.HEADER_PROFIT_LOSS,
             Label.HEADER_PROFIT_LOSS_PERCENT,
@@ -50,9 +50,10 @@ public class LabelCollection {
      * List of the column headers in the price report.
      */
     public static final List<Label> PRODUCT_PRICE_HEADERS = List.of(
-            Label.HEADER_TICKER,
+            Label.HEADER_SYMBOL,
             Label.HEADER_PRICE,
-            Label.HEADER_DATE,
+            Label.HEADER_TRADE_DATE,
+            Label.HEADER_REQUEST_DATE,
             Label.HEADER_DATA_PROVIDER);
 
     /**

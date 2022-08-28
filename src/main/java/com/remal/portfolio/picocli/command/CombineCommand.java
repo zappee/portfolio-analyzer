@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicLong;
@@ -89,9 +88,7 @@ public class CombineCommand implements Callable<Integer> {
 
         // writer
         var outFilenameTemplate = outputArgGroup.getOutputFile();
-        var outFilename = Objects.isNull(outFilenameTemplate)
-                ? null
-                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
+        var outFilename = LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
 
         Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), outFilename, transactions);
@@ -111,7 +108,7 @@ public class CombineCommand implements Callable<Integer> {
             Optional<Transaction> found = target
                     .stream()
                     .filter(targetCurrent -> Filter.transactionIdFilter(sourceCurrent, targetCurrent))
-                    .filter(actual -> Filter.tickerFilter(inputArgGroup.getTickers(), actual))
+                    .filter(actual -> Filter.symbolFilter(inputArgGroup.getSymbols(), actual))
                     .findAny();
 
             if (found.isPresent() && overwrite) {
@@ -124,7 +121,7 @@ public class CombineCommand implements Callable<Integer> {
                 tr.setPrice(sourceCurrent.getPrice());
                 tr.setFee(sourceCurrent.getFee());
                 tr.setCurrency(sourceCurrent.getCurrency());
-                tr.setTicker(sourceCurrent.getTicker());
+                tr.setSymbol(sourceCurrent.getSymbol());
                 tr.setTransferId(sourceCurrent.getTransferId());
                 tr.setTradeId(sourceCurrent.getTradeId());
                 tr.setOrderId(sourceCurrent.getOrderId());

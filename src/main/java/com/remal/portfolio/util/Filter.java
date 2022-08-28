@@ -30,14 +30,14 @@ public class Filter {
     }
 
     /**
-     * Ticker filter.
+     * Symbol filter.
      *
-     * @param tickers ticker names
+     * @param symbols product names
      * @param transaction transaction to check
      * @return true if the date meets with the conditions
      */
-    public static boolean tickerFilter(List<String> tickers, Transaction transaction) {
-        return tickers.isEmpty() || tickers.contains(transaction.getTicker().trim());
+    public static boolean symbolFilter(List<String> symbols, Transaction transaction) {
+        return symbols.isEmpty() || symbols.contains(transaction.getSymbol().trim());
     }
 
     /**
@@ -104,11 +104,11 @@ public class Filter {
      * Base currency filter.
      *
      * @param baseCurrency the base currency of the account at the broker company
-     * @param ticker product name/ticker
+     * @param symbol product name
      * @return true if the transaction meet with the conditions
      */
-    public static boolean baseCurrencyFilter(CurrencyType baseCurrency, String ticker) {
-        return Objects.isNull(baseCurrency) || ticker.contains(baseCurrency.name());
+    public static boolean baseCurrencyFilter(CurrencyType baseCurrency, String symbol) {
+        return Objects.isNull(baseCurrency) || symbol.contains(baseCurrency.name());
     }
 
     /**

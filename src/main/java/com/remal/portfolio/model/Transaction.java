@@ -62,10 +62,10 @@ public class Transaction {
     private CurrencyType currency;
 
     /**
-     * A ticker is an abbreviation used to uniquely identify publicly traded
-     * shares of a particular stock on a particular stock market.
+     * A symbol is an abbreviation used to uniquely identify publicly
+     * traded shares of a particular stock on a particular stock market.
      */
-    private String ticker;
+    private String symbol;
 
     /**
      * Used when transferring the items from one account to another.

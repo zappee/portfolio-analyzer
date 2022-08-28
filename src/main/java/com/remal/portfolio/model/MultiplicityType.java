@@ -3,7 +3,7 @@ package com.remal.portfolio.model;
 import lombok.Getter;
 
 /**
- * Controls the export of the number of the market prices for a ticker
+ * Controls the export of the number of the market prices for a symbol
  * in the history file.
  * <p>
  * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
@@ -16,7 +16,7 @@ public enum MultiplicityType {
     /**
      * Allowed only one price record in the history file within 1 minutes.
      */
-    ONE_MINUTES(60L),
+    ONE_MINUTE(60L),
 
     /**
      * Allowed only one price record in the history file within 5 minutes.

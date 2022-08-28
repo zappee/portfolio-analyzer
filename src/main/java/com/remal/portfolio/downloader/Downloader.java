@@ -2,8 +2,8 @@ package com.remal.portfolio.downloader;
 
 import com.remal.portfolio.downloader.coinbasepro.CoinbaseProDownloader;
 import com.remal.portfolio.downloader.yahoo.YahooDownloader;
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
-import com.remal.portfolio.model.ProviderType;
 
 import java.util.Calendar;
 import java.util.EnumMap;
@@ -21,31 +21,41 @@ import java.util.Optional;
 public interface Downloader {
 
     /**
+     * Error log message template.
+     */
+    String SYMBOL_NOT_FOUND = "symbol \"{}\" not found, provider: \"{}\"";
+
+    /**
+     * Error log message template.
+     */
+    String DOWNLOAD_ERROR = "error while downloading the price of \"{}\", provider: \"{}\", {}";
+
+    /**
      * Downloads the latest price of a stock.
      *
-     * @param ticker product name
-     * @return       the latest price
+     * @param symbol product name
+     * @return the latest price
      */
-    Optional<Price> getPrice(String ticker);
+    Optional<Price> getPrice(String symbol);
 
     /**
      * Downloads the price of a stock on a certain date in the past.
      *
-     * @param ticker    product name
+     * @param symbol product name
      * @param timestamp date in the past
-     * @return          the latest price
+     * @return the latest price
      */
-    Optional<Price> getPrice(String ticker, Calendar timestamp);
+    Optional<Price> getPrice(String symbol, Calendar timestamp);
 
     /**
      * Initialize the market price downloader instances.
      *
      * @return the market price downloader instances
      */
-    static Map<ProviderType, Downloader> initializeDownloader() {
-        Map<ProviderType, Downloader> downloader = new EnumMap<>(ProviderType.class);
-        downloader.put(ProviderType.COINBASE_PRO, new CoinbaseProDownloader());
-        downloader.put(ProviderType.YAHOO, new YahooDownloader());
+    static Map<DataProviderType, Downloader> get() {
+        Map<DataProviderType, Downloader> downloader = new EnumMap<>(DataProviderType.class);
+        downloader.put(DataProviderType.COINBASE_PRO, new CoinbaseProDownloader());
+        downloader.put(DataProviderType.YAHOO, new YahooDownloader());
         return downloader;
     }
 }

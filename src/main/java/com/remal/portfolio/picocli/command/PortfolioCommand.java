@@ -1,8 +1,9 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.generator.PortfolioGenerator;
+import com.remal.portfolio.downloader.MarketPriceDownloader;
 import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.PortfolioReport;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
@@ -18,7 +19,6 @@ import picocli.CommandLine;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -47,6 +47,15 @@ public class PortfolioCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-q", "--quiet"},
             description = "In this mode log wont be shown.")
     boolean quietMode;
+
+    /**
+     * Set the price history file.
+     */
+    @CommandLine.Option(
+            names = {"-P", "--price-history"},
+            description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
+                    + "Accepted extensions: .txt, .md, .csv and .xlsx")
+    private String priceHistoryFile;
 
     /**
      * An argument group definition to configure the input.
@@ -79,26 +88,35 @@ public class PortfolioCommand implements Callable<Integer> {
 
         // parser
         Parser<Transaction> parser = Parser.build(inputArgGroup);
-        var zone = ZoneId.of(inputArgGroup.getZone());
-        var transactionsFile = LocalDateTimes.toString(zone, inputArgGroup.getFile(), LocalDateTime.now());
+        var inputZone = ZoneId.of(inputArgGroup.getZone());
+        var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
                 .stream()
-                .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
+                .filter(x -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), x))
                 .toList();
 
         // generate the report
-        var generator = PortfolioGenerator.build(inputArgGroup, outputArgGroup);
-        var summary = generator.generate(transactions);
+        var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());
+        var portfolioReport = new PortfolioReport(currency);
+        portfolioReport.addTransactions(transactions);
+
+        // set market prices
+        var marketPriceDownloader = new MarketPriceDownloader(priceHistoryFile, inputArgGroup, outputArgGroup);
+        var zoneId = ZoneId.of(inputArgGroup.getZone());
+        var marketPriceAt = LocalDateTimes.toLocalDateTime(
+                zoneId,
+                inputArgGroup.getDateTimePattern(),
+                inputArgGroup.getTo());
+        marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
 
         // writer
-        var outFilenameTemplate = outputArgGroup.getOutputFile();
-        var outFilename = Objects.isNull(outFilenameTemplate)
-                ? null
-                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
+        var templateFilename = outputArgGroup.getOutputFile();
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var outFile = LocalDateTimes.toString(zone, templateFilename, LocalDateTime.now());
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outFilename, Collections.singletonList(summary));
+        writer.write(outputArgGroup.getWriteMode(), outFile, Collections.singletonList(portfolioReport));
         return CommandLine.ExitCode.OK;
     }
 }

@@ -1,9 +1,9 @@
 package com.remal.portfolio.parser;
 
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Price;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
@@ -60,10 +60,11 @@ public class PriceParser extends Parser<Price> {
                 var row = sheet.getRow(rowIndex);
                 var p = Price.builder();
 
-                p.ticker(getCellValueAsString(row, 0));
+                p.symbol(getCellValueAsString(row, 0));
                 p.unitPrice(getCellValueAsBigDecimal(row, 1));
-                p.date(getCellValueAsLocalDateTime(row, 2));
-                p.providerType(ProviderType.valueOf(getCellValueAsString(row, 3)));
+                p.tradeDate(getCellValueAsLocalDateTime(row, 2));
+                p.requestDate(getCellValueAsLocalDateTime(row, 3));
+                p.dataProvider(DataProviderType.valueOf(getCellValueAsString(row, 3)));
                 prices.add(p.build());
             });
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -111,9 +112,9 @@ public class PriceParser extends Parser<Price> {
     /**
      * Parse the Markdown and CSV file.
      *
-     * @param file      the input file
+     * @param file the input file
      * @param separator separator char used in the input file
-     * @return          the list of the transactions
+     * @return the list of the transactions
      */
     private List<Price> parseTextFile(String file, String separator) {
         List<Price> prices = new ArrayList<>();
@@ -127,10 +128,11 @@ public class PriceParser extends Parser<Price> {
                         var index = new AtomicInteger(1);
                         Price p = Price
                                 .builder()
-                                .ticker(getString(index, fields, Label.HEADER_TICKER))
+                                .symbol(getString(index, fields, Label.HEADER_SYMBOL))
                                 .unitPrice(getBigDecimal(index, fields, Label.HEADER_PRICE))
-                                .date(getLocalDateTime(index, fields))
-                                .providerType(getProviderType(index, fields))
+                                .tradeDate(getLocalDateTime(index, fields))
+                                .requestDate(getLocalDateTime(index, fields))
+                                .dataProvider(getDataProvider(index, fields))
                                 .build();
                         prices.add(p);
                     });
@@ -153,11 +155,11 @@ public class PriceParser extends Parser<Price> {
      * @param fields the parsed line from the input file
      * @return the next index value
      */
-    private ProviderType getProviderType(AtomicInteger index, String[] fields) {
+    private DataProviderType getDataProvider(AtomicInteger index, String[] fields) {
         if (missingColumns.contains(Label.HEADER_CURRENCY.getId())) {
             return null;
         } else {
-            return ProviderType.getEnum(fields[index.getAndIncrement()].trim());
+            return DataProviderType.getEnum(fields[index.getAndIncrement()].trim());
         }
     }
 }

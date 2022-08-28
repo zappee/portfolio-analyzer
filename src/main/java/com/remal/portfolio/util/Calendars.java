@@ -30,9 +30,11 @@ public class Calendars {
     public static Calendar fromString(String timestampAsString, String dateTimePattern) {
         Calendar calendar = null;
         try {
-            calendar = Calendar.getInstance();
-            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateTimePattern);
-            calendar.setTime(simpleDateFormat.parse(timestampAsString));
+            if (Objects.nonNull(timestampAsString) && Objects.nonNull(dateTimePattern)) {
+                calendar = Calendar.getInstance();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(dateTimePattern);
+                calendar.setTime(simpleDateFormat.parse(timestampAsString));
+            }
         } catch (ParseException e) {
             Logger.logErrorAndExit(
                     "An error has occurred while converting '{}' to calendar using the '{}' as a pattern, error: {}",
@@ -40,7 +42,6 @@ public class Calendars {
                     dateTimePattern,
                     e.getMessage());
         }
-
         return calendar;
     }
 
@@ -50,7 +51,21 @@ public class Calendars {
      * @param calendar calendar instance
      * @return the string that represents the provided calendar
      */
-    public static String toString(Calendar calendar) {
+    public static String toUtcString(final Calendar calendar) {
+        if (Objects.isNull(calendar)) {
+            return "";
+        } else {
+            return calendar.getTime().toString();
+        }
+    }
+
+    /**
+     * Convert java.util.Calendar to String.
+     *
+     * @param calendar calendar instance
+     * @return the string that represents the provided calendar
+     */
+    public static String toIsoString(final Calendar calendar) {
         if (Objects.isNull(calendar)) {
             return "";
         } else {
@@ -64,8 +79,19 @@ public class Calendars {
      * @param calendar calendar to convert
      * @return the LocalDateTime instance
      */
-    public static LocalDateTime toLocalDateTime(Calendar calendar) {
+    public static LocalDateTime toLocalDateTime(final Calendar calendar) {
         return LocalDateTime.ofInstant(calendar.toInstant(), ZoneId.systemDefault());
+    }
+
+    /**
+     * Converts a Calendar to LocalDateTime.
+     *
+     * @param calendar calendar to convert
+     * @param zone the time zone information
+     * @return the LocalDateTime object
+     */
+    public static LocalDateTime toLocalDateTime(Calendar calendar, ZoneId zone) {
+        return LocalDateTime.ofInstant(calendar.toInstant(), zone);
     }
 
     /**

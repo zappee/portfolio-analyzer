@@ -1,22 +1,35 @@
 <configuration>
     <conversionRule conversionWord="highlight" converterClass="com.remal.portfolio.logback.OverwriteDefaultColors" />
 
-    <!-- application log -->
-    <appender name="STDOUT_LOG" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- application logs -->
+    <appender name="LOG_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
         <withJansi>true</withJansi>
         <encoder>
             <pattern>%highlight([%-5level]) %highlight(%class{0}) %highlight(%m%n)</pattern>
         </encoder>
     </appender>
 
-    <!-- application output (System.out.println) -->
-    <appender name="STDOUT_DATA" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- application errors -->
+    <appender name="ERROR_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
+        <withJansi>true</withJansi>
+        <encoder>
+            <pattern>%highlight([%-5level]) %highlight(%m%n)</pattern>
+        </encoder>
+    </appender>
+
+    <!-- show the report -->
+    <appender name="REPORT_APPENDER" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%msg%n</pattern>
         </encoder>
     </appender>
+
     <logger name="com.remal.portfolio.writer.StdoutWriter" level="debug" additivity = "false">
-        <appender-ref ref="STDOUT_DATA" />
+        <appender-ref ref="REPORT_APPENDER" />
+    </logger>
+
+    <logger name="com.remal.portfolio.util.Logger" level="error" additivity = "false">
+        <appender-ref ref="ERROR_APPENDER" />
     </logger>
 
     <!-- disable loggers for a specific package -->
@@ -24,6 +37,6 @@
 
     <!-- root logger configuration -->
     <root level="debug">
-        <appender-ref ref="STDOUT_LOG" />
+        <appender-ref ref="LOG_APPENDER" />
     </root>
 </configuration>

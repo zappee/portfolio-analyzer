@@ -54,11 +54,11 @@ java \
     -i "'tmp/transactions-report_2022-07-12.md'" \
     -e \
     -a \
-    -l "docs/provider.properties" \
+    -l "docs/market-data-providers.properties" \
     -B EUR \
-    -P "'tmp/price-history.md'" \
+    -P "'tmp/market-price-history.md'" \
     -L EN \
-    -C "PORTFOLIO, TICKER, PROFIT_LOSS, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL" \
+    -C "PORTFOLIO, SYMBOL, PROFIT_LOSS, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL" \
     -M OVERWRITE \
     -U ONE_HOUR \
     -O "'tmp/summary.csv'"

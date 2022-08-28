@@ -1,7 +1,7 @@
 package com.remal.portfolio.picocli.arggroup;
 
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.MultiplicityType;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.FileWriter;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,17 +30,17 @@ public class PriceArgGroup {
          * Set the stock name.
          */
         @CommandLine.Option(
-                names = {"-i", "--ticker"},
+                names = {"-i", "--symbol"},
                 required = true,
                 description = "The product id that represents the company's stock.")
-        private String ticker;
+        private String symbol;
 
         /**
          * Data provider definition.
          */
         @CommandLine.ArgGroup(
                 multiplicity = "1")
-        private final ProviderArgGroup providerArgGroup = new ProviderArgGroup();
+        private final DataProviderArgGroup dataProviderArgGroup = new DataProviderArgGroup();
 
         /**
          * The price of a stock on a certain date in the past.
@@ -64,24 +64,24 @@ public class PriceArgGroup {
      * Data provider CLi options.
      */
     @Getter
-    public static class ProviderArgGroup {
+    public static class DataProviderArgGroup {
 
         /**
          * Set the data provider name.
          */
         @CommandLine.Option(
-                names = {"-d", "--provider-id"},
+                names = {"-d", "--data-provider"},
                 description = "Retrieve the market price using the provider. Candidates: ${COMPLETION-CANDIDATES}.")
-        private ProviderType providerType;
+        private DataProviderType dataProvider;
 
         /**
          * Set the data provider properties file.
          */
         @CommandLine.Option(
-                names = {"-f", "--provider-file"},
+                names = {"-p", "--data-provider-file"},
                 description = "Path to a *.properties file to get the data provider name "
                         + " used to retrieve the market price.")
-        private String providerFile;
+        private String dataProviderFile;
     }
 
     /**
@@ -90,15 +90,6 @@ public class PriceArgGroup {
     @Getter
     @Setter
     public static class OutputArgGroup {
-
-        /**
-         * Set the price history file.
-         */
-        @CommandLine.Option(
-                names = {"-P", "--price-history"},
-                description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
-                        + "Accepted extensions: .txt, .md, .csv and .xlsx")
-        private String priceHistoryFile;
 
         /**
          * Controls the price export to file.

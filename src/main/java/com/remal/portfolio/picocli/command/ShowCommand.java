@@ -5,12 +5,15 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.Filter;
+import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
 import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -75,12 +78,16 @@ public class ShowCommand implements Callable<Integer> {
         transactions = transactions
                 .stream()
                 .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
-                .filter(t -> Filter.tickerFilter(inputArgGroup.getTickers(), t))
+                .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
                 .collect(Collectors.toList());
 
         // writer
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var filename = LocalDateTimes.toString(zone, outputArgGroup.getOutputFile(), LocalDateTime.now());
+
         var writer = TransactionWriter.build(outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getOutputFile(), transactions);
+        writer.write(outputArgGroup.getWriteMode(), filename, transactions);
+
         return CommandLine.ExitCode.OK;
     }
 }

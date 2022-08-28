@@ -15,7 +15,6 @@ import picocli.CommandLine;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -84,9 +83,7 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
         // output
         var outFilenameTemplate = outputArgGroup.getOutputFile();
         var zone = ZoneId.of(outputArgGroup.getZone());
-        var outFilename = Objects.isNull(outFilenameTemplate)
-                ? null
-                : LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
+        var outFilename = LocalDateTimes.toString(zone, outFilenameTemplate, LocalDateTime.now());
 
         Writer<Transaction> writer = TransactionWriter.build(outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), outFilename, transactions);

@@ -139,8 +139,8 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                     IntStream.range(0, x.size()).forEach(index -> {
                         var jsonItem = x.get(index);
                         var fillJson = (JSONObject) jsonItem;
-                        var ticker = accounts.get(fillJson.get("account_id").toString());
-                        var isCurrency = currencies.contains(ticker);
+                        var symbol = accounts.get(fillJson.get("account_id").toString());
+                        var isCurrency = currencies.contains(symbol);
                         var pattern = "yyyy-MM-dd HH:mm:ss.[SSSSSS][SSSSS]x";
 
                         Transaction transaction = Transaction
@@ -151,8 +151,8 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                                 .quantity(new BigDecimal(fillJson.get("amount").toString()))
                                 .price(isCurrency ? BigDecimal.ONE : BigDecimal.TEN)
                                 .fee(isCurrency ? BigDecimal.ZERO : BigDecimal.TEN)
-                                .currency(isCurrency ? CurrencyType.getEnum(ticker) : CurrencyType.UNKNOWN)
-                                .ticker(ticker)
+                                .currency(isCurrency ? CurrencyType.getEnum(symbol) : CurrencyType.UNKNOWN)
+                                .symbol(symbol)
                                 .transferId(fillJson.get("id").toString())
                                 .build();
                         transactions.add(transaction);
@@ -194,7 +194,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                                 .price(new BigDecimal(fillJson.get("price").toString()))
                                 .fee(new BigDecimal(fillJson.get("fee").toString()))
                                 .currency(CurrencyType.getEnum(productId.split("-")[1]))
-                                .ticker(productId)
+                                .symbol(productId)
                                 .tradeId(fillJson.get("trade_id").toString())
                                 .orderId(fillJson.get("order_id").toString())
                                 .build();
@@ -281,8 +281,8 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
             for (Object jsonItem : jsonArray.get()) {
                 var json = (JSONObject) jsonItem;
                 var id = json.get("id").toString();
-                var ticker = json.get("currency").toString();
-                accounts.put(id, ticker);
+                var symbol = json.get("currency").toString();
+                accounts.put(id, symbol);
             }
         }
     }

@@ -53,14 +53,6 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label HEADER_DATE = Label.builder()
-            .id("HEADER_DATE")
-            .key("header.date")
-            .build();
-
-    /**
-     * A column header.
-     */
     public static final Label HEADER_DEPOSIT_TOTAL = Label.builder()
             .id("HEADER_DEPOSIT_TOTAL")
             .key("header.deposit-total")
@@ -157,9 +149,17 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label HEADER_TICKER = Label.builder()
-            .id("HEADER_TICKER")
-            .key("header.ticker")
+    public static final Label HEADER_REQUEST_DATE = Label.builder()
+            .id("HEADER_REQUEST_DATE")
+            .key("header.request-date")
+            .build();
+
+    /**
+     * A column header.
+     */
+    public static final Label HEADER_SYMBOL = Label.builder()
+            .id("HEADER_SYMBOL")
+            .key("header.symbol")
             .build();
 
     /**

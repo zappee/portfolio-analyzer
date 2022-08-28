@@ -1,9 +1,9 @@
 package com.remal.portfolio.writer;
 
 import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Label;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.model.TransactionType;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.FileWriter;
@@ -158,14 +158,26 @@ public abstract class Writer<T> {
     protected abstract List<T> getHistoryFromFile(String filename);
 
     /**
-     * Write the report to the output. The output can be a file ot the
+     * Write the report to the output. The output can be a file or the
      * standard output.
      *
      * @param writeMode control the way of open the file
-     * @param filename  the report file name, can contain date/time patterns too
-     * @param items     the report data
+     * @param filename the report file name
+     * @param item the report data
      */
-    public void write(FileWriter.WriteMode writeMode, String filename, List<T> items) {
+    public void write(final FileWriter.WriteMode writeMode, final String filename, final T item) {
+        write(writeMode, filename, List.of(item));
+    }
+
+    /**
+     * Write the report to the output. The output can be a file or the
+     * standard output.
+     *
+     * @param writeMode control the way of open the file
+     * @param filename the report file name
+     * @param items the report data
+     */
+    public void write(final FileWriter.WriteMode writeMode, final String filename, final List<T> items) {
         this.writeMode = writeMode;
         var fileType = com.remal.portfolio.util.Files.getFileType(filename);
         List<T> itemContainer = new ArrayList<>();
@@ -173,11 +185,7 @@ public abstract class Writer<T> {
         if (Objects.nonNull(filename) && Files.exists(Path.of(filename)) && writeMode == FileWriter.WriteMode.APPEND) {
             // keep the items from the history file
             itemContainer.addAll(getHistoryFromFile(filename));
-
-            // add the new items if not exist
-            itemContainer.addAll(items.stream()
-                    .filter(item -> !itemContainer.contains(item))
-                    .toList());
+            itemContainer.addAll(items.stream().filter(item -> !itemContainer.contains(item)).toList());
         } else {
             itemContainer.addAll(items);
         }
@@ -216,8 +224,8 @@ public abstract class Writer<T> {
      * column title and the length of the cell contents.
      *
      * @param widths the list that stores the width of the columns
-     * @param label  column title
-     * @param value  cell value
+     * @param label column title
+     * @param value cell value
      */
     protected void updateWidth(Map<String, Integer> widths, Label label, final Object value) {
         if (value instanceof BigDecimal x) {
@@ -254,9 +262,9 @@ public abstract class Writer<T> {
     /**
      * Return the value as a string or an empty string if the column is hidden.
      *
-     * @param label             column ID
+     * @param label column ID
      * @param cellValueAsObject cell value
-     * @return                  the value or an empty string
+     * @return the value or an empty string
      */
     protected String getCell(Label label, Object cellValueAsObject) {
         return getCell(label, cellValueAsObject, "");
@@ -265,10 +273,10 @@ public abstract class Writer<T> {
     /**
      * Return the value as a string or an empty string if the column is hidden.
      *
-     * @param label             column ID
+     * @param label column ID
      * @param cellValueAsObject cell value
-     * @param separator         separator character used in the report
-     * @return                  the value or an empty string
+     * @param separator separator character used in the report
+     * @return the value or an empty string
      */
     protected String getCell(Label label, Object cellValueAsObject, String separator) {
         return columnsToHide.contains(label.getId())
@@ -279,10 +287,10 @@ public abstract class Writer<T> {
     /**
      * Generate an alignment value as a String.
      *
-     * @param label  column ID
-     * @param value  cell value
+     * @param label column ID
+     * @param value cell value
      * @param widths column width
-     * @return       the value or an empty String if the column is hidden
+     * @return the value or an empty String if the column is hidden
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
         if (columnsToHide.contains(label.getId())) {
@@ -315,7 +323,7 @@ public abstract class Writer<T> {
      * Generate a string that is used as a key in the Map that keeps the length of
      * BigDecimal fields.
      *
-     * @param  label the column ID
+     * @param label the column ID
      * @return the key for the Map
      */
     protected String getWholeWidthKey(Label label) {
@@ -327,7 +335,7 @@ public abstract class Writer<T> {
      * BigDecimal fields.
      *
      * @param label the column ID
-     * @return      the key for the Map
+     * @return the key for the Map
      */
     protected String getFractionalWidthKey(Label label) {
         return label.getId() + "-F";
@@ -337,7 +345,7 @@ public abstract class Writer<T> {
      * Convert an object to String.
      *
      * @param value the value
-     * @return      the string representation of the object
+     * @return the string representation of the object
      */
     private Optional<String> getStringValue(final Object value) {
         if (Objects.isNull(value)) {
@@ -355,12 +363,12 @@ public abstract class Writer<T> {
             stringValue = Optional.of(x.name());
 
         } else if (value instanceof LocalDateTime x) {
-            stringValue = Optional.of(LocalDateTimes.toString(zone, dateTimePattern, x));
+            stringValue = Optional.of(LocalDateTimes.toNullSafeString(zone, dateTimePattern, x));
 
         } else if (value instanceof BigDecimal x) {
             stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());
 
-        } else if (value instanceof ProviderType x) {
+        } else if (value instanceof DataProviderType x) {
             stringValue = Optional.of(x.name());
 
         } else if (value instanceof CurrencyType x) {
@@ -377,8 +385,8 @@ public abstract class Writer<T> {
      * Compute the full length of a decimal field.
      *
      * @param widths the list that keeps info about the columns
-     * @param label  column ID
-     * @return       the length of the decimal number
+     * @param label column ID
+     * @return the length of the decimal number
      */
     private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
         var wholeWidth = widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
@@ -391,7 +399,7 @@ public abstract class Writer<T> {
      * Split the decimal number to whole and fractal parts.
      *
      * @param value the decimal number
-     * @return      the parts
+     * @return the parts
      */
     private String[] partsOfBigDecimal(BigDecimal value) {
         if (Objects.isNull(value)) {
@@ -417,8 +425,8 @@ public abstract class Writer<T> {
     /**
      * Escape the special character in order to it can be used as a regexp expression.
      *
-     * @param charToEscape the special character
-     * @return             the escaped special character
+     * @param charToEscape special character to escape
+     * @return the escaped special character
      */
     private String escapeDecimalSeparator(char charToEscape) {
         if (charToEscape == '.') {
@@ -432,7 +440,7 @@ public abstract class Writer<T> {
      * Write Excel spreadsheet to a byte array.
      *
      * @param workbook the Excel spreadsheet
-     * @return         the Excel file as a byte array
+     * @return Excel file as a byte array
      */
     protected byte[] workbookToBytes(XSSFWorkbook workbook) {
         try (var outputStream = new ByteArrayOutputStream()) {
@@ -448,10 +456,10 @@ public abstract class Writer<T> {
      * Set the cell value if the object is not null, otherwise skip
      * the set operation.
      *
-     * @param workbook    the Excel workbook
-     * @param row         row in the Excel spreadsheet
+     * @param workbook the Excel workbook
+     * @param row row in the Excel spreadsheet
      * @param columnIndex column index within the row
-     * @param obj         the value to be set as a cell value
+     * @param obj the value to be set as a cell value
      */
     protected void skipIfNullOrSet(XSSFWorkbook workbook, XSSFRow row, AtomicInteger columnIndex, Object obj) {
         if (Objects.isNull(obj)) {
@@ -482,16 +490,16 @@ public abstract class Writer<T> {
      */
     private void showConfiguration() {
         log.debug("> time zone: '{}'", zone.getId());
-        log.debug("> report has title: {}", !hideTitle);
-        log.debug("> table has header: {}", !hideHeader);
+        log.debug(hideTitle ? "< printing the report without title" : "< printing the report with title");
+        log.debug(hideHeader ? "< skipping to print the table header" : "< printing table header");
     }
 
     /**
      * Get the next cell in the row.
      *
-     * @param row         row in the Excel spreadsheet
+     * @param row row in the Excel spreadsheet
      * @param columnIndex column index within the row
-     * @return            the next cell in the row
+     * @return the next cell in the row
      */
     private XSSFCell getNextCell(XSSFRow row, AtomicInteger columnIndex) {
         return row.createCell(columnIndex.incrementAndGet());

@@ -79,7 +79,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     .append(NEW_LINE)
                     .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
                     .append(": ")
-                    .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
+                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
                     .append(NEW_LINE);
         }
 
@@ -102,7 +102,7 @@ public class TransactionWriter extends Writer<Transaction> {
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> report
                         .append(getCell(Label.HEADER_PORTFOLIO, transaction.getPortfolio(), csvSeparator))
-                        .append(getCell(Label.HEADER_TICKER, transaction.getTicker(), csvSeparator))
+                        .append(getCell(Label.HEADER_SYMBOL, transaction.getSymbol(), csvSeparator))
                         .append(getCell(Label.HEADER_TYPE, transaction.getType(), csvSeparator))
                         .append(getCell(Label.HEADER_VALUATION, transaction.getInventoryValuation(), csvSeparator))
                         .append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), csvSeparator))
@@ -142,7 +142,7 @@ public class TransactionWriter extends Writer<Transaction> {
             row = sheet.createRow(rowIndex.incrementAndGet());
             cell = row.createCell(columnIndex);
             cell.setCellValue(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language) + ": "
-                    + LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()));
+                    + LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()));
         }
 
         // table header
@@ -170,7 +170,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     var index = new AtomicInteger(-1);
 
                     skipIfNullOrSet(workbook, row, index, transaction.getPortfolio());
-                    skipIfNullOrSet(workbook, row, index, transaction.getTicker());
+                    skipIfNullOrSet(workbook, row, index, transaction.getSymbol());
                     skipIfNullOrSet(workbook, row, index, Enums.enumToString(transaction.getType()));
                     skipIfNullOrSet(workbook, row, index, Enums.enumToString(transaction.getInventoryValuation()));
                     skipIfNullOrSet(workbook, row, index, transaction.getTradeDate());
@@ -206,7 +206,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     .append("_")
                     .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
                     .append(": ")
-                    .append(LocalDateTimes.toString(zone, dateTimePattern, LocalDateTime.now()))
+                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
                     .append("_")
                     .append(NEW_LINE)
                     .append(NEW_LINE);
@@ -240,7 +240,7 @@ public class TransactionWriter extends Writer<Transaction> {
                 .sorted(Sorter.tradeDateComparator())
                 .forEach(transaction -> {
                     report.append(getCell(Label.HEADER_PORTFOLIO, transaction.getPortfolio(), widths));
-                    report.append(getCell(Label.HEADER_TICKER, transaction.getTicker(), widths));
+                    report.append(getCell(Label.HEADER_SYMBOL, transaction.getSymbol(), widths));
                     report.append(getCell(Label.HEADER_TYPE, transaction.getType(), widths));
                     report.append(getCell(Label.HEADER_VALUATION, transaction.getInventoryValuation(), widths));
                     report.append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), widths));
@@ -293,7 +293,7 @@ public class TransactionWriter extends Writer<Transaction> {
             updateWidth(widths, Label.HEADER_PRICE, transaction.getPrice());
             updateWidth(widths, Label.HEADER_FEE, transaction.getFee());
             updateWidth(widths, Label.HEADER_CURRENCY, transaction.getCurrency());
-            updateWidth(widths, Label.HEADER_TICKER, transaction.getTicker());
+            updateWidth(widths, Label.HEADER_SYMBOL, transaction.getSymbol());
             updateWidth(widths, Label.HEADER_TRANSFER_ID, transaction.getTransferId());
             updateWidth(widths, Label.HEADER_TRADE_ID, transaction.getTradeId());
             updateWidth(widths, Label.HEADER_ORDER_ID, transaction.getOrderId());

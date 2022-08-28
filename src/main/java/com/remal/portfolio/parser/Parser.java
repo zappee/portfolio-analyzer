@@ -50,7 +50,7 @@ public abstract class Parser<T> {
     /**
      * Log message.
      */
-    protected static final String LOG_ERROR_GENERAL = "Error while parsing the \"{}\" file. Error: {}";
+    protected static final String LOG_ERROR_GENERAL = "Error while parsing the \"{}\" file. {}";
 
     /**
      * Log message.
@@ -98,7 +98,7 @@ public abstract class Parser<T> {
     /**
      * Product name filter.
      */
-    private List<String> tickers = new ArrayList<>();
+    private List<String> symbols = new ArrayList<>();
 
     /**
      * Set the name of the missing columns in the report.
@@ -137,7 +137,7 @@ public abstract class Parser<T> {
         parser.setFrom(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getFrom()));
         parser.setTo(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getTo()));
         parser.setMissingColumns(arguments.getMissingColumns());
-        parser.setTickers(arguments.getTickers());
+        parser.setSymbols(arguments.getSymbols());
         return parser;
     }
 
@@ -331,10 +331,10 @@ public abstract class Parser<T> {
      */
     private void showConfiguration() {
         log.debug("< time zone: '{}'", Objects.isNull(zone) ? "<not defined>" : zone.getId());
-        log.debug("< report has title: {}", hasTitle);
-        log.debug("< table has header: {}", hasHeader);
-        if (!tickers.isEmpty()) {
-            log.debug("< show the following tickers: {}", tickers);
+        log.debug(hasTitle ? "< printing the report with title" : "< printing the report without title");
+        log.debug(hasHeader ? "< printing table header" : "< skipping to print the table header");
+        if (!symbols.isEmpty()) {
+            log.debug("< showing only the following symbols: {}", symbols);
         }
     }
 }

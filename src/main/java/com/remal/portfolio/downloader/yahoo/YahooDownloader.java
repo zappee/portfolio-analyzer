@@ -1,10 +1,9 @@
 package com.remal.portfolio.downloader.yahoo;
 
 import com.remal.portfolio.downloader.Downloader;
+import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.util.Calendars;
-import com.remal.portfolio.util.Logger;
 import lombok.extern.slf4j.Slf4j;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
@@ -15,9 +14,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -35,49 +34,43 @@ public class YahooDownloader implements Downloader {
     /**
      * The ID of this providerType.
      */
-    private static final ProviderType PROVIDER_TYPE = ProviderType.YAHOO;
-
-    /**
-     * Error log message template.
-     */
-    private static final String PRICE_NOT_FOUND = "ticker '{}' not found, provider: '{}'";
-
-    /**
-     * Error log message template.
-     */
-    private static final String DOWNLOAD_ERROR = "error while downloading the price of '{}', provider: '{}', error: {}";
+    private static final DataProviderType DATA_PROVIDER = DataProviderType.YAHOO;
 
     /**
      * Downloads the latest price of a stock. It uses the Yahoo REST API
      * to get the actual price.
      *
-     * @param ticker product name
-     * @return       the latest price
+     * @param symbol product name
+     * @return the latest price
      */
     @Override
-    public Optional<Price> getPrice(String ticker) {
-        log.debug("< getting the latest price of '{}', provider: '{}'...", ticker, PROVIDER_TYPE);
+    public Optional<Price> getPrice(String symbol) {
+        log.debug("< getting the latest price of '{}', provider: '{}'...", symbol, DATA_PROVIDER);
         Optional<Price> marketPrice = Optional.empty();
 
         try {
-            Stock stock = YahooFinance.get(ticker);
-            var price = stock.getQuote().getPrice();
-            if (Objects.nonNull(price)) {
+            Stock stock = YahooFinance.get(symbol);
+            if (stock.isValid()) {
+                var tradeDate = Calendars.toLocalDateTime(
+                        stock.getQuote().getLastTradeTime(),
+                        stock.getQuote().getTimeZone().toZoneId());
+
                 marketPrice = Optional.of(Price
                         .builder()
-                        .ticker(ticker)
-                        .unitPrice(price)
-                        .providerType(PROVIDER_TYPE)
-                        .date(LocalDateTime.now())
+                        .symbol(symbol)
+                        .unitPrice(stock.getQuote().getPrice())
+                        .dataProvider(DATA_PROVIDER)
+                        .tradeDate(tradeDate.atZone(ZoneOffset.UTC).toLocalDateTime())
+                        .requestDate(LocalDateTime.now())
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         } catch (NullPointerException e) {
-            Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE.name());
+            log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER.name());
         }
 
-        logResult(ticker, marketPrice.orElse(null));
+        marketPrice.ifPresent(price -> log.info("< {}", price));
         return marketPrice;
     }
 
@@ -85,54 +78,42 @@ public class YahooDownloader implements Downloader {
      * Downloads the price of a stock on a certain date in the past.
      * It uses the Yahoo REST API to get the actual price.
      *
-     * @param ticker    product name
-     * @param timestamp date in the past
-     * @return          the latest price
+     * @param symbol product name
+     * @param requestedTradeDate trade date in the past
+     * @return the product's market price
      */
     @Override
-    public Optional<Price> getPrice(String ticker, Calendar timestamp) {
-        var message = "< getting the price of '{}' at {}, provider: '{}'...";
-        log.debug(message, ticker, PROVIDER_TYPE, Calendars.toString(timestamp));
+    public Optional<Price> getPrice(String symbol, Calendar requestedTradeDate) {
+        var message = "< getting the price of \"{}\" at {}, provider: \"{}\"...";
+        log.debug(message, symbol, Calendars.toUtcString(requestedTradeDate), DATA_PROVIDER);
 
         Optional<Price> marketPrice = Optional.empty();
         try {
-            Stock stock = YahooFinance.get(ticker);
-            List<HistoricalQuote> historicalQuotes = stock.getHistory(timestamp, Interval.DAILY);
+            var stock = YahooFinance.get(symbol);
+            var clonedRequestedTradeDate = (Calendar) requestedTradeDate.clone();
+            List<HistoricalQuote> historicalQuotes = stock.getHistory(clonedRequestedTradeDate, Interval.DAILY);
             if (historicalQuotes.isEmpty()) {
-                Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+                log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
                 var historicalQuote = historicalQuotes.get(0);
                 marketPrice = Optional.of(Price
                         .builder()
-                        .ticker(ticker)
+                        .symbol(symbol)
                         .unitPrice(historicalQuote.getClose())
-                        .providerType(PROVIDER_TYPE)
-                        .date(LocalDateTime.ofInstant(
+                        .dataProvider(DATA_PROVIDER)
+                        .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
+                        .tradeDate(LocalDateTime.ofInstant(
                                 Instant.ofEpochMilli(historicalQuote.getDate().getTimeInMillis()),
                                 ZoneId.systemDefault()))
                         .build());
             }
         } catch (IOException e) {
-            Logger.logErrorAndExit(DOWNLOAD_ERROR, ticker, PROVIDER_TYPE, e.toString());
+            log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
         } catch (NullPointerException e) {
-            Logger.logErrorAndExit(PRICE_NOT_FOUND, ticker, PROVIDER_TYPE);
+            log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
         }
 
-        logResult(ticker, marketPrice.orElse(null));
+        marketPrice.ifPresent(price -> log.info("< {}", price));
         return marketPrice;
-    }
-
-    /**
-     * Log the result of the price downloader task.
-     *
-     * @param ticker product name
-     * @param price  the result
-     */
-    private void logResult(String ticker, Price price) {
-        if (Objects.isNull(price)) {
-            Logger.logErrorAndExit("< invalid ticker: {}", ticker);
-        } else {
-            log.info("< {}", price);
-        }
     }
 }

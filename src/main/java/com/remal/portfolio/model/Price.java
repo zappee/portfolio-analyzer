@@ -27,10 +27,10 @@ import java.time.LocalDateTime;
 public class Price {
 
     /**
-     * A ticker is an abbreviation used to uniquely identify publicly traded
+     * A symbol is an abbreviation used to uniquely identify publicly traded
      * shares of a particular stock on a particular stock market.
      */
-    private String ticker;
+    private String symbol;
 
     /**
      * The price for one unit.
@@ -41,10 +41,15 @@ public class Price {
     /**
      * The data provider.
      */
-    private ProviderType providerType;
+    private DataProviderType dataProvider;
 
     /**
-     * The time and date when the price was downloaded.
+     * The date of that market price belongs to.
      */
-    private LocalDateTime date;
+    private LocalDateTime tradeDate;
+
+    /**
+     * The price request date.
+     */
+    private LocalDateTime requestDate;
 }

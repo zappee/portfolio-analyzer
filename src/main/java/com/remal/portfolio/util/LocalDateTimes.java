@@ -12,6 +12,8 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoField;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -80,14 +82,14 @@ public class LocalDateTimes {
 
     /**
      * Make a timezone transformation from UTC to client time zone and
-     * converts the date/time to a String.
+     * converts the date/time to a String on a null safe way.
      *
      * @param zone the timezone to convert the date to
      * @param dateTimePattern the date/time pattern
      * @param timestamp the date/time to convert
      * @return the date/time as a string at the provided timezone
      */
-    public static String toString(ZoneId zone, String dateTimePattern, LocalDateTime timestamp) {
+    public static String toNullSafeString(ZoneId zone, String dateTimePattern, LocalDateTime timestamp) {
         if (Objects.nonNull(timestamp) && Objects.nonNull(dateTimePattern)) {
             try {
                 var timestampAtLocalZone = timestamp.atZone(ZoneId.systemDefault());
@@ -98,14 +100,27 @@ public class LocalDateTimes {
 
             } catch (IllegalArgumentException e) {
                 Logger.logErrorAndExit(
-                        "An error has occurred while converting date to string. "
-                        + "Wrap the filename with single quotas may help. "
-                        + "String: \"{}\", Error: {}",
+                        "An error has occurred while parsing a string with date/time symbols. Wrap \"{}\" with"
+                        + " single quotas may help. {}",
                         dateTimePattern,
                         e.getMessage());
             }
         }
         return "";
+    }
+
+    /**
+     * Make a timezone transformation from UTC to client time zone and
+     * converts the date/time to a String.
+     *
+     * @param zone the timezone to convert the date to
+     * @param dateTimePattern the date/time pattern
+     * @param timestamp the date/time to convert
+     * @return the date/time as a string at the provided timezone
+     */
+    public static String toString(ZoneId zone, String dateTimePattern, LocalDateTime timestamp) {
+        var timestampAsString = toNullSafeString(zone, dateTimePattern, timestamp);
+        return timestampAsString.isEmpty() ? null : timestampAsString;
     }
 
     /**
@@ -135,15 +150,16 @@ public class LocalDateTimes {
      * Example:
      *    to = 2022-04-11 21:11:19 --> 2022-04-11 21:11:19.000
      *    transaction.getTradeDate() = 2022-04-11 21:11:19.345
-     *
+     * </p>
+     * <p>
      * Then transaction.getTradeDate().isBefore(to) will hide the
      * transaction above so the last record wil not appear in the
      * report:
-     *
      * |portfolio|symbol |type   |trade date          |quantity|price|fee  |currency|
      * |default  |EUR    |DEPOSIT|2022-03-29 22:33:08|15       |   1 |0    |EUR     |
      * |default  |ETH-EUR|BUY    |2022-04-11 21:11:19| 0.35    |2740 |3.836|EUR     |
-     *
+     * </p>
+     * <p>
      * To avoid this situation the value of the "to" must be
      * increased with 999 millisecond this way:
      *    2022-04-11 21:11:19 --> 2022-04-11 21:11:19.999
@@ -162,6 +178,20 @@ public class LocalDateTimes {
             }
         }
         return timestamp;
+    }
+
+    /**
+     * LocalDateTiem to Calendr converter.
+     *
+     * @param datetimeToConvert date-time object to convert
+     * @return the converted onbjet
+     */
+    public static Calendar toCalendar(LocalDateTime datetimeToConvert) {
+        Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();
+        Date date = Date.from(instant);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return calendar;
     }
 
     /**

@@ -83,7 +83,7 @@ public class OutputArgGroup {
     @CommandLine.Option(
             names = {"-C", "--columns-to-hide"},
             description = "Comma separated list of column names that won't be displayed in the report. "
-                    + "Candidates: PORTFOLIO, TICKER, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE, FEE, "
+                    + "Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE, FEE, "
                     + "CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
             converter = StringToListConverter.class)
     private final List<String> columnsToHide = new ArrayList<>();

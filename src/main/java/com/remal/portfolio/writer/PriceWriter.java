@@ -42,7 +42,7 @@ public class PriceWriter extends Writer<Price> {
      * Builder that initializes a new writer instance.
      *
      * @param arguments input arguments
-     * @return          the writer instance
+     * @return the writer instance
      */
     public static Writer<Price> build(PriceArgGroup.OutputArgGroup arguments) {
         // validating the output params
@@ -63,7 +63,7 @@ public class PriceWriter extends Writer<Price> {
      * Generate the CSV report.
      *
      * @param prices list of the prices
-     * @return       the report content as a String
+     * @return the report content as a String
      */
     @Override
     protected String buildCsvReport(List<Price> prices) {
@@ -81,10 +81,11 @@ public class PriceWriter extends Writer<Price> {
                 .stream()
                 .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> report
-                    .append(getCell(Label.HEADER_TICKER, productPrice.getTicker(), csvSeparator))
+                    .append(getCell(Label.HEADER_SYMBOL, productPrice.getSymbol(), csvSeparator))
                     .append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), csvSeparator))
-                    .append(getCell(Label.HEADER_DATE, productPrice.getDate(), csvSeparator))
-                    .append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getProviderType()))
+                    .append(getCell(Label.HEADER_TRADE_DATE, productPrice.getTradeDate(), csvSeparator))
+                    .append(getCell(Label.HEADER_REQUEST_DATE, productPrice.getRequestDate(), csvSeparator))
+                    .append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getDataProvider()))
                     .append(NEW_LINE));
 
         return report.toString();
@@ -94,7 +95,7 @@ public class PriceWriter extends Writer<Price> {
      * Generate the Excel report.
      *
      * @param prices list of the prices
-     * @return       the report content as bytes
+     * @return the report content as bytes
      */
     @Override
     protected byte[] buildExcelReport(List<Price> prices) {
@@ -121,10 +122,11 @@ public class PriceWriter extends Writer<Price> {
                     var dataRow = sheet.createRow(rowIndex.incrementAndGet());
                     var index = new AtomicInteger(-1);
 
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getTicker());
+                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getSymbol());
                     skipIfNullOrSet(workbook, dataRow, index, productPrice.getUnitPrice());
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getDate());
-                    skipIfNullOrSet(workbook, dataRow, index, Enums.enumToString(productPrice.getProviderType()));
+                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getTradeDate());
+                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getRequestDate());
+                    skipIfNullOrSet(workbook, dataRow, index, Enums.enumToString(productPrice.getDataProvider()));
                 });
 
         return workbookToBytes(workbook);
@@ -134,11 +136,13 @@ public class PriceWriter extends Writer<Price> {
      * Generate the Text/Markdown report.
      *
      * @param prices list of the prices
-     * @return       the report content as a String
+     * @return the report content as a String
      */
     @Override
     protected String buildMarkdownReport(List<Price> prices) {
-        reduceBasedOnMultiplicity(prices, multiplicity);
+        if (prices.size() > 1) {
+            reduceBasedOnMultiplicity(prices, multiplicity);
+        }
 
         var widths = calculateColumnWidth(prices);
 
@@ -163,10 +167,11 @@ public class PriceWriter extends Writer<Price> {
                 .stream()
                 .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> {
-                    report.append(getCell(Label.HEADER_TICKER, productPrice.getTicker(), widths));
+                    report.append(getCell(Label.HEADER_SYMBOL, productPrice.getSymbol(), widths));
                     report.append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), widths));
-                    report.append(getCell(Label.HEADER_DATE, productPrice.getDate(), widths));
-                    report.append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getProviderType(), widths));
+                    report.append(getCell(Label.HEADER_TRADE_DATE, productPrice.getTradeDate(), widths));
+                    report.append(getCell(Label.HEADER_REQUEST_DATE, productPrice.getRequestDate(), widths));
+                    report.append(getCell(Label.HEADER_DATA_PROVIDER, productPrice.getDataProvider(), widths));
                     report.append(markdownSeparator).append(NEW_LINE);
                 });
 
@@ -192,15 +197,16 @@ public class PriceWriter extends Writer<Price> {
      * Calculate the with of the columns that are shown in the report.
      *
      * @param prices list of the prices
-     * @return       length of the columns
+     * @return length of the columns
      */
     private Map<String, Integer> calculateColumnWidth(List<Price> prices) {
         Map<String, Integer> widths = new HashMap<>();
         prices.forEach(productPrice -> {
-            updateWidth(widths, Label.HEADER_TICKER, productPrice.getTicker());
+            updateWidth(widths, Label.HEADER_SYMBOL, productPrice.getSymbol());
             updateWidth(widths, Label.HEADER_PRICE, productPrice.getUnitPrice());
-            updateWidth(widths, Label.HEADER_DATE, productPrice.getDate());
-            updateWidth(widths, Label.HEADER_DATA_PROVIDER, productPrice.getProviderType());
+            updateWidth(widths, Label.HEADER_TRADE_DATE, productPrice.getTradeDate());
+            updateWidth(widths, Label.HEADER_REQUEST_DATE, productPrice.getRequestDate());
+            updateWidth(widths, Label.HEADER_DATA_PROVIDER, productPrice.getDataProvider());
         });
         return widths;
     }
@@ -209,24 +215,24 @@ public class PriceWriter extends Writer<Price> {
      * Filter out the unacceptable items from the price list.
      *
      * @param prices the product price list
-     * @param multiplicity  controls how to add the price to the list
+     * @param multiplicity controls how to add the price to the list
      */
     public static void reduceBasedOnMultiplicity(List<Price> prices, MultiplicityType multiplicity) {
         var correction = 1; // avoid the overlapping of the intervals
 
         log.debug("> multiplicity: {}", multiplicity.name());
-        log.debug("> number of item before the reduce: {}", prices.size());
+        log.debug("> number of items before the reduce: {}", prices.size());
 
         prices.removeIf(price -> {
-            var intervalEnd = price.getDate();
+            var intervalEnd = price.getTradeDate();
             var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec() - correction);
             var itemCount = prices
                     .stream()
-                    .filter(x -> x.getTicker().equals(price.getTicker()))
-                    .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getDate()))
+                    .filter(x -> x.getSymbol().equals(price.getSymbol()))
+                    .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getTradeDate()))
                     .count();
             return multiplicity != MultiplicityType.MANY && itemCount > 1;
         });
-        log.debug("> number of item after the reduce: {}", prices.size());
+        log.debug("> number of items after the reduce: {}", prices.size());
     }
 }

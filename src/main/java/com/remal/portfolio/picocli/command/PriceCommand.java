@@ -1,28 +1,18 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.downloader.Downloader;
+import com.remal.portfolio.downloader.MarketPriceDownloader;
 import com.remal.portfolio.model.Price;
-import com.remal.portfolio.model.ProviderType;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
-import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.PriceWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
  * Implementation of the 'price' command.
@@ -52,6 +42,15 @@ public class PriceCommand implements Callable<Integer> {
     boolean quietMode;
 
     /**
+     * Set the price history file.
+     */
+    @CommandLine.Option(
+            names = {"-P", "--price-history"},
+            description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
+                    + "Accepted extensions: .txt, .md, .csv and .xlsx")
+    private String priceHistoryFile;
+
+    /**
      * Data providerType configuration.
      */
     @CommandLine.ArgGroup(
@@ -69,18 +68,6 @@ public class PriceCommand implements Callable<Integer> {
     private final PriceArgGroup.OutputArgGroup outputArgGroup = new PriceArgGroup.OutputArgGroup();
 
     /**
-     * Supported price downloader modules.
-     */
-    private final Map<ProviderType, Downloader> downloader;
-
-    /**
-     * Constructor that initializes the price downloader objects.
-     */
-    public PriceCommand() {
-        downloader = Downloader.initializeDownloader();
-    }
-
-    /**
      * Execute the command and computes a result.
      *
      * @return exit code
@@ -88,52 +75,19 @@ public class PriceCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        ZoneIds.validate(outputArgGroup.getZone());
 
-        var ticker = inputArgGroup.getTicker();
-        var providerFileTemplate = inputArgGroup.getProviderArgGroup().getProviderFile();
-        var zone = ZoneId.of(outputArgGroup.getZone());
-        var providerFile = LocalDateTimes.toString(zone, providerFileTemplate, LocalDateTime.now());
-        var provider = Stream.<Supplier<ProviderType>>of(
-                        () -> inputArgGroup.getProviderArgGroup().getProviderType(),
-                        () -> ProviderType.getProvider(ticker, providerFile))
-                .map(Supplier::get)
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-        var tickerAlias = Objects.nonNull(providerFileTemplate)
-                ? ProviderType.getTicker(ticker, providerFile)
-                : ticker;
-        var price = getPrice(tickerAlias, provider);
-        List<Price> prices = new ArrayList<>();
-        price.ifPresent(p -> {
-            p.setTicker(ticker);
-            prices.add(p);
-        });
+        var priceDownloader = MarketPriceDownloader.build(priceHistoryFile, inputArgGroup, outputArgGroup);
+        var tradeDate = Calendars.fromString(inputArgGroup.getTradeDate(), inputArgGroup.getDateTimePattern());
+        var price = priceDownloader.getMarketPrice(inputArgGroup.getSymbol(), tradeDate);
 
-        // writer
-        Writer<Price> writer = PriceWriter.build(outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outputArgGroup.getPriceHistoryFile(), prices);
+        if (price.isPresent()) {
+            Writer<Price> writer = PriceWriter.build(outputArgGroup);
+            writer.write(outputArgGroup.getWriteMode(), priceHistoryFile, price.get());
+        } else {
+            Logger.logErrorAndExit("Price not found.");
+        }
 
         return CommandLine.ExitCode.OK;
-    }
-
-    /**
-     * Download the price from data provider.
-     *
-     * @param ticker       the company's ticker
-     * @param providerType trading data provider
-     * @return             the market price of the company
-     */
-    private Optional<Price> getPrice(String ticker, ProviderType providerType) {
-        if (Objects.nonNull(providerType)) {
-            var tradeDate = inputArgGroup.getTradeDate();
-            var pattern = inputArgGroup.getDateTimePattern();
-            return Objects.isNull(tradeDate)
-                    ? downloader.get(providerType).getPrice(ticker)
-                    : downloader.get(providerType).getPrice(ticker, Calendars.fromString(tradeDate, pattern));
-        } else {
-            Logger.logErrorAndExit("Market price data provider can not be empty.");
-            return Optional.empty();
-        }
     }
 }

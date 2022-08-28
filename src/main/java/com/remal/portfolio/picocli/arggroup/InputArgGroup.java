@@ -56,10 +56,10 @@ public class InputArgGroup {
      */
     @CommandLine.Option(
             order = 100,
-            names = {"-c", "--ticker"},
-            description = "Product filter, that is a comma separated list with tickers, e.g. \"BTC-EUR, AMZN\".",
+            names = {"-c", "--symbol"},
+            description = "Product filter, that is a comma separated list with symbols, e.g. \"BTC-EUR, AMZN\".",
             converter = StringToListConverter.class)
-    private List<String> tickers = new ArrayList<>();
+    private List<String> symbols = new ArrayList<>();
 
     /**
      * Pattern for parsing date and time.
