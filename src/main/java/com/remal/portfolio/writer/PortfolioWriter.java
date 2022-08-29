@@ -174,13 +174,13 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                         .forEach(p -> {
                             var product = p.getValue();
                             if (BigDecimals.isNotZero(product.getQuantity())) {
+                                var price = product.getMarketPrice().getUnitPrice();
                                 report
                                     .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), widths))
                                     .append(getCell(Label.HEADER_SYMBOL, product.getSymbol(), widths))
                                     .append(getCell(Label.HEADER_QUANTITY, product.getQuantity(), widths))
-                                    //.append(getCell(Label.HEADER_AVG_PRICE, p.getAveragePrice(), widths))
-                                    .append(getCell(Label.HEADER_MARKET_UNIT_PRICE,
-                                            product.getMarketPrice().getUnitPrice(), widths))
+                                    .append(getCell(Label.HEADER_AVG_PRICE, product.getAveragePrice(), widths))
+                                    .append(getCell(Label.HEADER_MARKET_UNIT_PRICE, price, widths))
                                     //.append(getCell(Label.HEADER_INVESTED_AMOUNT, p.getInvestedAmount(), widths))
                                     // .append(getCell(Label.HEADER_MARKET_VALUE, p.getMarketValue(), widths))
                                     //.append(getCell(Label.HEADER_PROFIT_LOSS, p.getProfitAndLoss(), widths))
@@ -268,8 +268,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     updateWidth(widths, Label.HEADER_SYMBOL, product.getSymbol());
                     updateWidth(widths, Label.HEADER_QUANTITY, product.getQuantity());
                     updateWidth(widths, Label.HEADER_AVG_PRICE, product.getAveragePrice());
-                    //updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
                     updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, product.getMarketPrice().getUnitPrice());
+                    //updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
                     //              updateWidth(widths, Label.HEADER_MARKET_VALUE, product.getMarketValue());
                     //           updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());
                     //         updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, product.getProfitLossPercent());

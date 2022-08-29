@@ -134,6 +134,11 @@ public class Product {
         updateAveragePrice();
     }
 
+    /**
+     * Updates the quantiy value.
+     *
+     * @param transaction transaction
+     */
     private void updateQuantity(Transaction transaction) {
         quantity = switch (transaction.getType()) {
             case DEPOSIT, BUY -> quantity.add(transaction.getQuantity());
@@ -148,6 +153,9 @@ public class Product {
         }
     }
 
+    /**
+     * Updates the supply list.
+     */
     private void updateSupply() {
         supply.clear();
 
