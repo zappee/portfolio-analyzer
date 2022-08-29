@@ -28,6 +28,16 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Product {
 
     /**
+     * Scale to round the numbers in the report.
+     */
+    private static final int SCALE = 2;
+
+    /**
+     * Rounding mode used to show decimal numbers in the report.
+     */
+    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
+
+    /**
      * Portfolio name.
      */
     private final String portfolio;
@@ -125,7 +135,7 @@ public class Product {
      * The current market value of the holding.
      */
     public BigDecimal getMarketValue() {
-        return quantity.multiply(marketPrice.getUnitPrice());
+        return quantity.multiply(marketPrice.getUnitPrice()).setScale(SCALE, ROUNDING_MODE);
     }
 
     /**
@@ -133,7 +143,7 @@ public class Product {
      */
     public BigDecimal getInvestedAmount() {
         var avgPrice = getAveragePrice();
-        return Objects.isNull(avgPrice) ? null : quantity.multiply(avgPrice);
+        return Objects.isNull(avgPrice) ? null : quantity.multiply(avgPrice).setScale(SCALE, ROUNDING_MODE);
     }
 
     /**
@@ -153,8 +163,7 @@ public class Product {
             return null;
         } else {
             var pl = getMarketValue().divide(investedAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
-            var scale = 2;
-            return pl.multiply(hundred).setScale(scale, RoundingMode.HALF_EVEN);
+            return pl.multiply(hundred).setScale(SCALE, ROUNDING_MODE);
         }
     }
 
