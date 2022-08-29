@@ -173,6 +173,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                         .filter(p -> symbolsToShow.isEmpty() || symbolsToShow.contains(p.getValue().getSymbol().trim()))
                         .forEach(p -> {
                             var product = p.getValue();
+                            var profitAndLossPercent = product.getProfitAndLossPercent();
+
                             if (BigDecimals.isNotZero(product.getQuantity())) {
                                 var price = product.getMarketPrice().getUnitPrice();
                                 report
@@ -181,10 +183,10 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                                     .append(getCell(Label.HEADER_QUANTITY, product.getQuantity(), widths))
                                     .append(getCell(Label.HEADER_AVG_PRICE, product.getAveragePrice(), widths))
                                     .append(getCell(Label.HEADER_MARKET_UNIT_PRICE, price, widths))
-                                    //.append(getCell(Label.HEADER_INVESTED_AMOUNT, p.getInvestedAmount(), widths))
-                                    // .append(getCell(Label.HEADER_MARKET_VALUE, p.getMarketValue(), widths))
-                                    //.append(getCell(Label.HEADER_PROFIT_LOSS, p.getProfitAndLoss(), widths))
-                                    //.append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, p.getProfitLossPercent(), widths))
+                                    .append(getCell(Label.HEADER_MARKET_VALUE, product.getMarketValue(), widths))
+                                    .append(getCell(Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount(), widths))
+                                    .append(getCell(Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss(), widths))
+                                    .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, profitAndLossPercent, widths))
                                     //.append(getCell(Label.HEADER_COST_TOTAL, p.getCostTotal(), widths))
                                     //.append(getCell(Label.HEADER_DEPOSIT_TOTAL, p.getDepositTotal(), widths))
                                     //.append(getCell(Label.HEADER_WITHDRAWAL_TOTAL, p.getWithdrawalTotal(), widths))
@@ -269,10 +271,10 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     updateWidth(widths, Label.HEADER_QUANTITY, product.getQuantity());
                     updateWidth(widths, Label.HEADER_AVG_PRICE, product.getAveragePrice());
                     updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, product.getMarketPrice().getUnitPrice());
-                    //updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
-                    //              updateWidth(widths, Label.HEADER_MARKET_VALUE, product.getMarketValue());
-                    //           updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());
-                    //         updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, product.getProfitLossPercent());
+                    updateWidth(widths, Label.HEADER_MARKET_VALUE, product.getMarketValue());
+                    updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
+                    updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());
+                    updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, product.getProfitAndLossPercent());
                     //       updateWidth(widths, Label.HEADER_COST_TOTAL, product.getCostTotal());
                     //     updateWidth(widths, Label.HEADER_DEPOSIT_TOTAL, product.getDepositTotal());
                     //   updateWidth(widths, Label.HEADER_WITHDRAWAL_TOTAL, product.getWithdrawalTotal());

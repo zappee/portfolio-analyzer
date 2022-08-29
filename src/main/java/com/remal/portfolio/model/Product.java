@@ -7,10 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -94,21 +96,6 @@ public class Product {
     private final Map<BigDecimal, BigDecimal> supply = new LinkedHashMap<>();
 
     /**
-     * The current market value of the holding.
-     */
-    //private BigDecimal marketValue;
-
-    /**
-     * The profit/loss value in currency.
-     */
-    //private BigDecimal profitAndLoss;
-
-    /**
-     * The profit/loss value in percent.
-     */
-    //private BigDecimal profitLossPercent;
-
-    /**
      * Constructor.
      *
      * @param portfolio portfolio name
@@ -135,7 +122,44 @@ public class Product {
     }
 
     /**
-     * Updates the quantiy value.
+     * The current market value of the holding.
+     */
+    public BigDecimal getMarketValue() {
+        return quantity.multiply(marketPrice.getUnitPrice());
+    }
+
+    /**
+     * Invested amount.
+     */
+    public BigDecimal getInvestedAmount() {
+        var avgPrice = getAveragePrice();
+        return Objects.isNull(avgPrice) ? null : quantity.multiply(avgPrice);
+    }
+
+    /**
+     * P/L on the investment.
+     */
+    public BigDecimal getProfitAndLoss() {
+        return getMarketValue().subtract(getInvestedAmount());
+    }
+
+    /**
+     * P/L on the investment.
+     */
+    public BigDecimal getProfitAndLossPercent() {
+        var hundred = BigDecimal.valueOf(100);
+        var investedAmount = getInvestedAmount();
+        if (Objects.isNull(investedAmount)) {
+            return null;
+        } else {
+            var pl = getMarketValue().divide(investedAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
+            var scale = 2;
+            return pl.multiply(hundred).setScale(scale, RoundingMode.HALF_EVEN);
+        }
+    }
+
+    /**
+     * Updates the quantity value.
      *
      * @param transaction transaction
      */
