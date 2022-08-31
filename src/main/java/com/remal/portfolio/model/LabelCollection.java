@@ -42,7 +42,7 @@ public class LabelCollection {
             Label.HEADER_INVESTED_AMOUNT,
             Label.HEADER_PROFIT_LOSS,
             Label.HEADER_PROFIT_LOSS_PERCENT,
-            Label.HEADER_COST_TOTAL,
+            Label.HEADER_COSTS,
             Label.HEADER_DEPOSIT_TOTAL,
             Label.HEADER_WITHDRAWAL_TOTAL);
 

@@ -29,9 +29,9 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label HEADER_COST_TOTAL = Label.builder()
-            .id("HEADER_COST_TOTAL")
-            .key("header.cost-total")
+    public static final Label HEADER_COSTS = Label.builder()
+            .id("HEADER_COSTS")
+            .key("header.costs")
             .build();
 
     /**

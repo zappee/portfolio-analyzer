@@ -83,9 +83,9 @@ public class Product {
     //private BigDecimal withdrawals;
 
     /**
-     * Trading fee summary.
+     * Trading fee and costs together.
      */
-    //private BigDecimal fees;
+    private BigDecimal costs;
 
     /**
      * The transactions that are relevant.
@@ -129,6 +129,7 @@ public class Product {
         updateQuantity(transaction);
         updateSupply();
         updateAveragePrice();
+        updateCosts();
     }
 
     /**
@@ -229,6 +230,17 @@ public class Product {
             });
             averagePrice = amountInvested.get().divide(sharesBought.get(), MathContext.DECIMAL64);
         }
+    }
+
+    /**
+     * Calculates the amount of the total fee.
+     */
+    private void updateCosts() {
+        costs = BigDecimal.ZERO;
+        transactions.forEach(transaction -> {
+            var fee = Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee();
+            costs = costs.add(fee);
+        });
     }
 
     /**
