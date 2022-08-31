@@ -239,7 +239,8 @@ public class Product {
         costs = transactions
                 .stream()
                 .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(SCALE, ROUNDING_MODE);
     }
 
     /**
