@@ -43,8 +43,8 @@ public class LabelCollection {
             Label.HEADER_PROFIT_LOSS,
             Label.HEADER_PROFIT_LOSS_PERCENT,
             Label.HEADER_COSTS,
-            Label.HEADER_DEPOSIT_TOTAL,
-            Label.HEADER_WITHDRAWAL_TOTAL);
+            Label.HEADER_DEPOSITS,
+            Label.HEADER_WITHDRAWALS);
 
     /**
      * List of the column headers in the price report.

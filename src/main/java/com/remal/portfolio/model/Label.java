@@ -53,9 +53,9 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label HEADER_DEPOSIT_TOTAL = Label.builder()
-            .id("HEADER_DEPOSIT_TOTAL")
-            .key("header.deposit-total")
+    public static final Label HEADER_DEPOSITS = Label.builder()
+            .id("HEADER_DEPOSITS")
+            .key("header.deposits")
             .build();
 
     /**
@@ -205,9 +205,9 @@ public class Label {
     /**
      * A column header.
      */
-    public static final Label HEADER_WITHDRAWAL_TOTAL = Label.builder()
-            .id("HEADER_WITHDRAWAL_TOTAL")
-            .key("header.withdrawal-total")
+    public static final Label HEADER_WITHDRAWALS = Label.builder()
+            .id("HEADER_WITHDRAWALS")
+            .key("header.withdrawals")
             .build();
 
     /**

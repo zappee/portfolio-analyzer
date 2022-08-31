@@ -188,9 +188,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                                     .append(getCell(Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss(), widths))
                                     .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, profitAndLossPercent, widths))
                                     .append(getCell(Label.HEADER_COSTS, product.getCosts(), widths))
-                                    //.append(getCell(Label.HEADER_DEPOSIT_TOTAL, p.getDepositTotal(), widths))
-                                    //.append(getCell(Label.HEADER_WITHDRAWAL_TOTAL, p.getWithdrawalTotal(), widths))
-                                    //.append(markdownSeparator)
+                                    .append(getCell(Label.HEADER_DEPOSITS, product.getDeposits(), widths))
+                                    .append(getCell(Label.HEADER_WITHDRAWALS, product.getWithdrawals(), widths))
+                                    .append(markdownSeparator)
                                     .append(NEW_LINE);
                             }
                         })
@@ -276,8 +276,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());
                     updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, product.getProfitAndLossPercent());
                     updateWidth(widths, Label.HEADER_COSTS, product.getCosts());
-                    //     updateWidth(widths, Label.HEADER_DEPOSIT_TOTAL, product.getDepositTotal());
-                    //   updateWidth(widths, Label.HEADER_WITHDRAWAL_TOTAL, product.getWithdrawalTotal());
+                    updateWidth(widths, Label.HEADER_DEPOSITS, product.getDeposits());
+                    updateWidth(widths, Label.HEADER_WITHDRAWALS, product.getWithdrawals());
                 }
             });
         });

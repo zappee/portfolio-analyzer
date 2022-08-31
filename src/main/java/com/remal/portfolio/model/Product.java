@@ -72,15 +72,13 @@ public class Product {
 
     /**
      * The sum of the deposits.
-     * This field only used for currency, otherwise it is null.
      */
-    //private BigDecimal deposits;
+    private BigDecimal deposits;
 
     /**
      * The sum of the withdrawals.
-     * This field only used for currency, otherwise it is null.
      */
-    //private BigDecimal withdrawals;
+    private BigDecimal withdrawals;
 
     /**
      * Trading fee and costs together.
@@ -130,6 +128,8 @@ public class Product {
         updateSupply();
         updateAveragePrice();
         updateCosts();
+        updateDeposits();
+        updateWithdrawals();
     }
 
     /**
@@ -236,11 +236,32 @@ public class Product {
      * Calculates the amount of the total fee.
      */
     private void updateCosts() {
-        costs = BigDecimal.ZERO;
-        transactions.forEach(transaction -> {
-            var fee = Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee();
-            costs = costs.add(fee);
-        });
+        costs = transactions
+                .stream()
+                .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Calculates the amount of the total deposits.
+     */
+    private void updateDeposits() {
+        deposits = transactions
+                .stream()
+                .filter(transaction -> transaction.getType() == TransactionType.DEPOSIT)
+                .map(Transaction::getQuantity)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Calculates the amount of the total withdrawals.
+     */
+    private void updateWithdrawals() {
+        withdrawals = transactions
+                .stream()
+                .filter(transaction -> transaction.getType() == TransactionType.WITHDRAWAL)
+                .map(Transaction::getQuantity)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**
@@ -291,40 +312,4 @@ public class Product {
             }
         }
     }
-
-    /*
-    private void updateCostTotal() {
-        if (CurrencyType.isValid(this.symbol)) {
-            costTotal = transactionHistory
-                    .stream()
-                    .filter(transaction -> CurrencyType.isValid(transaction.getSymbol()))
-                    .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        } else {
-            costTotal = transactionHistory
-                    .stream()
-                    .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-    }
-
-    private void updateDepositTotal() {
-        if (CurrencyType.isValid(this.symbol)) {
-            depositTotal = transactionHistory
-                    .stream()
-                    .filter(transaction -> transaction.getType() == TransactionType.DEPOSIT)
-                    .map(Transaction::getQuantity)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-    }
-
-    private void updateWithdrawalTotal() {
-        if (CurrencyType.isValid(this.symbol)) {
-            withdrawalTotal = transactionHistory
-                    .stream()
-                    .filter(transaction -> transaction.getType() == TransactionType.WITHDRAWAL)
-                    .map(Transaction::getQuantity)
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-        }
-    }*/
 }

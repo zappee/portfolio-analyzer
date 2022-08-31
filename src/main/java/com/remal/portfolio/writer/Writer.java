@@ -305,7 +305,7 @@ public abstract class Writer<T> {
                     ? widths.get(getWholeWidthKey(label)) + labelWidth - columnWidth
                     : widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
 
-            var parts = partsOfBigDecimal(x);
+            var parts = partsOfBigDecimal(BigDecimals.isNullOrZero(x) ? null : x);
             var spaces = (Objects.isNull(fractionalWidth) || fractionalWidth == 0)
                     ? ""
                     : Strings.space(fractionalWidth + 1);
