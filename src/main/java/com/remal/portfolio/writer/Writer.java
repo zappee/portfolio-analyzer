@@ -293,7 +293,8 @@ public abstract class Writer<T> {
      * @return the value or an empty String if the column is hidden
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
-        if (columnsToHide.contains(label.getId())) {
+        // LABEL_PORTFOLIO -> PORTFOLIO
+        if (columnsToHide.contains(label.getId().split("_")[1])) {
             return "";
         }
 

@@ -78,13 +78,14 @@ public class Filter {
 
     /**
      * Columns to hide filter.
+     * The filter converts the alias name before the use: "LABEL_PORTFOLIO" -> "PORTFOLIO"
      *
      * @param columnsToHide list of column names that must hide
      * @param label column ID
      * @return true if the column meet with the conditions
      */
     public static boolean columnsToHideFilter(List<String> columnsToHide, Label label) {
-        return !columnsToHide.contains(label.getId());
+        return !columnsToHide.contains(label.getId().split("_")[1]);
     }
 
     /**
