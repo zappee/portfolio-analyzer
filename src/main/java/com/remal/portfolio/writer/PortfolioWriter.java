@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,9 +209,18 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @return the report summary
      */
     private StringBuilder generateSummary(PortfolioReport portfolioReport) {
+        var labelWidth = LabelCollection.PRODUCT_SUMMARY_FOOTER
+                .stream()
+                .max(Comparator.comparingInt( x -> x.getLabel(language).length()))
+                .get()
+                .getLabel(language).length();
+
         return new StringBuilder()
                 .append(NEW_LINE)
-                .append(mapToString(Label.LABEL_TOTAL_CASH_PER_CURRENCY, portfolioReport.getCashInPortfolio()))
+                .append(mapToString(
+                        Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+                        labelWidth,
+                        portfolioReport.getCashInPortfolio()))
 
                 .append(Label.LABEL_TOTAL_CASH.getLabel(language).replace("{1}", baseCurrency.name()))
                 .append(": ").append(getCashInBaseCurrency(portfolioReport)).append(NEW_LINE)
@@ -246,14 +256,19 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * Converts HashMap to String.
      *
      * @param label label for the value
+     * @param labelWidth the with of the label
      * @param map portfolio report
      * @return the report content
      */
-    private StringBuilder mapToString(Label label, Map<String, BigDecimal> map) {
+    private StringBuilder mapToString(Label label, int labelWidth, Map<String, BigDecimal> map) {
         var sb = new StringBuilder();
-        map.forEach((symbol, value) -> sb
-                .append(label.getLabel(language).replace("{1}", symbol)).append(": ")
-                .append(value.setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE)).append(NEW_LINE));
+        map.forEach((symbol, value) -> {
+            var l = label.getLabel(language).replace("{1}", symbol);
+            sb
+                    .append(l).append(": ")
+                    .append(Strings.space(labelWidth - l.length()))
+                    .append(value.setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
+        });
         return sb;
     }
 

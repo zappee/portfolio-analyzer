@@ -56,6 +56,13 @@ public class LabelCollection {
             Label.HEADER_REQUEST_DATE,
             Label.HEADER_DATA_PROVIDER);
 
+    public static final List<Label> PRODUCT_SUMMARY_FOOTER = List.of(
+            Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+            Label.LABEL_TOTAL_CASH,
+            Label.LABEL_TOTAL_DEPOSIT,
+            Label.LABEL_TOTAL_WITHDRAWALS,
+            Label.LABEL_TOTAL_INVESTMENT);
+
     /**
      * Utility classes should not have public constructors.
      *
