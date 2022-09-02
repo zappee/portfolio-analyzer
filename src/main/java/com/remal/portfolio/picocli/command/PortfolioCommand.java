@@ -104,9 +104,8 @@ public class PortfolioCommand implements Callable<Integer> {
 
         // set market prices
         var marketPriceDownloader = new MarketPriceDownloader(priceHistoryFile, inputArgGroup, outputArgGroup);
-        var zoneId = ZoneId.of(inputArgGroup.getZone());
         var marketPriceAt = LocalDateTimes.toLocalDateTime(
-                zoneId,
+                ZoneId.of(inputArgGroup.getZone()),
                 inputArgGroup.getDateTimePattern(),
                 inputArgGroup.getTo());
         marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);

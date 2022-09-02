@@ -2,6 +2,7 @@ package com.remal.portfolio.model;
 
 import lombok.Getter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -34,6 +35,12 @@ public class PortfolioReport {
     private final Map<String, Portfolio> portfolios = new LinkedHashMap<>();
 
     /**
+     * Exchange rages, used to exchange the portfolio items to the
+     * base currency.
+     */
+    private final Map<String, BigDecimal> exchangeRates = new LinkedHashMap<>();
+
+    /**
      * The total invested amounts per currency.
      */
     //private Map<String, BigDecimal> invested;
@@ -56,7 +63,7 @@ public class PortfolioReport {
     /**
      * Cash in portfolio per currency.
      */
-    //private Map<String, BigDecimal> cashInPortfolio;
+    private final Map<String, BigDecimal> cashInPortfolio = new LinkedHashMap<>();
 
     /**
      * The account value, also known as total equity, is the total dollar value of all
@@ -92,5 +99,24 @@ public class PortfolioReport {
         var portfolioName = transaction.getPortfolio();
         var portfolio = portfolios.computeIfAbsent(portfolioName, x -> new Portfolio(portfolioName));
         portfolio.addTransaction(transaction);
+        updateCashInPortfolio();
+    }
+
+    /**
+     * Calculates the value of the total cash in portfolio.
+     */
+    private void updateCashInPortfolio() {
+        cashInPortfolio.clear();
+        portfolios.forEach((name, portfolio) ->
+                portfolio.getProducts()
+                        .entrySet()
+                        .stream()
+                        .filter(productEntry -> CurrencyType.isValid(productEntry.getKey()))
+                        .forEach(productEntry -> {
+                            var cur = productEntry.getKey();
+                            var cashActual = cashInPortfolio.computeIfAbsent(cur, x -> BigDecimal.ZERO);
+                            cashInPortfolio.put(cur, cashActual.add(productEntry.getValue().getQuantity()));
+                        })
+        );
     }
 }

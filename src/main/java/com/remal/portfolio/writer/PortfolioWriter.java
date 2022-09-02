@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Portfolio summary writer.
@@ -48,34 +50,34 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * The total invested amount.
      */
-    private final Map<String, BigDecimal> depositTotal = new HashMap<>();
+    //private final Map<String, BigDecimal> depositTotal = new HashMap<>();
 
     /**
      * Portfolio market value
      */
-    private final Map<String, BigDecimal> marketValue = new HashMap<>();
+    //private final Map<String, BigDecimal> marketValue = new HashMap<>();
 
     /**
      * Invested amount.
      */
-    private BigDecimal investedAmount;
+    //private BigDecimal investedAmount;
 
     /**
      * P/L on portfolio.
      */
-    private final Map<String, BigDecimal> profitAndLoss = new HashMap<>();
+    //private final Map<String, BigDecimal> profitAndLoss = new HashMap<>();
 
     /**
      * Cash in portfolio.
      */
-    private final Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
+    //private final Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
 
     /**
      * The account value, also known as total equity, is the total dollar value of all
      * the holdings of the trading account, not just the securities, but the cash as
      * well.
      */
-    private BigDecimal accountValue;
+    //private BigDecimal accountValue;
 
     /**
      * Builder that initializes a new writer instance.
@@ -96,7 +98,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         writer.setDateTimePattern(outputArgGroup.getDateTimePattern());
         writer.setZone(ZoneId.of(outputArgGroup.getZone()));
         writer.setColumnsToHide(outputArgGroup.getColumnsToHide());
-
         return writer;
     }
 
@@ -195,7 +196,65 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             }
                         })
         );
+
+        // totals
+        report.append(generateSummary(portfolioReport));
+
         return report.toString();
+    }
+
+    /**
+     * Generates the report summary.
+     * @return the report summary
+     */
+    private StringBuilder generateSummary(PortfolioReport portfolioReport) {
+        return new StringBuilder()
+                .append(NEW_LINE)
+                .append(mapToString(Label.LABEL_TOTAL_CASH_PER_CURRENCY, portfolioReport.getCashInPortfolio()))
+
+                .append(Label.LABEL_TOTAL_CASH.getLabel(language).replace("{1}", baseCurrency.name()))
+                .append(": ").append(getCashInBaseCurrency(portfolioReport)).append(NEW_LINE)
+
+                .append(Label.LABEL_TOTAL_DEPOSIT.getLabel(language)).append(NEW_LINE)
+                .append(Label.LABEL_TOTAL_WITHDRAWALS.getLabel(language)).append(NEW_LINE)
+                .append(Label.LABEL_TOTAL_INVESTMENT.getLabel(language)).append(NEW_LINE);
+    }
+
+    /**
+     * Exchange the cash amounts that are available in the
+     * portfolios to the base currency.
+     *
+     * @param portfolioReport portfolio report
+     * @return cash total in base currency
+     */
+    private BigDecimal getCashInBaseCurrency(PortfolioReport portfolioReport) {
+        AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
+        portfolioReport.getCashInPortfolio().forEach((symbol, quantity) -> {
+            var exchangeRateSymbol = symbol + "-" + baseCurrency;
+            var exchangeRate = portfolioReport.getExchangeRates().get(exchangeRateSymbol);
+            if (Objects.isNull(exchangeRate)) {
+                total.set(total.get().add(quantity));
+            } else {
+                total.set(total.get().add(quantity.multiply(exchangeRate)));
+            }
+        });
+
+        return total.get().setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+    }
+
+    /**
+     * Converts HashMap to String.
+     *
+     * @param label label for the value
+     * @param map portfolio report
+     * @return the report content
+     */
+    private StringBuilder mapToString(Label label, Map<String, BigDecimal> map) {
+        var sb = new StringBuilder();
+        map.forEach((symbol, value) -> sb
+                .append(label.getLabel(language).replace("{1}", symbol)).append(": ")
+                .append(value.setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE)).append(NEW_LINE));
+        return sb;
     }
 
     /**

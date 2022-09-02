@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,16 +25,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Getter
 @Slf4j
 public class Product {
-
-    /**
-     * Scale to round the numbers in the report.
-     */
-    private static final int SCALE = 2;
-
-    /**
-     * Rounding mode used to show decimal numbers in the report.
-     */
-    private static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
     /**
      * Portfolio name.
@@ -134,9 +123,11 @@ public class Product {
 
     /**
      * The current market value of the holding.
+     *
+     * @return market value of the product
      */
     public BigDecimal getMarketValue() {
-        return quantity.multiply(marketPrice.getUnitPrice()).setScale(SCALE, ROUNDING_MODE);
+        return quantity.multiply(marketPrice.getUnitPrice()).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -144,7 +135,9 @@ public class Product {
      */
     public BigDecimal getInvestedAmount() {
         var avgPrice = getAveragePrice();
-        return Objects.isNull(avgPrice) ? null : quantity.multiply(avgPrice).setScale(SCALE, ROUNDING_MODE);
+        return Objects.isNull(avgPrice)
+                ? null
+                : quantity.multiply(avgPrice).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -164,7 +157,7 @@ public class Product {
             return null;
         } else {
             var pl = getMarketValue().divide(investedAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
-            return pl.multiply(hundred).setScale(SCALE, ROUNDING_MODE);
+            return pl.multiply(hundred).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
         }
     }
 
@@ -240,7 +233,7 @@ public class Product {
                 .stream()
                 .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(SCALE, ROUNDING_MODE);
+                .setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
     }
 
     /**

@@ -181,10 +181,10 @@ public class LocalDateTimes {
     }
 
     /**
-     * LocalDateTiem to Calendr converter.
+     * LocalDateTime to Calendar converter.
      *
      * @param datetimeToConvert date-time object to convert
-     * @return the converted onbjet
+     * @return the converted object
      */
     public static Calendar toCalendar(LocalDateTime datetimeToConvert) {
         Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();

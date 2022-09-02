@@ -213,38 +213,6 @@ public class Label {
     /**
      * A simple text.
      */
-    public static final Label LABEL_CASH = Label.builder()
-            .id("LABEL_CASH")
-            .key("label.total.cash")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_DEPOSIT = Label.builder()
-            .id("LABEL_DEPOSIT")
-            .key("label.total.deposit")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_INVESTMENT = Label.builder()
-            .id("LABEL_INVESTMENT")
-            .key("label.total.investment")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_MARKET_VALUE = Label.builder()
-            .id("LABEL_MARKET_VALUE")
-            .key("label.total.market-value")
-            .build();
-
-    /**
-     * A simple text.
-     */
     public static final Label LABEL_PORTFOLIO = Label.builder()
             .id("LABEL_PORTFOLIO")
             .key("label.portfolio")
@@ -269,9 +237,25 @@ public class Label {
     /**
      * A simple text.
      */
-    public static final Label LABEL_PROFIT_LOSS = Label.builder()
-            .id("LABEL_PROFIT_LOSS")
-            .key("label.total.profit-loss")
+    public static final Label LABEL_TOTAL_CASH_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_CASH_PER_CURRENCY")
+            .key("label.total.cash-per-currency")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_CASH = Label.builder()
+            .id("LABEL_TOTAL_CASH")
+            .key("label.total.cash")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_DEPOSIT = Label.builder()
+            .id("LABEL_TOTAL_DEPOSIT")
+            .key("label.total.deposit")
             .build();
 
     /**
@@ -280,6 +264,38 @@ public class Label {
     public static final Label LABEL_TOTAL_EQUITY = Label.builder()
             .id("LABEL_TOTAL_EQUITY")
             .key("label.total.total-equity")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_INVESTMENT = Label.builder()
+            .id("LABEL_TOTAL_INVESTMENT")
+            .key("label.total.investment")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_MARKET_VALUE = Label.builder()
+            .id("LABEL_TOTAL_MARKET_VALUE")
+            .key("label.total.market-value")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_PROFIT_LOSS = Label.builder()
+            .id("LABEL_TOTAL_PROFIT_LOSS")
+            .key("label.total.profit-loss")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_WITHDRAWALS = Label.builder()
+            .id("LABEL_TOTAL_WITHDRAWALS")
+            .key("label.total.withdrawals")
             .build();
 
     /**

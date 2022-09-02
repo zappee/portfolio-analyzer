@@ -17,6 +17,16 @@ import java.util.Objects;
 public class BigDecimals {
 
     /**
+     * Scale to round the numbers in the report.
+     */
+    public static final int SCALE = 2;
+
+    /**
+     * Rounding mode used to show decimal numbers in the report.
+     */
+    public static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
+
+    /**
      * Convert decimal number to a formatted String.
      *
      * @param decimalFormat decimal format, e.g. '###,###.###'

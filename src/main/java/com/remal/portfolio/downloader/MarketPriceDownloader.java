@@ -122,12 +122,47 @@ public class MarketPriceDownloader {
     }
 
     /**
-     * Set the market price in the portfolio report.
+     * Set the market prices for currencies and products.
      *
      * @param portfolioReport the portfolio report
      * @param marketPriceAt the date of the market prices
      */
     public void updateMarketPrices(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
+        updateProductMarketPrice(portfolioReport, marketPriceAt);
+        updateExchangeRates(portfolioReport, marketPriceAt);
+    }
+
+    /**
+     * Update the exchange rates for currencies used in the portfolio report.
+     *
+     * @param portfolioReport the portfolio report
+     * @param marketPriceAt the date of the market prices
+     */
+    private void updateExchangeRates(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
+        var baseCurrency = portfolioReport.getCurrency().name();
+        portfolioReport.getCashInPortfolio()
+                .entrySet()
+                .stream()
+                .filter(cashInPortfolioEntry -> !cashInPortfolioEntry.getKey().equals(baseCurrency))
+                .forEach(cashInPortfolioEntry -> {
+                    var exchangeRateSymbol = cashInPortfolioEntry.getKey() + "-" + baseCurrency;
+                    var calendar = LocalDateTimes.toCalendar(marketPriceAt);
+                    var exchangeRate = getMarketPrice(exchangeRateSymbol, calendar);
+                    if (exchangeRate.isPresent()) {
+                        portfolioReport.getExchangeRates().put(exchangeRateSymbol, exchangeRate.get().getUnitPrice());
+                    } else {
+                        Logger.logErrorAndExit("the exchange rate for {} does not exist", exchangeRateSymbol);
+                    }
+                });
+    }
+
+    /**
+     * Update the market prices of products.
+     *
+     * @param portfolioReport the portfolio report
+     * @param marketPriceAt the date of the market prices
+     */
+    private void updateProductMarketPrice(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
         portfolioReport.getPortfolios().forEach((portfolioName, portfolio) ->
                 portfolio.getProducts().forEach((key, product) -> {
                     if (CurrencyType.isValid(product.getSymbol())) {
@@ -151,7 +186,6 @@ public class MarketPriceDownloader {
                                     LocalDateTimes.toCalendar(marketPriceAt));
                             product.setMarketPrice(marketPrice.orElse(null));
                         }
-                        marketPrice.ifPresent(price -> writeToHistoryFile(priceHistoryFile, price));
                     }
                 })
         );
@@ -184,13 +218,17 @@ public class MarketPriceDownloader {
         if (Objects.isNull(priceHistoryFile)) {
             return getPriceFromDataProvider(symbol, tradeDate);
         } else {
-            var price = getPriceFromHistory(symbol, tradeDate);
+            var dataProviderConfiguration = getDataProviderConfiguration(symbol);
+            var symbolAliasName = getSymbolAlias(symbol, dataProviderConfiguration);
+            var price = getPriceFromHistory(symbolAliasName, tradeDate);
             if (price.isEmpty()) {
                 log.info("price does not exists in the history");
                 price = getPriceFromDataProvider(symbol, tradeDate);
             } else {
                 log.info("price exists in the history: {}", price);
             }
+
+            price.ifPresent(p -> writeToHistoryFile(priceHistoryFile, p));
             return price;
         }
     }
@@ -251,8 +289,8 @@ public class MarketPriceDownloader {
 
         if (Objects.isNull(dataProvider)) {
             var dataProviderConfiguration = getDataProviderConfiguration(symbol);
-            dataProvider = DataProviderType.valueOf(dataProviderConfiguration[0]);
-            symbolAliasName = dataProviderConfiguration.length == 1 ? symbol : dataProviderConfiguration[1];
+            dataProvider = getDataProvider(dataProviderConfiguration);
+            symbolAliasName = getSymbolAlias(symbol, dataProviderConfiguration);
         }
 
         var downloader = Downloader.get().get(dataProvider);
@@ -268,7 +306,7 @@ public class MarketPriceDownloader {
 
     /**
      * Parses the market data configuration file and returns with
-     * the relevant configuration.
+     * the product symbol alias.
      *
      * @param symbol product name
      * @return the data provider configuration
@@ -305,5 +343,26 @@ public class MarketPriceDownloader {
         }
 
         return dataProviderConfiguration;
+    }
+
+    /**
+     * Gets alias name of the product symbol, stored in the data-provider.properties file.
+     *
+     * @param symbol product symbol
+     * @param dataProviderConfiguration data provider configuration string
+     * @return product symbol alias name
+     */
+    private String getSymbolAlias(String symbol, String[] dataProviderConfiguration) {
+        return dataProviderConfiguration.length == 1 ? symbol : dataProviderConfiguration[1];
+    }
+
+    /**
+     * Gets the data provider for a given product.
+     *
+     * @param dataProviderConfiguration data provider configuration string
+     * @return the data provider
+     */
+    private DataProviderType getDataProvider(String[] dataProviderConfiguration) {
+        return DataProviderType.valueOf(dataProviderConfiguration[0]);
     }
 }

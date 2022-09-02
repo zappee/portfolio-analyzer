@@ -27,7 +27,7 @@ public class PortfolioInputArgGroup extends InputArgGroup {
     private String file;
 
     /**
-     * Set the data provider properties file.
+     * Set the market data provider configuration file.
      */
     @CommandLine.Option(
             order = 10,
