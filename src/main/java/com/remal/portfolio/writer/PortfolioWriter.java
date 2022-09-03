@@ -98,17 +98,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     }
 
     /**
-     * Generate the Excel report.
-     *
-     * @param items data
-     * @return the report content as bytes
-     */
-    @Override
-    protected byte[] buildExcelReport(List<PortfolioReport> items) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
      * Generate the Text/Markdown report.
      *
      * @param items data

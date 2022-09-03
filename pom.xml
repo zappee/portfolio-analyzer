@@ -78,26 +78,6 @@
             <artifactId>logback-classic</artifactId>
             <version>${logback.classic.version}</version>
         </dependency>
-        <!-- Excel file reader/writer -->
-        <dependency>
-            <groupId>org.apache.poi</groupId>
-            <artifactId>poi-ooxml</artifactId>
-            <version>${poi.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-math3</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.github.virtuald</groupId>
-                    <artifactId>curvesapi</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <!-- this library makes it easy to communicate with
              the Yahoo Finance API -->
         <dependency>

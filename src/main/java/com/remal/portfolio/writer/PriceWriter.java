@@ -6,20 +6,17 @@ import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
-import com.remal.portfolio.util.Enums;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
 import com.remal.portfolio.util.ZoneIds;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Generate transaction reports.
@@ -89,47 +86,6 @@ public class PriceWriter extends Writer<Price> {
                     .append(NEW_LINE));
 
         return report.toString();
-    }
-
-    /**
-     * Generate the Excel report.
-     *
-     * @param prices list of the prices
-     * @return the report content as bytes
-     */
-    @Override
-    protected byte[] buildExcelReport(List<Price> prices) {
-        reduceBasedOnMultiplicity(prices, multiplicity);
-
-        var workbook = new XSSFWorkbook();
-        var sheet = workbook.createSheet(Label.LABEL_PRICE_HISTORY.getLabel(language));
-
-        // table header
-        var rowIndex = new AtomicInteger(-1);
-        var columnIndex = new AtomicInteger(-1);
-        var headerRow = sheet.createRow(rowIndex.incrementAndGet());
-        LabelCollection.PRODUCT_PRICE_HEADERS
-                .forEach(label -> {
-                    var cell = headerRow.createCell(columnIndex.incrementAndGet());
-                    cell.setCellValue(label.getLabel(language));
-                });
-
-        // data
-        prices
-                .stream()
-                .sorted(Sorter.priceComparator())
-                .forEach(productPrice -> {
-                    var dataRow = sheet.createRow(rowIndex.incrementAndGet());
-                    var index = new AtomicInteger(-1);
-
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getSymbol());
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getUnitPrice());
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getTradeDate());
-                    skipIfNullOrSet(workbook, dataRow, index, productPrice.getRequestDate());
-                    skipIfNullOrSet(workbook, dataRow, index, Enums.enumToString(productPrice.getDataProvider()));
-                });
-
-        return workbookToBytes(workbook);
     }
 
     /**

@@ -46,7 +46,7 @@ public class PortfolioArgGroup {
         @CommandLine.Option(
                 names = {"-O", "--output-file"},
                 description = "Write report to file (i.e. \"'tmp/'yyyy-MM-dd'_report.md'\"). "
-                        + "Accepted extensions: .txt, .md, .csv and .xlsx")
+                        + "Accepted extensions: .txt, .md and .csv")
         private String outputFile;
 
         /**

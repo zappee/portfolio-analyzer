@@ -16,11 +16,6 @@ public enum FileType {
     MARKDOWN,
 
     /**
-     * File type for *.xls files.
-     */
-    EXCEL,
-
-    /**
      * File type for *.csv files.
      */
     CSV,

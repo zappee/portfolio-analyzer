@@ -12,14 +12,7 @@ import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Strings;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.CreationHelper;
-import org.apache.poi.xssf.usermodel.XSSFCell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Common functionalities that is used by the report writers.
@@ -135,14 +127,6 @@ public abstract class Writer<T> {
     protected abstract String buildCsvReport(List<T> items);
 
     /**
-     * Generate the Excel report.
-     *
-     * @param items data
-     * @return      the report content as bytes
-     */
-    protected abstract byte[] buildExcelReport(List<T> items);
-
-    /**
      * Generate the Text/Markdown report.
      *
      * @param items data
@@ -195,12 +179,6 @@ public abstract class Writer<T> {
             case CSV -> {
                 log.debug("> generating the CSV report...");
                 byte[] reportAsBytes = buildCsvReport(itemContainer).getBytes();
-                FileWriter.write(writeMode, filename, reportAsBytes);
-                log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
-            }
-            case EXCEL -> {
-                log.debug("> generating the Excel report...");
-                byte[] reportAsBytes = buildExcelReport(itemContainer);
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
             }
@@ -438,71 +416,11 @@ public abstract class Writer<T> {
     }
 
     /**
-     * Write Excel spreadsheet to a byte array.
-     *
-     * @param workbook the Excel spreadsheet
-     * @return Excel file as a byte array
-     */
-    protected byte[] workbookToBytes(XSSFWorkbook workbook) {
-        try (var outputStream = new ByteArrayOutputStream()) {
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
-        } catch (IOException e) {
-            Logger.logErrorAndExit("Error while saving the Excel file, error: {}", e.toString());
-        }
-        return new byte[0];
-    }
-
-    /**
-     * Set the cell value if the object is not null, otherwise skip
-     * the set operation.
-     *
-     * @param workbook the Excel workbook
-     * @param row row in the Excel spreadsheet
-     * @param columnIndex column index within the row
-     * @param obj the value to be set as a cell value
-     */
-    protected void skipIfNullOrSet(XSSFWorkbook workbook, XSSFRow row, AtomicInteger columnIndex, Object obj) {
-        if (Objects.isNull(obj)) {
-            columnIndex.incrementAndGet();
-        } else {
-            if (obj instanceof BigDecimal x) {
-                getNextCell(row, columnIndex).setCellValue(BigDecimals.valueOf(x));
-            } else if (obj instanceof String x) {
-                getNextCell(row, columnIndex).setCellValue(x);
-            } else if (obj instanceof LocalDateTime x) {
-                var cell = getNextCell(row, columnIndex);
-                CellStyle dateCellStyle = workbook.createCellStyle();
-                CreationHelper creationHelper = workbook.getCreationHelper();
-                dateCellStyle.setDataFormat(creationHelper.createDataFormat().getFormat(dateTimePattern));
-
-                cell.setCellValue(x);
-                cell.setCellStyle(dateCellStyle);
-
-            } else {
-                columnIndex.incrementAndGet();
-                log.warn("Unhandled type: {}", obj.getClass().getSimpleName());
-            }
-        }
-    }
-
-    /**
      * Show the writer configuration.
      */
     private void showConfiguration() {
         log.debug("> time zone: '{}'", zone.getId());
         log.debug(hideTitle ? "< printing the report without title" : "< printing the report with title");
         log.debug(hideHeader ? "< skipping to print the table header" : "< printing table header");
-    }
-
-    /**
-     * Get the next cell in the row.
-     *
-     * @param row row in the Excel spreadsheet
-     * @param columnIndex column index within the row
-     * @return the next cell in the row
-     */
-    private XSSFCell getNextCell(XSSFRow row, AtomicInteger columnIndex) {
-        return row.createCell(columnIndex.incrementAndGet());
     }
 }

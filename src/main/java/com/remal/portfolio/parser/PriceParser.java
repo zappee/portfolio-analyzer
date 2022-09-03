@@ -7,15 +7,12 @@ import com.remal.portfolio.model.Price;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -38,45 +35,6 @@ public class PriceParser extends Parser<Price> {
     @Override
     protected List<Price> parseCsvFile(String fileName) {
         return parseTextFile(fileName, csvSeparator);
-    }
-
-    /**
-     * Process an Excel file.
-     *
-     * @param fileName path to the data file
-     * @return the list of the parsed items
-     */
-    @Override
-    protected List<Price> parseExcelFile(String fileName) {
-        List<Price> prices = new ArrayList<>();
-        try (var xlsFile = new FileInputStream(fileName)) {
-            var firstRow = 1;
-            var workbook = new XSSFWorkbook(xlsFile);
-            var sheet = workbook.getSheetAt(0);
-            var lastRow = sheet.getLastRowNum() + 1;
-            log.debug("selecting rows from {} to {} in the excel spreadsheet", firstRow, lastRow);
-
-            IntStream.range(firstRow, lastRow).forEach(rowIndex -> {
-                var row = sheet.getRow(rowIndex);
-                var p = Price.builder();
-
-                p.symbol(getCellValueAsString(row, 0));
-                p.unitPrice(getCellValueAsBigDecimal(row, 1));
-                p.tradeDate(getCellValueAsLocalDateTime(row, 2));
-                p.requestDate(getCellValueAsLocalDateTime(row, 3));
-                p.dataProvider(DataProviderType.valueOf(getCellValueAsString(row, 3)));
-                prices.add(p.build());
-            });
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
-        } catch (Exception e) {
-            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
-        }
-
-        return prices
-                .stream()
-                .sorted(Sorter.priceComparator())
-                .toList();
     }
 
     /**

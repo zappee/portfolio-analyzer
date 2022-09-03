@@ -15,8 +15,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,12 +38,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Setter
 @Getter
 public abstract class Parser<T> {
-
-    /**
-     * DataFormatter contains methods for formatting the value stored
-     * in an Excel cell.
-     */
-    private static final DataFormatter DATA_FORMATTER = new DataFormatter();
 
     /**
      * Log message.
@@ -171,10 +163,6 @@ public abstract class Parser<T> {
                 log.debug(LOG_BEFORE_EXECUTION, filename, "CSV");
                 items = parseCsvFile(filename);
             }
-            case EXCEL -> {
-                log.debug(LOG_BEFORE_EXECUTION, filename, "Excel");
-                items = parseExcelFile(filename);
-            }
             case MARKDOWN -> {
                 log.debug(LOG_BEFORE_EXECUTION, filename, "Markdown");
                 items = parseMarkdownFile(filename);
@@ -198,14 +186,6 @@ public abstract class Parser<T> {
     protected abstract List<T> parseCsvFile(String file);
 
     /**
-     * Process an Excel file.
-     *
-     * @param file path to the data file
-     * @return     the list of the parsed items
-     */
-    protected abstract List<T> parseExcelFile(String file);
-
-    /**
      * Process a Text/Markdown file.
      *
      * @param file path to the data file
@@ -221,13 +201,13 @@ public abstract class Parser<T> {
      */
     protected int getFirstDataRow(FileType fileType) {
         var titleRows = switch (fileType) {
-            case CSV, EXCEL -> hasTitle ? 1 : 0;
+            case CSV -> hasTitle ? 1 : 0;
             case MARKDOWN -> hasTitle ? 3 : 0;
             default -> 0;
         };
 
         var headerRows = switch (fileType) {
-            case CSV, EXCEL -> hasHeader ? 1 : 0;
+            case CSV -> hasHeader ? 1 : 0;
             case MARKDOWN -> hasHeader ? 2 : 0;
             default -> 0;
         };
@@ -284,45 +264,6 @@ public abstract class Parser<T> {
             return null;
         } else {
             return LocalDateTimes.toLocalDateTime(zone, dateTimePattern, fields[index.getAndIncrement()].trim());
-        }
-    }
-
-    /**
-     * Get an excel cell value as a String.
-     *
-     * @param row      row in the Excel spreadsheet
-     * @param colIndex column index within the row
-     * @return         the cell value as a String or null in the row and column indexes are invalid
-     */
-    protected String getCellValueAsString(XSSFRow row, int colIndex) {
-        return Objects.isNull(row.getCell(colIndex)) ? null : DATA_FORMATTER.formatCellValue(row.getCell(colIndex));
-    }
-
-    /**
-     * Get an excel cell value as a BigDecimal.
-     *
-     * @param row      row in the Excel spreadsheet
-     * @param colIndex column index within the row
-     * @return         the cell value as a BigDecimal or null in the row and column indexes are invalid
-     */
-    protected BigDecimal getCellValueAsBigDecimal(XSSFRow row, int colIndex) {
-        return row.getCell(colIndex) == null
-                ? null
-                : new BigDecimal(DATA_FORMATTER.formatCellValue(row.getCell(colIndex)));
-    }
-
-    /**
-     * Get an excel cell value as a String.
-     *
-     * @param row      row in the Excel spreadsheet
-     * @param colIndex column index
-     * @return         the cell value as a String or null in the row and column indexes are invalid
-     */
-    protected LocalDateTime getCellValueAsLocalDateTime(XSSFRow row, int colIndex) {
-        if (Objects.isNull(row.getCell(colIndex))) {
-            return null;
-        } else {
-            return row.getCell(colIndex).getLocalDateTimeCellValue().atZone(zone).toLocalDateTime();
         }
     }
 

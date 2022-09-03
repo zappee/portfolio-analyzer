@@ -54,7 +54,7 @@ public class PortfolioCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = {"-P", "--price-history"},
             description = "Storing the price in a file, e.g. \"'price_'yyyy'.md'\". "
-                    + "Accepted extensions: .txt, .md, .csv and .xlsx")
+                    + "Accepted extensions: .txt, .md and .csv")
     private String priceHistoryFile;
 
     /**

@@ -10,17 +10,13 @@ import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
@@ -48,55 +44,6 @@ public class TransactionParser extends Parser<Transaction> {
             var firstColumn = 0;
             transactions.addAll(parseTextFile(skipRows, firstColumn, fileName, csvSeparator));
 
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
-        } catch (Exception e) {
-            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
-        }
-
-        return transactions
-                .stream()
-                .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
-                .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
-                .sorted(Sorter.tradeDateComparator())
-                .toList();
-    }
-
-    /**
-     * Process an Excel file.
-     *
-     * @param fileName path to the data file
-     * @return the list of the parsed items
-     */
-    @Override
-    protected List<Transaction> parseExcelFile(String fileName) {
-        List<Transaction> transactions = new ArrayList<>();
-        try (var xlsFile = new FileInputStream(fileName)) {
-            var firstRow = getFirstDataRow(FileType.EXCEL);
-            var workbook = new XSSFWorkbook(xlsFile);
-            var sheet = workbook.getSheetAt(0);
-            var lastRow = sheet.getLastRowNum() + 1;
-            log.debug("selecting rows from {} to {} in the excel spreadsheet", firstRow, lastRow);
-
-            IntStream.range(firstRow, lastRow).forEach(rowIndex -> {
-                var row = sheet.getRow(rowIndex);
-                var t = Transaction.builder();
-                var currency = CurrencyType.getEnum(getCellValueAsString(row, 8));
-
-                t.portfolio(getCellValueAsString(row, 0));
-                t.symbol(getSymbol(getCellValueAsString(row, 1), currency));
-                t.type(TransactionType.valueOf(getCellValueAsString(row, 2)));
-                t.inventoryValuation(InventoryValuationType.getEnum(getCellValueAsString(row, 3)));
-                t.tradeDate(getCellValueAsLocalDateTime(row, 4));
-                t.quantity(Objects.requireNonNull(getCellValueAsBigDecimal(row, 5)).abs());
-                t.price(getCellValueAsBigDecimal(row, 6));
-                t.fee(getCellValueAsBigDecimal(row, 7));
-                t.currency(currency);
-                t.orderId(getCellValueAsString(row, 9));
-                t.tradeId(getCellValueAsString(row, 10));
-                t.transferId(getCellValueAsString(row, 11));
-                transactions.add(t.build());
-            });
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
         } catch (Exception e) {
@@ -183,23 +130,6 @@ public class TransactionParser extends Parser<Transaction> {
                     });
         }
         return transactions;
-    }
-
-    /**
-     * Find the symbol.
-     * When the symbol is null then the currency will be used as a symbol. That happens
-     * in case of deposits and withdrawals of a company's stock.
-     *
-     * @param symbol abbreviation used to uniquely identify the traded shares
-     * @param currency the unit of the price and fee
-     * @return the symbol
-     */
-    private String getSymbol(String symbol, CurrencyType currency) {
-        if (Objects.isNull(symbol) || symbol.isEmpty()) {
-            return currency.name();
-        } else {
-            return symbol;
-        }
     }
 
     /**

@@ -7,8 +7,6 @@ import com.remal.portfolio.picocli.command.PriceCommand;
 import com.remal.portfolio.picocli.command.ShowCommand;
 import com.remal.portfolio.picocli.provider.ManifestVersionProvider;
 import com.remal.portfolio.picocli.renderer.CustomOptionRenderer;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.status.StatusLogger;
 import picocli.CommandLine;
 
 /**
@@ -60,27 +58,18 @@ public final class Main {
      * @param args program arguments
      */
     public static void main(String[] args) {
-        var app = new Main();
-        app.configureLogger();
-
-        var cmd = new CommandLine(app);
+        var cmd = new CommandLine(new Main());
         cmd.setHelpFactory(new CustomOptionRenderer());
         System.exit(cmd.execute(args));
     }
 
     /**
-     * <p>
-     * Disable status-logger of log4j.
-     * </p>
-     * Apache POI tries to initialize log4j, but this project does not use log4j.
-     * So org.apache.logging.log4j.status.StatusLogger must be disabled, otherwise
-     * the following error message appears:
-     * <p>
-     *    StatusLogger Log4j2 could not find a logging implementation. Please add
-     *    log4j-core to the classpath. Using SimpleLogger to log to the console...
-     * </p>
+     * Utility classes should not have public constructors.
+     *
+     * @throws java.lang.UnsupportedOperationException if this method is called
      */
-    private void configureLogger() {
-        StatusLogger.getLogger().setLevel(Level.OFF);
+    private Main() {
+        throw new UnsupportedOperationException();
     }
+
 }

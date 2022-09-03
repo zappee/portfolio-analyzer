@@ -22,7 +22,7 @@ public class TransactionParserInputArgGroup extends InputArgGroup {
     @CommandLine.Option(
             order = 10,
             names = {"-i", "--input-file"},
-            description = "File with transactions. Accepted extensions: .txt, .md, .csv and .xlsx",
+            description = "File with transactions. Accepted extensions: .txt, .md and .csv",
             required = true)
     private String file;
 }

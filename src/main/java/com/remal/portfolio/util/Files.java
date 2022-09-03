@@ -35,9 +35,6 @@ public class Files {
             if (escapedFileName.matches("^.*\\.(md|txt)$")) {
                 fileType = FileType.MARKDOWN;
 
-            } else if (escapedFileName.matches("^.*\\.(xlsx)$")) {
-                fileType = FileType.EXCEL;
-
             } else if (escapedFileName.matches("^.*\\.(csv)$")) {
                 fileType = FileType.CSV;
             }

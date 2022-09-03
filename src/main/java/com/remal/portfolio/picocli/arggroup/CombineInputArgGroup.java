@@ -24,7 +24,7 @@ public class CombineInputArgGroup extends InputArgGroup {
             order = 10,
             names = {"-i", "--input-files"},
             description = "Comma separated list of files with transactions to be combined. "
-                    + "Accepted extensions: .txt, .md, .csv and .xlsx",
+                    + "Accepted extensions: .txt, .md and .csv",
             arity = "1..*",
             converter = StringToListConverter.class)
     private final List<String> files = Collections.emptyList();
