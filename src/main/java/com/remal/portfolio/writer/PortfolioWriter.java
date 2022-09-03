@@ -259,6 +259,17 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_PROFIT_LOSS.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getProfitLoss(),
+                            Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY,
+                            Label.LABEL_TOTAL_PROFIT_LOSS,
+                            labelWidth));
+        }
+
         return sb;
     }
 

@@ -325,6 +325,14 @@ public class Label {
     /**
      * A simple text.
      */
+    public static final Label LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY")
+            .key("label.total.profit-loss-per-currency")
+            .build();
+
+    /**
+     * A simple text.
+     */
     public static final Label LABEL_TOTAL_WITHDRAWAL = Label.builder()
             .id("LABEL_TOTAL_WITHDRAWAL")
             .key("label.total.withdrawal")

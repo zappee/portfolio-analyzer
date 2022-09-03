@@ -130,7 +130,7 @@ public class MarketPriceDownloader {
     public void updateMarketPrices(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
         updateProductMarketPrice(portfolioReport, marketPriceAt);
         updateExchangeRates(portfolioReport, marketPriceAt);
-        portfolioReport.updateProfitAndLosses();
+        portfolioReport.updateProfitLoss();
     }
 
     /**

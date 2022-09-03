@@ -67,6 +67,11 @@ public class PortfolioReport {
     private final Map<String, BigDecimal> withdrawals = new LinkedHashMap<>();
 
     /**
+     * The total amount of withdrawals.
+     */
+    private final Map<String, BigDecimal> profitLoss = new LinkedHashMap<>();
+
+    /**
      * Constructor.
      *
      * @param currency base currency
@@ -99,10 +104,9 @@ public class PortfolioReport {
     /**
      * Update profit and loss related values.
      */
-    public void updateProfitAndLosses() {
+    public void updateProfitLoss() {
         investments.clear();
         marketValues.clear();
-
         portfolios.forEach((name, portfolio) -> portfolio.getProducts()
                 .entrySet()
                 .stream()
@@ -116,6 +120,13 @@ public class PortfolioReport {
                     marketValues.put(symbol, marketValue.add(marketValues.getOrDefault(symbol, BigDecimal.ZERO)));
                 })
         );
+
+        profitLoss.clear();
+        marketValues.forEach((symbol, marketValue) -> {
+            var investment = investments.get(symbol);
+            var profit = marketValue.subtract(investment);
+            profitLoss.put(symbol, profitLoss.getOrDefault(symbol, BigDecimal.ZERO).add(profit));
+        });
     }
 
     /**
