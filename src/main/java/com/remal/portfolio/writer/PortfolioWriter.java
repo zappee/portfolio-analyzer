@@ -6,6 +6,7 @@ import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.PortfolioReport;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
+import com.remal.portfolio.util.BigDecimalFormatter;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
@@ -45,6 +46,11 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * Markdown unordered list.
      */
     private static final String MARKDOWN_LIST = "* ";
+
+    /**
+     * Decimal number formatter.
+     */
+    private BigDecimalFormatter bigDecimalFormatter;
 
     /**
      * The currency of the portfolio report.
@@ -88,25 +94,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      */
     @Override
     protected String buildCsvReport(List<PortfolioReport> items) {
-       /* items.addAll((new PortfolioParser()).parse("'filename.md'"));
-        items.sort(Comparator.comparing(PortfolioCollection::getGenerated));
-
-        var report = new StringBuilder();
-        report.append(buildTableHeader(items));
-        items.forEach(summaries -> {
-            report
-                    .append(LocalDateTimes.toString(zone, dateTimePattern, summaries.getGenerated()))
-                    .append(csvSeparator);
-            summaries.getPortfolios().forEach(portfolio -> portfolio
-                    .stream()
-                    .filter(summary -> BigDecimals.isNotNullAndNotZero(summary.getTotalShares()))
-                    .forEach(summary -> report.append(buildReportItem(summary))));
-        });
-        report.setLength(report.length() - csvSeparator.length());
-        return report.toString();/*
-
-        */
-
         throw new UnsupportedOperationException();
     }
 
@@ -130,6 +117,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     @Override
     protected String buildMarkdownReport(List<PortfolioReport> items) {
         var portfolioReport = items.stream().findFirst().orElse(new PortfolioReport(CurrencyType.EUR));
+        bigDecimalFormatter = initializeBogDecimalFormatter(portfolioReport);
         var report = new StringBuilder();
         var widths = calculateColumnWidth(portfolioReport);
 
@@ -195,7 +183,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .max(Comparator.comparingInt(x -> x.getLabel(language).length()))
                 .orElse(emptyLabel).getLabel(language)
                 .length();
-
         var sb = new StringBuilder();
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace(PREFIX_TO_REMOVE, ""))) {
@@ -274,6 +261,26 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     }
 
     /**
+     * Get the length of the longest decimal value from the footer.
+     *
+     * @param portfolioReport portfolio report
+     * @return the length of the longest decimal value in the footer
+     */
+    private BigDecimalFormatter initializeBogDecimalFormatter(PortfolioReport portfolioReport) {
+        var formatter = new BigDecimalFormatter(decimalFormat, decimalGroupingSeparator);
+
+        portfolioReport.getExchangeRates().forEach(formatter.get(BigDecimals.SCALE_FOR_EXCHANGE_RATE));
+        portfolioReport.getCashInPortfolio().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getDeposits().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getWithdrawals().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getInvestments().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getMarketValues().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getProfitLoss().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+
+        return formatter;
+    }
+
+    /**
      * Generates a footer content.
      *
      * @param valuesToShow portfolio report
@@ -286,7 +293,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                         Label.LABEL_TOTAL_EXCHANGE_RATE,
                         labelWidth,
                         valuesToShow,
-                        BigDecimals.SCALE_FOR_CURRENCY));
+                        BigDecimals.SCALE_FOR_EXCHANGE_RATE));
     }
 
     /**
@@ -311,21 +318,20 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     .append(MARKDOWN_LIST).append(labelAsString)
                     .append(": ")
                     .append(Strings.space(labelWidth - labelAsString.length()))
-                    .append(showSummaryPerCurrency(rates, valuesToSum))
+                    .append(sumAndShow(rates, valuesToSum))
                     .append(NEW_LINE);
         }
     }
 
     /**
-     * Exchange the cash amounts that are available in the
-     * portfolios to the base currency.
+     * Exchange the currencies to the base currency and sum up them.
      *
      * @param rates exchange rates
      * @param valuesToSum values to sum
-     * @return summed value in base currency
+     * @return summed value in base currency as a formatted string
      */
-    private BigDecimal showSummaryPerCurrency(Map<String, BigDecimal> rates,
-                                              Map<String, BigDecimal> valuesToSum) {
+    private String sumAndShow(Map<String, BigDecimal> rates,
+                                  Map<String, BigDecimal> valuesToSum) {
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
         valuesToSum.forEach((symbol, quantity) -> {
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
@@ -337,7 +343,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             }
         });
 
-        return total.get().setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+        return bigDecimalFormatter.format(total.get(), BigDecimals.SCALE_DEFAULT);
     }
 
     /**
@@ -356,12 +362,14 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .stream()
                 .filter(entry -> BigDecimals.isNotNullAndNotZero(entry.getValue()))
                 .forEach(entry -> {
-                    var l = label.getLabel(language).replace("{1}", entry.getKey());
+                    var labelAsString = label.getLabel(language).replace("{1}", entry.getKey());
+                    var decimalValue = entry.getValue().setScale(scale, BigDecimals.ROUNDING_MODE);
+                    var decimalValueAsString = bigDecimalFormatter.format(decimalValue, scale);
                     sb
                             .append(MARKDOWN_LIST)
-                            .append(l).append(": ")
-                            .append(Strings.space(labelWidth - l.length()))
-                            .append(entry.getValue().setScale(scale, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
+                            .append(labelAsString).append(": ")
+                            .append(Strings.space(labelWidth - labelAsString.length()))
+                            .append(decimalValueAsString).append(NEW_LINE);
                 });
         return sb;
     }

@@ -24,7 +24,7 @@ public class BigDecimals {
     /**
      * Scale to round the numbers in the report.
      */
-    public static final int SCALE_FOR_CURRENCY = 6;
+    public static final int SCALE_FOR_EXCHANGE_RATE = 6;
 
     /**
      * Rounding mode used to show decimal numbers in the report.
@@ -133,7 +133,7 @@ public class BigDecimals {
      *
      * @param d1 first decimal value
      * @param d2 second decimal value
-     * @param scale scale of the result
+     * @param scale scale of the BigDecimal value to be returned
      * @return the result in percent
      */
     public static BigDecimal percentOf(BigDecimal d1, BigDecimal d2, int scale) {
