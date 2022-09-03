@@ -49,7 +49,7 @@ public class PriceWriter extends Writer<Price> {
         ZoneIds.validate(arguments.getZone());
 
         //  initialize
-        PriceWriter writer = new PriceWriter();
+        var writer = new PriceWriter();
         writer.setLanguage(arguments.getLanguage());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDecimalGroupingSeparator(Character.MIN_VALUE);

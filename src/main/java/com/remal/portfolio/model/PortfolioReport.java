@@ -159,7 +159,9 @@ public class PortfolioReport {
                             var withdrawalsActual = sumQuantities(
                                     TransactionType.WITHDRAWAL,
                                     productEntry.getValue().getTransactionHistory());
-                            withdrawals.put(symbol, withdrawalsActual.add(withdrawals.getOrDefault(symbol, BigDecimal.ZERO)));
+                            withdrawals.put(
+                                    symbol,
+                                    withdrawalsActual.add(withdrawals.getOrDefault(symbol, BigDecimal.ZERO)));
                         })
         );
     }

@@ -241,7 +241,7 @@ public class MarketPriceDownloader {
      * @param price the price will be saved
      */
     private void writeToHistoryFile(String priceHistoryFile, Price price) {
-        PriceWriter writer = new PriceWriter();
+        var writer = new PriceWriter();
         writer.setLanguage(priceHistoryWriterPrams.getLanguage());
         writer.setDecimalFormat(priceHistoryWriterPrams.getDecimalFormat());
         writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
