@@ -1,5 +1,6 @@
 package com.remal.portfolio.model;
 
+import com.remal.portfolio.util.BigDecimals;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -43,22 +44,12 @@ public class PortfolioReport {
     /**
      * The total invested amounts per currency.
      */
-    //private Map<String, BigDecimal> invested;
+    private final Map<String, BigDecimal> investments = new LinkedHashMap<>();
 
     /**
-     * Portfolio market value
+     * The total market value per currency.
      */
-    //private Map<String, BigDecimal> marketValue;
-
-    /**
-     * Invested amount.
-     */
-    //private BigDecimal investedAmount;
-
-    /**
-     * P/L on portfolio.
-     */
-    //private BigDecimal profitAndLoss;
+    private final Map<String, BigDecimal> marketValues = new LinkedHashMap<>();
 
     /**
      * Cash in portfolio per currency.
@@ -74,13 +65,6 @@ public class PortfolioReport {
      * The total amount of withdrawals.
      */
     private final Map<String, BigDecimal> withdrawals = new LinkedHashMap<>();
-
-    /**
-     * The account value, also known as total equity, is the total dollar value of all
-     * the holdings of the trading account, not just the securities, but the cash as
-     * well.
-     */
-    //private BigDecimal accountValue;
 
     /**
      * Constructor.
@@ -113,6 +97,28 @@ public class PortfolioReport {
     }
 
     /**
+     * Update profit and loss related values.
+     */
+    public void updateProfitAndLosses() {
+        investments.clear();
+        marketValues.clear();
+
+        portfolios.forEach((name, portfolio) -> portfolio.getProducts()
+                .entrySet()
+                .stream()
+                .filter(productEntry -> BigDecimals.isNotNullAndNotZero(productEntry.getValue().getQuantity()))
+                .forEach(productEntry -> {
+                    var product = productEntry.getValue();
+                    var symbol = productEntry.getValue().getCurrency().name();
+                    var investedAmount = product.getInvestedAmount();
+                    var marketValue = product.getMarketValue();
+                    investments.put(symbol, investedAmount.add(investments.getOrDefault(symbol, BigDecimal.ZERO)));
+                    marketValues.put(symbol, marketValue.add(marketValues.getOrDefault(symbol, BigDecimal.ZERO)));
+                })
+        );
+    }
+
+    /**
      * Calculates the value of the totals in portfolio.
      */
     private void updateTotals() {
@@ -126,23 +132,23 @@ public class PortfolioReport {
                         .stream()
                         .filter(productEntry -> CurrencyType.isValid(productEntry.getKey()))
                         .forEach(productEntry -> {
-                            var cur = productEntry.getKey();
+                            var symbol = productEntry.getKey();
 
                             // cash in portfolio
-                            var cashActual = cashInPortfolio.computeIfAbsent(cur, x -> BigDecimal.ZERO);
-                            cashInPortfolio.put(cur, cashActual.add(productEntry.getValue().getQuantity()));
+                            var cashActual = cashInPortfolio.computeIfAbsent(symbol, x -> BigDecimal.ZERO);
+                            cashInPortfolio.put(symbol, cashActual.add(productEntry.getValue().getQuantity()));
 
                             // deposits
                             var depositActual = sumQuantities(
                                     TransactionType.DEPOSIT,
                                     productEntry.getValue().getTransactionHistory());
-                            deposits.put(cur, depositActual.add(deposits.getOrDefault(cur, BigDecimal.ZERO)));
+                            deposits.put(symbol, depositActual.add(deposits.getOrDefault(symbol, BigDecimal.ZERO)));
 
                             // withdrawals
                             var withdrawalsActual = sumQuantities(
                                     TransactionType.WITHDRAWAL,
                                     productEntry.getValue().getTransactionHistory());
-                            withdrawals.put(cur, withdrawalsActual.add(withdrawals.getOrDefault(cur, BigDecimal.ZERO)));
+                            withdrawals.put(symbol, withdrawalsActual.add(withdrawals.getOrDefault(symbol, BigDecimal.ZERO)));
                         })
         );
     }

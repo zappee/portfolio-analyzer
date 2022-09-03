@@ -37,6 +37,16 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PortfolioWriter extends Writer<PortfolioReport> {
 
     /**
+     * Prefix to be removed from the label id.
+     */
+    private static final String PREFIX_TO_REMOVE = "LABEL_";
+
+    /**
+     * Markdown unordered list.
+     */
+    private static final String MARKDOWN_LIST = "* ";
+
+    /**
      * The currency of the portfolio report.
      */
     @Setter
@@ -47,33 +57,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      */
     @Setter
     private List<String> symbolsToShow = new ArrayList<>();
-
-    /**
-     * Portfolio market value
-     */
-    //private final Map<String, BigDecimal> marketValue = new HashMap<>();
-
-    /**
-     * Invested amount.
-     */
-    //private BigDecimal investedAmount;
-
-    /**
-     * P/L on portfolio.
-     */
-    //private final Map<String, BigDecimal> profitAndLoss = new HashMap<>();
-
-    /**
-     * Cash in portfolio.
-     */
-    //private final Map<String, BigDecimal> cashInPortfolio = new HashMap<>();
-
-    /**
-     * The account value, also known as total equity, is the total dollar value of all
-     * the holdings of the trading account, not just the securities, but the cash as
-     * well.
-     */
-    //private BigDecimal accountValue;
 
     /**
      * Builder that initializes a new writer instance.
@@ -194,7 +177,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         );
 
         // totals
-        report.append(NEW_LINE).append(generateSummary(portfolioReport));
+        report.append(generateSummary(portfolioReport));
 
         return report.toString();
     }
@@ -215,39 +198,66 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         var sb = new StringBuilder();
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace("LABEL_", ""))) {
-            sb.append(showSummaryPerCurrencyAndTotalFooter(
-                    portfolioReport.getExchangeRates(),
-                    portfolioReport.getCashInPortfolio(),
-                    Label.LABEL_TOTAL_CASH_PER_CURRENCY,
-                    Label.LABEL_TOTAL_CASH,
-                    labelWidth));
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getCashInPortfolio(),
+                            Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+                            Label.LABEL_TOTAL_CASH,
+                            labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.getId().replace("LABEL_", ""))) {
-            sb.append(showMapValue(portfolioReport.getExchangeRates(), labelWidth));
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showMapValue(portfolioReport.getExchangeRates(), labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.getId().replace("LABEL_", ""))) {
-            sb.append(showSummaryPerCurrencyAndTotalFooter(
-                    portfolioReport.getExchangeRates(),
-                    portfolioReport.getDeposits(),
-                    Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
-                    Label.LABEL_TOTAL_DEPOSIT,
-                    labelWidth));
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getDeposits(),
+                            Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
+                            Label.LABEL_TOTAL_DEPOSIT,
+                            labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.getId().replace("LABEL_", ""))) {
-            sb.append(showSummaryPerCurrencyAndTotalFooter(
-                    portfolioReport.getExchangeRates(),
-                    portfolioReport.getWithdrawals(),
-                    Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
-                    Label.LABEL_TOTAL_WITHDRAWAL,
-                    labelWidth));
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getWithdrawals(),
+                            Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
+                            Label.LABEL_TOTAL_WITHDRAWAL,
+                            labelWidth));
         }
 
-        sb
-                .append(Label.LABEL_TOTAL_INVESTMENT.getLabel(language)).append(NEW_LINE);
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_INVESTMENT.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getInvestments(),
+                            Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY,
+                            Label.LABEL_TOTAL_INVESTMENT,
+                            labelWidth));
+        }
+
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_MARKET_VALUE.getId().replace(PREFIX_TO_REMOVE, ""))) {
+            sb
+                    .append(NEW_LINE)
+                    .append(showSummaryPerCurrencyAndTotal(
+                            portfolioReport.getExchangeRates(),
+                            portfolioReport.getMarketValues(),
+                            Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY,
+                            Label.LABEL_TOTAL_MARKET_VALUE,
+                            labelWidth));
+        }
 
         return sb;
     }
@@ -276,21 +286,21 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param labelWidth label will align left on this
      * @return the footer content
      */
-    private StringBuilder showSummaryPerCurrencyAndTotalFooter(Map<String, BigDecimal> rates,
-                                                               Map<String, BigDecimal> valuesToSum,
-                                                               Label labelForCurrency,
-                                                               Label labelForTotal,
-                                                               int labelWidth) {
+    private StringBuilder showSummaryPerCurrencyAndTotal(Map<String, BigDecimal> rates,
+                                                         Map<String, BigDecimal> valuesToSum,
+                                                         Label labelForCurrency,
+                                                         Label labelForTotal,
+                                                         int labelWidth) {
         if (valuesToSum.isEmpty()) {
             return new StringBuilder();
         } else {
             var labelAsString = labelForTotal.getLabel(language).replace("{1}", baseCurrency.name());
             return new StringBuilder()
                     .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT))
-                    .append(labelAsString)
+                    .append(MARKDOWN_LIST).append(labelAsString)
                     .append(": ")
                     .append(Strings.space(labelWidth - labelAsString.length()))
-                    .append(showSummaryPerCurrencyFooter(rates, valuesToSum))
+                    .append(showSummaryPerCurrency(rates, valuesToSum))
                     .append(NEW_LINE);
         }
     }
@@ -303,8 +313,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param valuesToSum values to sum
      * @return summed value in base currency
      */
-    private BigDecimal showSummaryPerCurrencyFooter(Map<String, BigDecimal> rates,
-                                                    Map<String, BigDecimal> valuesToSum) {
+    private BigDecimal showSummaryPerCurrency(Map<String, BigDecimal> rates,
+                                              Map<String, BigDecimal> valuesToSum) {
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
         valuesToSum.forEach((symbol, quantity) -> {
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
@@ -337,6 +347,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .forEach(entry -> {
                     var l = label.getLabel(language).replace("{1}", entry.getKey());
                     sb
+                            .append(MARKDOWN_LIST)
                             .append(l).append(": ")
                             .append(Strings.space(labelWidth - l.length()))
                             .append(entry.getValue().setScale(scale, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);

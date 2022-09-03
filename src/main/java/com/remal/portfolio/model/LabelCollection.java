@@ -67,7 +67,10 @@ public class LabelCollection {
             Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
             Label.LABEL_TOTAL_WITHDRAWAL,
             Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
-            Label.LABEL_TOTAL_INVESTMENT);
+            Label.LABEL_TOTAL_INVESTMENT,
+            Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY,
+            Label.LABEL_TOTAL_MARKET_VALUE,
+            Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY);
 
     /**
      * Utility classes should not have public constructors.

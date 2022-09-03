@@ -293,9 +293,25 @@ public class Label {
     /**
      * A simple text.
      */
+    public static final Label LABEL_TOTAL_INVESTMENT_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_INVESTMENT_PER_CURRENCY")
+            .key("label.total.investment-per-currency")
+            .build();
+
+    /**
+     * A simple text.
+     */
     public static final Label LABEL_TOTAL_MARKET_VALUE = Label.builder()
             .id("LABEL_TOTAL_MARKET_VALUE")
             .key("label.total.market-value")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY")
+            .key("label.total.market-value-per-currency")
             .build();
 
     /**
