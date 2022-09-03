@@ -261,6 +261,14 @@ public class Label {
     /**
      * A simple text.
      */
+    public static final Label LABEL_TOTAL_DEPOSIT_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_DEPOSIT_PER_CURRENCY")
+            .key("label.total.deposit-per-currency")
+            .build();
+
+    /**
+     * A simple text.
+     */
     public static final Label LABEL_TOTAL_EQUITY = Label.builder()
             .id("LABEL_TOTAL_EQUITY")
             .key("label.total.equity")
@@ -301,9 +309,17 @@ public class Label {
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_WITHDRAWALS = Label.builder()
-            .id("LABEL_TOTAL_WITHDRAWALS")
-            .key("label.total.withdrawals")
+    public static final Label LABEL_TOTAL_WITHDRAWAL = Label.builder()
+            .id("LABEL_TOTAL_WITHDRAWAL")
+            .key("label.total.withdrawal")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY = Label.builder()
+            .id("LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY")
+            .key("label.total.withdrawal-per-currency")
             .build();
 
     /**

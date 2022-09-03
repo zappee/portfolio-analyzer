@@ -150,7 +150,7 @@ public class PortfolioArgGroup {
                 description = "Comma separated list of column names that won't be displayed in the report. "
                         + "Candidates: PORTFOLIO, SYMBOL, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, "
                         + "MARKET_VALUE, PROFIT_LOSS, PROFIT_LOSS_PERCENT, COSTS, DEPOSITS, WITHDRAWALS, TOTAL_CASH, "
-                        + "TOTAL_EXCHANGE_RATE",
+                        + "TOTAL_EXCHANGE_RATE, TOTAL_DEPOSIT, TOTAL_WITHDRAWAL",
                 converter = StringToListConverter.class)
         private final List<String> columnsToHide = new ArrayList<>();
     }

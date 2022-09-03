@@ -56,12 +56,17 @@ public class LabelCollection {
             Label.HEADER_REQUEST_DATE,
             Label.HEADER_DATA_PROVIDER);
 
+    /**
+     * List of the fields appear in the price report footer.
+     */
     public static final List<Label> PRODUCT_SUMMARY_FOOTER = List.of(
             Label.LABEL_TOTAL_CASH_PER_CURRENCY,
             Label.LABEL_TOTAL_CASH,
             Label.LABEL_TOTAL_EXCHANGE_RATE,
             Label.LABEL_TOTAL_DEPOSIT,
-            Label.LABEL_TOTAL_WITHDRAWALS,
+            Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
+            Label.LABEL_TOTAL_WITHDRAWAL,
+            Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
             Label.LABEL_TOTAL_INVESTMENT);
 
     /**

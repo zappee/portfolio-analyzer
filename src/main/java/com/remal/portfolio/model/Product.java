@@ -127,11 +127,15 @@ public class Product {
      * @return market value of the product
      */
     public BigDecimal getMarketValue() {
-        return quantity.multiply(marketPrice.getUnitPrice()).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+        return quantity
+                .multiply(marketPrice.getUnitPrice())
+                .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**
      * Invested amount.
+     *
+     * @return value of the invested amount
      */
     public BigDecimal getInvestedAmount() {
         var avgPrice = getAveragePrice();
@@ -142,6 +146,8 @@ public class Product {
 
     /**
      * P/L on the investment.
+     *
+     * @return value of the profit and loss
      */
     public BigDecimal getProfitAndLoss() {
         return getMarketValue().subtract(getInvestedAmount());
@@ -149,6 +155,8 @@ public class Product {
 
     /**
      * P/L on the investment.
+     *
+     * @return value of the profit and loss in percent
      */
     public BigDecimal getProfitAndLossPercent() {
         var hundred = BigDecimal.valueOf(100);

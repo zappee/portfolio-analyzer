@@ -124,7 +124,7 @@ public class BigDecimals {
      * @param object  the value to test, may be {@code null}
      * @return {@code object} if it is not {@code null}, zero otherwise
      */
-    public static BigDecimal zeroIfNull(final BigDecimal object) {
+    public static BigDecimal nullToZero(final BigDecimal object) {
         return object != null ? object : BigDecimal.ZERO;
     }
 

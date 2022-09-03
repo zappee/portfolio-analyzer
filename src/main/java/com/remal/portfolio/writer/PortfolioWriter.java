@@ -49,11 +49,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     private List<String> symbolsToShow = new ArrayList<>();
 
     /**
-     * The total invested amount.
-     */
-    //private final Map<String, BigDecimal> depositTotal = new HashMap<>();
-
-    /**
      * Portfolio market value
      */
     //private final Map<String, BigDecimal> marketValue = new HashMap<>();
@@ -199,7 +194,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         );
 
         // totals
-        report.append(generateSummary(portfolioReport));
+        report.append(NEW_LINE).append(generateSummary(portfolioReport));
 
         return report.toString();
     }
@@ -214,22 +209,44 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         
         var labelWidth = LabelCollection.PRODUCT_SUMMARY_FOOTER
                 .stream()
-                .max(Comparator.comparingInt( x -> x.getLabel(language).length()))
+                .max(Comparator.comparingInt(x -> x.getLabel(language).length()))
                 .orElse(emptyLabel).getLabel(language)
                 .length();
 
         var sb = new StringBuilder();
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace("LABEL_", ""))) {
-            sb.append(generateTotalCashFooter(portfolioReport, labelWidth));
+            sb.append(showSummaryPerCurrencyAndTotalFooter(
+                    portfolioReport.getExchangeRates(),
+                    portfolioReport.getCashInPortfolio(),
+                    Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+                    Label.LABEL_TOTAL_CASH,
+                    labelWidth));
         }
+
         if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.getId().replace("LABEL_", ""))) {
-            sb.append(generateExchangeRateFooter(portfolioReport, labelWidth));
+            sb.append(showMapValue(portfolioReport.getExchangeRates(), labelWidth));
+        }
+
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.getId().replace("LABEL_", ""))) {
+            sb.append(showSummaryPerCurrencyAndTotalFooter(
+                    portfolioReport.getExchangeRates(),
+                    portfolioReport.getDeposits(),
+                    Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
+                    Label.LABEL_TOTAL_DEPOSIT,
+                    labelWidth));
+        }
+
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.getId().replace("LABEL_", ""))) {
+            sb.append(showSummaryPerCurrencyAndTotalFooter(
+                    portfolioReport.getExchangeRates(),
+                    portfolioReport.getWithdrawals(),
+                    Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
+                    Label.LABEL_TOTAL_WITHDRAWAL,
+                    labelWidth));
         }
 
         sb
-                .append(Label.LABEL_TOTAL_DEPOSIT.getLabel(language)).append(NEW_LINE)
-                .append(Label.LABEL_TOTAL_WITHDRAWALS.getLabel(language)).append(NEW_LINE)
                 .append(Label.LABEL_TOTAL_INVESTMENT.getLabel(language)).append(NEW_LINE);
 
         return sb;
@@ -238,51 +255,60 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * Generates a footer content.
      *
-     * @param portfolioReport portfolio report
+     * @param valuesToShow portfolio report
      * @param labelWidth label will align left on this
      * @return the footer content
      */
-    private StringBuilder generateExchangeRateFooter(PortfolioReport portfolioReport, int labelWidth) {
+    private StringBuilder showMapValue(Map<String, BigDecimal> valuesToShow, int labelWidth) {
         return new StringBuilder()
                 .append(mapToString(
                         Label.LABEL_TOTAL_EXCHANGE_RATE,
                         labelWidth,
-                        portfolioReport.getExchangeRates(),
+                        valuesToShow,
                         BigDecimals.SCALE_FOR_CURRENCY));
     }
 
     /**
      * Generates a footer content.
      *
-     * @param portfolioReport portfolio report
+     * @param rates exchange rates
+     * @param valuesToSum values to sum
      * @param labelWidth label will align left on this
      * @return the footer content
      */
-    private StringBuilder generateTotalCashFooter(PortfolioReport portfolioReport, int labelWidth) {
-        return new StringBuilder()
-                .append(mapToString(
-                        Label.LABEL_TOTAL_CASH_PER_CURRENCY,
-                        labelWidth,
-                        portfolioReport.getCashInPortfolio(),
-                        BigDecimals.SCALE_DEFAULT))
-
-                .append(Label.LABEL_TOTAL_CASH.getLabel(language).replace("{1}", baseCurrency.name()))
-                .append(": ").append(getCashInBaseCurrency(portfolioReport))
-                .append(NEW_LINE);
+    private StringBuilder showSummaryPerCurrencyAndTotalFooter(Map<String, BigDecimal> rates,
+                                                               Map<String, BigDecimal> valuesToSum,
+                                                               Label labelForCurrency,
+                                                               Label labelForTotal,
+                                                               int labelWidth) {
+        if (valuesToSum.isEmpty()) {
+            return new StringBuilder();
+        } else {
+            var labelAsString = labelForTotal.getLabel(language).replace("{1}", baseCurrency.name());
+            return new StringBuilder()
+                    .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT))
+                    .append(labelAsString)
+                    .append(": ")
+                    .append(Strings.space(labelWidth - labelAsString.length()))
+                    .append(showSummaryPerCurrencyFooter(rates, valuesToSum))
+                    .append(NEW_LINE);
+        }
     }
 
     /**
      * Exchange the cash amounts that are available in the
      * portfolios to the base currency.
      *
-     * @param portfolioReport portfolio report
-     * @return cash total in base currency
+     * @param rates exchange rates
+     * @param valuesToSum values to sum
+     * @return summed value in base currency
      */
-    private BigDecimal getCashInBaseCurrency(PortfolioReport portfolioReport) {
+    private BigDecimal showSummaryPerCurrencyFooter(Map<String, BigDecimal> rates,
+                                                    Map<String, BigDecimal> valuesToSum) {
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
-        portfolioReport.getCashInPortfolio().forEach((symbol, quantity) -> {
+        valuesToSum.forEach((symbol, quantity) -> {
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
-            var exchangeRate = portfolioReport.getExchangeRates().get(exchangeRateSymbol);
+            var exchangeRate = rates.get(exchangeRateSymbol);
             if (Objects.isNull(exchangeRate)) {
                 total.set(total.get().add(quantity));
             } else {
@@ -304,13 +330,17 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      */
     private StringBuilder mapToString(Label label, int labelWidth, Map<String, BigDecimal> map, int scale) {
         var sb = new StringBuilder();
-        map.forEach((symbol, value) -> {
-            var l = label.getLabel(language).replace("{1}", symbol);
-            sb
-                    .append(l).append(": ")
-                    .append(Strings.space(labelWidth - l.length()))
-                    .append(value.setScale(scale, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
-        });
+        map
+                .entrySet()
+                .stream()
+                .filter(entry -> BigDecimals.isNotNullAndNotZero(entry.getValue()))
+                .forEach(entry -> {
+                    var l = label.getLabel(language).replace("{1}", entry.getKey());
+                    sb
+                            .append(l).append(": ")
+                            .append(Strings.space(labelWidth - l.length()))
+                            .append(entry.getValue().setScale(scale, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
+                });
         return sb;
     }
 
