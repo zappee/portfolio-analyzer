@@ -209,25 +209,66 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @return the report summary
      */
     private StringBuilder generateSummary(PortfolioReport portfolioReport) {
+        var emptyLabel = Label.HEADER_EMPTY;
+        emptyLabel.setLabel("");
+        
         var labelWidth = LabelCollection.PRODUCT_SUMMARY_FOOTER
                 .stream()
                 .max(Comparator.comparingInt( x -> x.getLabel(language).length()))
-                .get()
-                .getLabel(language).length();
+                .orElse(emptyLabel).getLabel(language)
+                .length();
 
-        return new StringBuilder()
-                .append(NEW_LINE)
-                .append(mapToString(
-                        Label.LABEL_TOTAL_CASH_PER_CURRENCY,
-                        labelWidth,
-                        portfolioReport.getCashInPortfolio()))
+        var sb = new StringBuilder();
 
-                .append(Label.LABEL_TOTAL_CASH.getLabel(language).replace("{1}", baseCurrency.name()))
-                .append(": ").append(getCashInBaseCurrency(portfolioReport)).append(NEW_LINE)
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace("LABEL_", ""))) {
+            sb.append(generateTotalCashFooter(portfolioReport, labelWidth));
+        }
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.getId().replace("LABEL_", ""))) {
+            sb.append(generateExchangeRateFooter(portfolioReport, labelWidth));
+        }
 
+        sb
                 .append(Label.LABEL_TOTAL_DEPOSIT.getLabel(language)).append(NEW_LINE)
                 .append(Label.LABEL_TOTAL_WITHDRAWALS.getLabel(language)).append(NEW_LINE)
                 .append(Label.LABEL_TOTAL_INVESTMENT.getLabel(language)).append(NEW_LINE);
+
+        return sb;
+    }
+
+    /**
+     * Generates a footer content.
+     *
+     * @param portfolioReport portfolio report
+     * @param labelWidth label will align left on this
+     * @return the footer content
+     */
+    private StringBuilder generateExchangeRateFooter(PortfolioReport portfolioReport, int labelWidth) {
+        return new StringBuilder()
+                .append(mapToString(
+                        Label.LABEL_TOTAL_EXCHANGE_RATE,
+                        labelWidth,
+                        portfolioReport.getExchangeRates(),
+                        BigDecimals.SCALE_FOR_CURRENCY));
+    }
+
+    /**
+     * Generates a footer content.
+     *
+     * @param portfolioReport portfolio report
+     * @param labelWidth label will align left on this
+     * @return the footer content
+     */
+    private StringBuilder generateTotalCashFooter(PortfolioReport portfolioReport, int labelWidth) {
+        return new StringBuilder()
+                .append(mapToString(
+                        Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+                        labelWidth,
+                        portfolioReport.getCashInPortfolio(),
+                        BigDecimals.SCALE_DEFAULT))
+
+                .append(Label.LABEL_TOTAL_CASH.getLabel(language).replace("{1}", baseCurrency.name()))
+                .append(": ").append(getCashInBaseCurrency(portfolioReport))
+                .append(NEW_LINE);
     }
 
     /**
@@ -249,7 +290,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             }
         });
 
-        return total.get().setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+        return total.get().setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -258,16 +299,17 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param label label for the value
      * @param labelWidth the with of the label
      * @param map portfolio report
+     * @param scale scale of the BigDecimal value to be returned
      * @return the report content
      */
-    private StringBuilder mapToString(Label label, int labelWidth, Map<String, BigDecimal> map) {
+    private StringBuilder mapToString(Label label, int labelWidth, Map<String, BigDecimal> map, int scale) {
         var sb = new StringBuilder();
         map.forEach((symbol, value) -> {
             var l = label.getLabel(language).replace("{1}", symbol);
             sb
                     .append(l).append(": ")
                     .append(Strings.space(labelWidth - l.length()))
-                    .append(value.setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
+                    .append(value.setScale(scale, BigDecimals.ROUNDING_MODE)).append(NEW_LINE);
         });
         return sb;
     }

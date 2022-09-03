@@ -19,7 +19,12 @@ public class BigDecimals {
     /**
      * Scale to round the numbers in the report.
      */
-    public static final int SCALE = 2;
+    public static final int SCALE_DEFAULT = 2;
+
+    /**
+     * Scale to round the numbers in the report.
+     */
+    public static final int SCALE_FOR_CURRENCY = 6;
 
     /**
      * Rounding mode used to show decimal numbers in the report.

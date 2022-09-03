@@ -127,7 +127,7 @@ public class Product {
      * @return market value of the product
      */
     public BigDecimal getMarketValue() {
-        return quantity.multiply(marketPrice.getUnitPrice()).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+        return quantity.multiply(marketPrice.getUnitPrice()).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -137,7 +137,7 @@ public class Product {
         var avgPrice = getAveragePrice();
         return Objects.isNull(avgPrice)
                 ? null
-                : quantity.multiply(avgPrice).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+                : quantity.multiply(avgPrice).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -157,7 +157,7 @@ public class Product {
             return null;
         } else {
             var pl = getMarketValue().divide(investedAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
-            return pl.multiply(hundred).setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+            return pl.multiply(hundred).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
         }
     }
 
@@ -233,7 +233,7 @@ public class Product {
                 .stream()
                 .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(BigDecimals.SCALE, BigDecimals.ROUNDING_MODE);
+                .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**

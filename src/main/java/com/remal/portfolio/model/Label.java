@@ -263,7 +263,15 @@ public class Label {
      */
     public static final Label LABEL_TOTAL_EQUITY = Label.builder()
             .id("LABEL_TOTAL_EQUITY")
-            .key("label.total.total-equity")
+            .key("label.total.equity")
+            .build();
+
+    /**
+     * A simple text.
+     */
+    public static final Label LABEL_TOTAL_EXCHANGE_RATE = Label.builder()
+            .id("LABEL_TOTAL_EXCHANGE_RATE")
+            .key("label.total.exchange-rate")
             .build();
 
     /**
