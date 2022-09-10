@@ -1,10 +1,6 @@
 package com.remal.portfolio.model;
 
 import com.remal.portfolio.util.I18n;
-import lombok.Builder;
-import lombok.Getter;
-
-import java.util.Objects;
 
 /**
  * Constants for labels that appear in the reports.
@@ -14,421 +10,231 @@ import java.util.Objects;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
-@Builder
-@Getter
-public class Label {
+public enum Label {
 
     /**
      * A column header.
      */
-    public static final Label HEADER_AVG_PRICE = Label.builder()
-            .id("HEADER_AVG_PRICE")
-            .key("header.avg-price")
-            .build();
+    HEADER_AVG_PRICE("header.avg-price"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_COSTS = Label.builder()
-            .id("HEADER_COSTS")
-            .key("header.costs")
-            .build();
+    HEADER_COSTS("header.costs"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_CURRENCY = Label.builder()
-            .id("HEADER_CURRENCY")
-            .key("header.currency")
-            .build();
+    HEADER_CURRENCY("header.currency"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_DATA_PROVIDER = Label.builder()
-            .id("HEADER_DATA_PROVIDER")
-            .key("header.data-provider")
-            .build();
+    HEADER_DATA_PROVIDER("header.data-provider"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_DEPOSITS = Label.builder()
-            .id("HEADER_DEPOSITS")
-            .key("header.deposits")
-            .build();
+    HEADER_DEPOSITS("header.deposits"),
 
     /**
      * An empty label that is used to format BigDecimal number without having a label.
      */
-    public static final Label HEADER_EMPTY = Label.builder()
-            .id("HEADER_EMPTY")
-            .key("label.empty")
-            .build();
+    HEADER_EMPTY("label.empty"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_FEE = Label.builder()
-            .id("HEADER_FEE")
-            .key("header.fee")
-            .build();
+    HEADER_FEE("header.fee"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_INVESTED_AMOUNT = Label.builder()
-            .id("HEADER_INVESTED_AMOUNT")
-            .key("header.invested-amount")
-            .build();
+    HEADER_INVESTED_AMOUNT("header.invested-amount"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_MARKET_UNIT_PRICE = Label.builder()
-            .id("HEADER_MARKET_UNIT_PRICE")
-            .key("header.market-unit-price")
-            .build();
+    HEADER_MARKET_UNIT_PRICE("header.market-unit-price"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_MARKET_VALUE = Label.builder()
-            .id("HEADER_MARKET_VALUE")
-            .key("header.market-value")
-            .build();
+    HEADER_MARKET_VALUE("header.market-value"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_ORDER_ID = Label.builder()
-            .id("HEADER_ORDER_ID")
-            .key("header.order-id")
-            .build();
+    HEADER_ORDER_ID("header.order-id"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_PORTFOLIO = Label.builder()
-            .id("HEADER_PORTFOLIO")
-            .key("header.portfolio")
-            .build();
+    HEADER_PORTFOLIO("header.portfolio"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_PRICE = Label.builder()
-            .id("HEADER_PRICE")
-            .key("header.price")
-            .build();
+    HEADER_PRICE("header.price"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_PROFIT_LOSS = Label.builder()
-            .id("HEADER_PROFIT_LOSS")
-            .key("header.profit-loss")
-            .build();
+    HEADER_PROFIT_LOSS("header.profit-loss"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_PROFIT_LOSS_PERCENT = Label.builder()
-            .id("HEADER_PROFIT_LOSS_PERCENT")
-            .key("header.profit-loss-percent")
-            .build();
+    HEADER_PROFIT_LOSS_PERCENT("header.profit-loss-percent"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_QUANTITY = Label.builder()
-            .id("HEADER_QUANTITY")
-            .key("header.quantity")
-            .build();
+    HEADER_QUANTITY("header.quantity"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_REQUEST_DATE = Label.builder()
-            .id("HEADER_REQUEST_DATE")
-            .key("header.request-date")
-            .build();
+    HEADER_REQUEST_DATE("header.request-date"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_SYMBOL = Label.builder()
-            .id("HEADER_SYMBOL")
-            .key("header.symbol")
-            .build();
+    HEADER_SYMBOL("header.symbol"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_TRADE_DATE = Label.builder()
-            .id("HEADER_TRADE_DATE")
-            .key("header.trade-date")
-            .build();
+    HEADER_TRADE_DATE("header.trade-date"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_TRADE_ID = Label.builder()
-            .id("HEADER_TRADE_ID")
-            .key("header.trade-id")
-            .build();
+    HEADER_TRADE_ID("header.trade-id"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_TRANSFER_ID = Label.builder()
-            .id("HEADER_TRANSFER_ID")
-            .key("header.transfer-id")
-            .build();
+    HEADER_TRANSFER_ID("header.transfer-id"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_TYPE = Label.builder()
-            .id("HEADER_TYPE")
-            .key("header.type")
-            .build();
+    HEADER_TYPE("header.type"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_VALUATION = Label.builder()
-            .id("HEADER_VALUATION")
-            .key("header.valuation")
-            .build();
+    HEADER_VALUATION("header.valuation"),
 
     /**
      * A column header.
      */
-    public static final Label HEADER_WITHDRAWALS = Label.builder()
-            .id("HEADER_WITHDRAWALS")
-            .key("header.withdrawals")
-            .build();
+    HEADER_WITHDRAWALS("header.withdrawals"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_PORTFOLIO = Label.builder()
-            .id("LABEL_PORTFOLIO")
-            .key("label.portfolio")
-            .build();
+    LABEL_PORTFOLIO_SUMMARY("label.portfolio-summary"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_PORTFOLIO_SUMMARY = Label.builder()
-            .id("LABEL_PORTFOLIO_SUMMARY")
-            .key("label.portfolio-summary")
-            .build();
+    LABEL_TOTAL_CASH_PER_CURRENCY("label.total.cash-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_PRICE_HISTORY = Label.builder()
-            .id("LABEL_PRICE_HISTORY")
-            .key("label.price-history")
-            .build();
+    LABEL_TOTAL_CASH("label.total.cash"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_CASH_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_CASH_PER_CURRENCY")
-            .key("label.total.cash-per-currency")
-            .build();
+    LABEL_TOTAL_DEPOSIT("label.total.deposit"),
+
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_CASH = Label.builder()
-            .id("LABEL_TOTAL_CASH")
-            .key("label.total.cash")
-            .build();
+    LABEL_TOTAL_DEPOSIT_PER_CURRENCY("label.total.deposit-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_DEPOSIT = Label.builder()
-            .id("LABEL_TOTAL_DEPOSIT")
-            .key("label.total.deposit")
-            .build();
+    LABEL_TOTAL_EXCHANGE_RATE("label.total.exchange-rate"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_DEPOSIT_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_DEPOSIT_PER_CURRENCY")
-            .key("label.total.deposit-per-currency")
-            .build();
+    LABEL_TOTAL_INVESTMENT("label.total.investment"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_EQUITY = Label.builder()
-            .id("LABEL_TOTAL_EQUITY")
-            .key("label.total.equity")
-            .build();
+    LABEL_TOTAL_INVESTMENT_PER_CURRENCY("label.total.investment-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_EXCHANGE_RATE = Label.builder()
-            .id("LABEL_TOTAL_EXCHANGE_RATE")
-            .key("label.total.exchange-rate")
-            .build();
+    LABEL_TOTAL_MARKET_VALUE("label.total.market-value"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_INVESTMENT = Label.builder()
-            .id("LABEL_TOTAL_INVESTMENT")
-            .key("label.total.investment")
-            .build();
+    LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY("label.total.market-value-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_INVESTMENT_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_INVESTMENT_PER_CURRENCY")
-            .key("label.total.investment-per-currency")
-            .build();
+    LABEL_TOTAL_PROFIT_LOSS("label.total.profit-loss"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_MARKET_VALUE = Label.builder()
-            .id("LABEL_TOTAL_MARKET_VALUE")
-            .key("label.total.market-value")
-            .build();
+    LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY("label.total.profit-loss-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY")
-            .key("label.total.market-value-per-currency")
-            .build();
+    LABEL_TOTAL_WITHDRAWAL("label.total.withdrawal"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_PROFIT_LOSS = Label.builder()
-            .id("LABEL_TOTAL_PROFIT_LOSS")
-            .key("label.total.profit-loss")
-            .build();
+    LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY("label.total.withdrawal-per-currency"),
 
     /**
      * A simple text.
      */
-    public static final Label LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY")
-            .key("label.total.profit-loss-per-currency")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_TOTAL_WITHDRAWAL = Label.builder()
-            .id("LABEL_TOTAL_WITHDRAWAL")
-            .key("label.total.withdrawal")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY = Label.builder()
-            .id("LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY")
-            .key("label.total.withdrawal-per-currency")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_TRANSACTION = Label.builder()
-            .id("LABEL_TRANSACTION")
-            .key("label.transaction")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_TRANSACTION_HISTORY = Label.builder()
-            .id("LABEL_TRANSACTION_HISTORY")
-            .key("label.transaction-history")
-            .build();
-
-    /**
-     * A simple text.
-     */
-    public static final Label LABEL_TRANSACTION_REPORT = Label.builder()
-            .id("LABEL_TRANSACTION_REPORT")
-            .key("label.transaction-report")
-            .build();
+    LABEL_TRANSACTION_REPORT("label.transaction-report"),
 
     /**
      * A report title.
      */
-    public static final Label TITLE_SUMMARY_REPORT = Label.builder()
-            .id("TITLE_SUMMARY_REPORT")
-            .key("title.summary-report")
-            .build();
+    TITLE_SUMMARY_REPORT("title.summary-report"),
 
     /**
      * A report title.
      */
-    public static final Label TITLE_TRANSACTIONS_REPORT = Label.builder()
-            .id("TITLE_TRANSACTIONS_REPORT")
-            .key("title.transactions-report")
-            .build();
-
-    /**
-     * The id of the label.
-     */
-    private String id;
+    TITLE_TRANSACTIONS_REPORT("title.transactions-report");
 
     /**
      * The key that identifies the translation in the I18N *.properties file.
      */
-    private String key;
+    private final String key;
 
-    /**
-     * The translated value of the label.
-     * Used only when the value must be overwritten.
-     */
-    private String i18n;
-
-    /**
-     * Setter method.
-     *
-     * @param i18n the label value
-     */
-    public void setLabel(String i18n) {
-        this.i18n = i18n;
+    Label(String key) {
+        this.key = key;
     }
 
     /**
      * Translation resolver that reads the belonging translation from
      * the property file.
      *
-     * @param language language code, e.g. en
+     * @param language an ISO 639 alpha-2 or alpha-3 language code, e.g. en
      * @return the translation text
      */
     public String getLabel(String language) {
-        return Objects.isNull(i18n) ? I18n.get(language, key) : this.i18n;
-    }
-
-    /**
-     * Returns with the id of the label.
-     *
-     * @return label id
-     */
-    @Override
-    public String toString() {
-        return id;
+        return I18n.get(language, key);
     }
 }

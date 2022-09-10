@@ -1,7 +1,7 @@
 package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
-import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.Filter;
@@ -15,7 +15,6 @@ import picocli.CommandLine;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the 'show' command.
@@ -72,14 +71,16 @@ public class ShowCommand implements Callable<Integer> {
         Logger.setSilentMode(silentMode);
 
         // parser
-        var parser = Parser.build(inputArgGroup);
-        var transactions = parser.parse(inputArgGroup.getFile());
+        var parser = TransactionParser.build(inputArgGroup);
+        var inputZone = ZoneId.of(inputArgGroup.getZone());
+        var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
+        var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
         transactions = transactions
                 .stream()
                 .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
                 .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
-                .collect(Collectors.toList());
+                .toList();
 
         // writer
         var zone = ZoneId.of(outputArgGroup.getZone());

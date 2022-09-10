@@ -124,7 +124,7 @@ public class MarketPriceDownloader {
     /**
      * Set the market prices for currencies and products.
      *
-     * @param portfolioReport the portfolio report
+     * @param portfolioReport portfolio report
      * @param marketPriceAt the date of the market prices
      */
     public void updateMarketPrices(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
@@ -136,7 +136,7 @@ public class MarketPriceDownloader {
     /**
      * Update the exchange rates for currencies used in the portfolio report.
      *
-     * @param portfolioReport the portfolio report
+     * @param portfolioReport portfolio report
      * @param marketPriceAt the date of the market prices
      */
     private void updateExchangeRates(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
@@ -160,7 +160,7 @@ public class MarketPriceDownloader {
     /**
      * Update the market prices of products.
      *
-     * @param portfolioReport the portfolio report
+     * @param portfolioReport portfolio report
      * @param marketPriceAt the date of the market prices
      */
     private void updateProductMarketPrice(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
@@ -244,7 +244,6 @@ public class MarketPriceDownloader {
         var writer = new PriceWriter();
         writer.setLanguage(priceHistoryWriterPrams.getLanguage());
         writer.setDecimalFormat(priceHistoryWriterPrams.getDecimalFormat());
-        writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
         writer.setDateTimePattern(priceHistoryWriterPrams.getDateTimePattern());
         writer.setZone(ZoneId.of(priceHistoryWriterPrams.getZone()));
         writer.setMultiplicity(priceHistoryWriterPrams.getMultiplicity());

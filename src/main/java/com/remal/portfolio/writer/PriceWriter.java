@@ -49,7 +49,6 @@ public class PriceWriter extends Writer<Price> {
         var writer = new PriceWriter();
         writer.setLanguage(arguments.getLanguage());
         writer.setDecimalFormat(arguments.getDecimalFormat());
-        writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
         writer.setDateTimePattern(arguments.getDateTimePattern());
         writer.setZone(ZoneId.of(arguments.getZone()));
         writer.setMultiplicity(arguments.getMultiplicity());
@@ -108,7 +107,7 @@ public class PriceWriter extends Writer<Price> {
         LabelCollection.PRODUCT_PRICE_HEADERS
                 .forEach(labelKey -> {
                     var labelValue = labelKey.getLabel(language);
-                    var width = widths.get(labelKey.getId());
+                    var width = widths.get(labelKey.name());
                     header.append(markdownSeparator).append(Strings.leftPad(labelValue, width));
                     headerSeparator.append(markdownSeparator).append("-".repeat(width));
                 });

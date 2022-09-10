@@ -17,6 +17,7 @@ import ch.qos.logback.core.pattern.color.ForegroundCompositeConverterBase;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@SuppressWarnings("java:S110")
 public class OverwriteDefaultColors extends ForegroundCompositeConverterBase<ILoggingEvent> {
 
     /**

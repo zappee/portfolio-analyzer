@@ -6,6 +6,7 @@ import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.picocli.arggroup.InputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
@@ -29,6 +30,16 @@ import java.util.stream.Stream;
  */
 @Slf4j
 public class TransactionParser extends Parser<Transaction> {
+
+    /**
+     * Builder that initializes a new writer instance.
+     *
+     * @param arguments input arguments
+     * @return          the parser instance
+     */
+    public static Parser<Transaction> build(InputArgGroup arguments) {
+        return build(Transaction.class, arguments, null, null);
+    }
 
     /**
      * Process a CSV file.
@@ -95,22 +106,22 @@ public class TransactionParser extends Parser<Transaction> {
      * Parse the Markdown and CSV file.
      *
      * @param skipRows number of the lines that must be skip while parsing the file
-     * @param firstColumn index from here starts to read the columns
-     * @param file the input file
+     * @param startColumn index from here starts to read the columns
+     * @param fileName the input file
      * @param separator separator char used in the input file
      * @return the list of the transactions
      * @throws IOException in case of file not found
      */
-    private List<Transaction> parseTextFile(int skipRows, int firstColumn, String file, String separator)
+    private List<Transaction> parseTextFile(int skipRows, int startColumn, String fileName, String separator)
             throws IOException {
 
         List<Transaction> transactions = new ArrayList<>();
-        try (Stream<String> stream = Files.lines(Path.of(file))) {
+        try (Stream<String> stream = Files.lines(Path.of(fileName))) {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
                         var fields = line.split(separator, -1);
-                        var index = new AtomicInteger(firstColumn);
+                        var index = new AtomicInteger(startColumn);
                         Transaction t = Transaction
                                 .builder()
                                 .portfolio(getString(index, fields, Label.HEADER_PORTFOLIO))
@@ -140,7 +151,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return next index value
      */
     private TransactionType getTransactionType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_TYPE.getId())) {
+        if (missingColumns.contains(Label.HEADER_TYPE.name())) {
             return null;
         } else {
             return TransactionType.getEnum(fields[index.getAndIncrement()].trim());
@@ -155,7 +166,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return next index value
      */
     private InventoryValuationType getInventoryValuationType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_VALUATION.getId())) {
+        if (missingColumns.contains(Label.HEADER_VALUATION.name())) {
             return null;
         } else {
             return InventoryValuationType.getEnum(fields[index.getAndIncrement()].trim());
@@ -170,7 +181,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return next index value
      */
     private CurrencyType getCurrencyType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_CURRENCY.getId())) {
+        if (missingColumns.contains(Label.HEADER_CURRENCY.name())) {
             return null;
         } else {
             return CurrencyType.getEnum(fields[index.getAndIncrement()].trim());

@@ -6,6 +6,7 @@ import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.PortfolioReport;
 import com.remal.portfolio.model.Transaction;
 import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.Filter;
@@ -18,13 +19,12 @@ import picocli.CommandLine;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Collections;
 import java.util.concurrent.Callable;
 
 /**
  * Implementation of the 'summary' command.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -87,7 +87,7 @@ public class PortfolioCommand implements Callable<Integer> {
         CurrencyType.abortIfInvalid(outputArgGroup.getBaseCurrency());
 
         // parser
-        Parser<Transaction> parser = Parser.build(inputArgGroup);
+        Parser<Transaction> parser = TransactionParser.build(inputArgGroup);
         var inputZone = ZoneId.of(inputArgGroup.getZone());
         var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
@@ -99,7 +99,9 @@ public class PortfolioCommand implements Callable<Integer> {
 
         // generate the report
         var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());
-        var portfolioReport = new PortfolioReport(currency);
+        var portfolioReport = new PortfolioReport(
+                currency,
+                LocalDateTimes.toLocalDateTime(inputArgGroup.getDateTimePattern(), inputArgGroup.getTo()));
         portfolioReport.addTransactions(transactions);
 
         // set market prices
@@ -111,11 +113,14 @@ public class PortfolioCommand implements Callable<Integer> {
         marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
 
         // writer
-        var templateFilename = outputArgGroup.getOutputFile();
         var zone = ZoneId.of(outputArgGroup.getZone());
-        var outFile = LocalDateTimes.toString(zone, templateFilename, LocalDateTime.now());
+        var now = LocalDateTime.now();
+        var portfolioReportFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioReportFile(), now);
+        var portfolioSummaryFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioSummaryFile(), now);
+
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), outFile, Collections.singletonList(portfolioReport));
+        writer.write(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
+        writer.writeSummary(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
         return CommandLine.ExitCode.OK;
     }
 }

@@ -15,6 +15,7 @@ import picocli.CommandLine;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 /**
@@ -78,7 +79,7 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
 
         // input
         var parser = new CoinbaseProResponseParser(inputArgGroup);
-        var transactions = parser.parse();
+        var transactions = new ArrayList<>(parser.parse());
 
         // output
         var outFilenameTemplate = outputArgGroup.getOutputFile();

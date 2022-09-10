@@ -20,7 +20,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
@@ -122,7 +121,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                 .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
                 .filter(t -> Filter.dateEqualOrBeforeFilter(t.getTradeDate(), to))
                 .sorted(Sorter.tradeDateComparator())
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**

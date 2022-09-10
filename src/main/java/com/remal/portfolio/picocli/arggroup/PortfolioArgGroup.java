@@ -44,10 +44,20 @@ public class PortfolioArgGroup {
          * Set the output file name.
          */
         @CommandLine.Option(
-                names = {"-O", "--output-file"},
-                description = "Write report to file (i.e. \"'tmp/'yyyy-MM-dd'_report.md'\"). "
+                names = {"-O", "--portfolio-report"},
+                description = "Write the portfolio report to file (i.e. \"'tmp/'yyyy-MM-dd'_portfolio-report.md'\"). "
                         + "Accepted extensions: .txt, .md and .csv")
-        private String outputFile;
+        private String portfolioReportFile;
+
+        /**
+         * Set the output file name.
+         */
+        @CommandLine.Option(
+                names = {"-S", "--summary-report"},
+                description = "Write the portfolio summary report to file "
+                        + ", i.e. \"'tmp/'yyyy-MM-dd'_portfolio-summary-report.md'\". "
+                        + "Accepted extensions: .txt, .md and .csv")
+        private String portfolioSummaryFile;
 
         /**
          * Set the file open mode.
@@ -121,7 +131,7 @@ public class PortfolioArgGroup {
         @CommandLine.Option(
                 names = {"-I", "--decimal-format"},
                 description = "Format numbers and decimals in the report. Default: \"${DEFAULT-VALUE}\"",
-                defaultValue = "##################.########")
+                defaultValue = "###,###,###,###,###,###.########")
         private String decimalFormat;
 
         /**

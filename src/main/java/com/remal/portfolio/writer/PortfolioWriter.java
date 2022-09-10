@@ -1,13 +1,17 @@
 package com.remal.portfolio.writer;
 
 import com.remal.portfolio.model.CurrencyType;
+import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.PortfolioReport;
+import com.remal.portfolio.parser.PortfolioSummaryParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.BigDecimalFormatter;
 import com.remal.portfolio.util.BigDecimals;
+import com.remal.portfolio.util.FileWriter;
+import com.remal.portfolio.util.Files;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Sorter;
@@ -21,15 +25,19 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 /**
  * Portfolio summary writer.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
@@ -50,7 +58,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * Decimal number formatter.
      */
-    private BigDecimalFormatter bigDecimalFormatter;
+    private BigDecimalFormatter decimalFormatter;
 
     /**
      * The currency of the portfolio report.
@@ -87,14 +95,81 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     }
 
     /**
-     * Generate the CSV report.
+     * Write the report to the file.
+     *
+     * @param writeMode control the way of open the file
+     * @param filename the report file name
+     * @param portfolioReport the report
+     */
+    public void writeSummary(FileWriter.WriteMode writeMode, String filename, final PortfolioReport portfolioReport) {
+        if (Objects.nonNull(filename) && Files.getFileType(filename) == FileType.CSV) {
+            log.debug("> writing the report to \"{}\", write-mode: {}...", filename, writeMode);
+            generatePortfolioSummaryCsvReport(writeMode, filename, portfolioReport);
+        } else {
+            log.info("> skipping the portfolio summary report generation: filename is empty or file type is not "
+                    + "supported");
+        }
+    }
+
+    /**
+     * Generates the CSV report.
      *
      * @param items data
      * @return the report content as a String
      */
     @Override
     protected String buildCsvReport(List<PortfolioReport> items) {
-        throw new UnsupportedOperationException();
+        var portfolioReport = items
+                .stream()
+                .findFirst()
+                .orElse(new PortfolioReport(CurrencyType.EUR, LocalDateTime.now()));
+        var report = new StringBuilder();
+
+        // report title
+        if (!hideTitle) {
+            report
+                    .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
+                    .append(NEW_LINE)
+                    .append(Label.TITLE_SUMMARY_REPORT.getLabel(language)).append(": ")
+                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, portfolioReport.getGenerated()))
+                    .append(NEW_LINE);
+        }
+
+        // table header
+        if (!hideHeader) {
+            LabelCollection.PORTFOLIO_TABLE_HEADERS
+                    .forEach(labelKey -> report
+                            .append(labelKey.getLabel(language))
+                            .append(csvSeparator));
+
+            report.setLength(report.length() - csvSeparator.length());
+            report.append(NEW_LINE);
+        }
+
+        // data
+        portfolioReport.getPortfolios().forEach((name, portfolio) -> portfolio.getProducts()
+                .forEach((key, product) -> {
+                    var profitAndLossPercent = product.getProfitAndLossPercent();
+                    if (BigDecimals.isNotZero(product.getQuantity())) {
+                        var price = product.getMarketPrice().getUnitPrice();
+                        report
+                            .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), csvSeparator))
+                            .append(getCell(Label.HEADER_SYMBOL, product.getSymbol(), csvSeparator))
+                            .append(getCell(Label.HEADER_QUANTITY, product.getQuantity(), csvSeparator))
+                            .append(getCell(Label.HEADER_AVG_PRICE, product.getAveragePrice(), csvSeparator))
+                            .append(getCell(Label.HEADER_MARKET_UNIT_PRICE, price, csvSeparator))
+                            .append(getCell(Label.HEADER_MARKET_VALUE, product.getMarketValue(), csvSeparator))
+                            .append(getCell(Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount(), csvSeparator))
+                            .append(getCell(Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss(), csvSeparator))
+                            .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, profitAndLossPercent, csvSeparator))
+                            .append(getCell(Label.HEADER_COSTS, product.getCosts(), csvSeparator))
+                            .append(getCell(Label.HEADER_DEPOSITS, product.getDeposits(), csvSeparator))
+                            .append(getCell(Label.HEADER_WITHDRAWALS, product.getWithdrawals(), csvSeparator))
+                            .append(NEW_LINE);
+                    }
+                })
+        );
+        return report.toString();
     }
 
     /**
@@ -105,8 +180,11 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      */
     @Override
     protected String buildMarkdownReport(List<PortfolioReport> items) {
-        var portfolioReport = items.stream().findFirst().orElse(new PortfolioReport(CurrencyType.EUR));
-        bigDecimalFormatter = initializeBogDecimalFormatter(portfolioReport);
+        var portfolioReport = items
+                .stream()
+                .findFirst()
+                .orElse(new PortfolioReport(CurrencyType.EUR, LocalDateTime.now()));
+        decimalFormatter = initializeDecimalFormatter(portfolioReport);
         var report = new StringBuilder();
         var widths = calculateColumnWidth(portfolioReport);
 
@@ -154,19 +232,197 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         );
 
         // totals
-        report.append(generateSummary(portfolioReport));
+        report.append(generatePortfolioSummaryMarkdownReport(portfolioReport));
 
         return report.toString();
     }
 
+
+    /**
+     * Get history data from file.
+     *
+     * @param filename data file name
+     */
+    @Override
+    protected List<PortfolioReport> getHistoryFromFile(String filename) {
+        return new ArrayList<>();
+    }
+
+    /**
+     * Generates the portfolio summary CSV report.
+     *
+     * @param writeMode control the way of open the file
+     * @param filename the report file name
+     * @param portfolioReport portfolio report
+     */
+    private void generatePortfolioSummaryCsvReport(FileWriter.WriteMode writeMode,
+                                                   String filename,
+                                                   final PortfolioReport portfolioReport) {
+
+        var inputArgGroup = buildTransactionParserInputArgGroup(filename);
+        var parser = PortfolioSummaryParser.build(baseCurrency, language, inputArgGroup);
+        var reportHistory = new ArrayList<>(parser.parse(filename));
+
+        if (!reportHistory.contains(portfolioReport)) {
+            reportHistory.add(portfolioReport);
+        }
+        reportHistory.sort(Sorter.portfolioReportComparator());
+
+        LinkedHashMap<Label, Set<String>> columnInfo = new LinkedHashMap<>();
+        reportHistory.forEach(report -> {
+            // cash
+            var placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_CASH_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getCashInPortfolio().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_CASH, Set.of(baseCurrency.name()));
+
+            // exchange rates
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_EXCHANGE_RATE,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getExchangeRates().keySet());
+
+            // deposits
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getDeposits().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_DEPOSIT, Set.of(baseCurrency.name()));
+
+            // withdrawals
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getWithdrawals().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_WITHDRAWAL, Set.of(baseCurrency.name()));
+
+            // investments
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getInvestments().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_INVESTMENT, Set.of(baseCurrency.name()));
+
+            // market values
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getMarketValues().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_MARKET_VALUE, Set.of(baseCurrency.name()));
+
+            // profits / losses
+            placeholderValues = columnInfo.computeIfAbsent(
+                    Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY,
+                    x -> new LinkedHashSet<>());
+            placeholderValues.addAll(report.getProfitLoss().keySet());
+            columnInfo.put(Label.LABEL_TOTAL_PROFIT_LOSS, Set.of(baseCurrency.name()));
+        });
+
+        var report = generatePortfolioSummaryCsvHeader(columnInfo)
+                + generatePortfolioSummaryCsvData(columnInfo, reportHistory);
+        FileWriter.write(writeMode, filename, report.getBytes());
+    }
+
+    /**
+     * Generates report header.
+     *
+     * @param columnInfo the map that contains info about the report columns
+     * @return the header
+     */
+    private String generatePortfolioSummaryCsvHeader(LinkedHashMap<Label, Set<String>> columnInfo) {
+        var sb = new StringBuilder();
+        sb.append(Label.HEADER_REQUEST_DATE.getLabel(language)).append(csvSeparator);
+
+        columnInfo.forEach((label, values) ->
+                values.forEach(value -> sb
+                        .append(label.getLabel(language).replace("{0}", value))
+                        .append(csvSeparator))
+        );
+        sb.setLength(sb.length() - csvSeparator.length());
+        sb.append(NEW_LINE);
+        return sb.toString();
+    }
+
+    /**
+     * Generates CSV data.
+     *
+     * @param columnInfo the map that contains info about the report columns
+     * @param portfolioReports portfolio report
+     * @return the report
+     */
+    private String generatePortfolioSummaryCsvData(LinkedHashMap<Label, Set<String>> columnInfo,
+                                                   List<PortfolioReport> portfolioReports) {
+        decimalFormat = BigDecimals.UNFORMATTED;
+        var sb = new StringBuilder();
+
+        BiConsumer<String, BigDecimal> consumer = (key, value) ->
+                sb.append(getStringValue(value).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+        portfolioReports.forEach(reportEntry -> {
+            sb.append(getStringValue(reportEntry.getGenerated()).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // cash
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_CASH_PER_CURRENCY), reportEntry.getCashInPortfolio());
+            reportEntry.getCashInPortfolio().forEach(consumer);
+            var sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // exchange rates
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_EXCHANGE_RATE), reportEntry.getExchangeRates());
+            reportEntry.getExchangeRates().forEach(consumer);
+
+            // deposits
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY), reportEntry.getDeposits());
+            reportEntry.getDeposits().forEach(consumer);
+            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getDeposits());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // withdrawals
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY), reportEntry.getWithdrawals());
+            reportEntry.getWithdrawals().forEach(consumer);
+            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // investments
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY), reportEntry.getInvestments());
+            reportEntry.getInvestments().forEach(consumer);
+            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getInvestments());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // market values
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY), reportEntry.getMarketValues());
+            reportEntry.getMarketValues().forEach(consumer);
+            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+
+            // profits / losses
+            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY), reportEntry.getProfitLoss());
+            reportEntry.getProfitLoss().forEach(consumer);
+            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
+            sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
+            sb.setLength(sb.length() - csvSeparator.length());
+            sb.append(NEW_LINE);
+        });
+
+        return sb.toString();
+    }
+
+    private void enrichMapValue(Set<String> source, Map<String, BigDecimal> target) {
+        source.forEach(value -> {
+            if (!target.containsKey(value)) {
+                target.put(value, BigDecimal.ZERO);
+            }
+        });
+    }
+
     /**
      * Generates the report summary.
+     *
      * @return the report summary
      */
-    private StringBuilder generateSummary(PortfolioReport portfolioReport) {
+    private StringBuilder generatePortfolioSummaryMarkdownReport(PortfolioReport portfolioReport) {
         var emptyLabel = Label.HEADER_EMPTY;
-        emptyLabel.setLabel("");
-        
         var labelWidth = LabelCollection.PRODUCT_SUMMARY_FOOTER
                 .stream()
                 .max(Comparator.comparingInt(x -> x.getLabel(language).length()))
@@ -174,7 +430,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .length();
         var sb = new StringBuilder();
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_CASH.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -185,13 +441,13 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showMapValue(portfolioReport.getExchangeRates(), labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -202,7 +458,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -213,7 +469,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_INVESTMENT.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_INVESTMENT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -224,7 +480,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_MARKET_VALUE.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_MARKET_VALUE.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -235,7 +491,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             labelWidth));
         }
 
-        if (!columnsToHide.contains(Label.LABEL_TOTAL_PROFIT_LOSS.getId().replace(PREFIX_TO_REMOVE, ""))) {
+        if (!columnsToHide.contains(Label.LABEL_TOTAL_PROFIT_LOSS.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
                     .append(NEW_LINE)
                     .append(showSummaryPerCurrencyAndTotal(
@@ -255,7 +511,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param portfolioReport portfolio report
      * @return the length of the longest decimal value in the footer
      */
-    private BigDecimalFormatter initializeBogDecimalFormatter(PortfolioReport portfolioReport) {
+    private BigDecimalFormatter initializeDecimalFormatter(PortfolioReport portfolioReport) {
         var formatter = new BigDecimalFormatter(decimalFormat, decimalGroupingSeparator);
 
         portfolioReport.getExchangeRates().forEach(formatter.get(BigDecimals.SCALE_FOR_EXCHANGE_RATE));
@@ -301,13 +557,13 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         if (valuesToSum.isEmpty()) {
             return new StringBuilder();
         } else {
-            var labelAsString = labelForTotal.getLabel(language).replace("{1}", baseCurrency.name());
+            var labelAsString = labelForTotal.getLabel(language).replace("{0}", baseCurrency.name());
             return new StringBuilder()
                     .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT))
                     .append(MARKDOWN_LIST).append(labelAsString)
                     .append(": ")
                     .append(Strings.space(labelWidth - labelAsString.length()))
-                    .append(sumAndShow(rates, valuesToSum))
+                    .append(decimalFormatter.format(sumAndExchange(rates, valuesToSum), BigDecimals.SCALE_DEFAULT))
                     .append(NEW_LINE);
         }
     }
@@ -317,9 +573,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      *
      * @param rates exchange rates
      * @param valuesToSum values to sum
-     * @return summed value in base currency as a formatted string
+     * @return summed value in base currency
      */
-    private String sumAndShow(Map<String, BigDecimal> rates,
+    private BigDecimal sumAndExchange(Map<String, BigDecimal> rates,
                                   Map<String, BigDecimal> valuesToSum) {
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
         valuesToSum.forEach((symbol, quantity) -> {
@@ -332,7 +588,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             }
         });
 
-        return bigDecimalFormatter.format(total.get(), BigDecimals.SCALE_DEFAULT);
+        return total.get();
     }
 
     /**
@@ -351,9 +607,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .stream()
                 .filter(entry -> BigDecimals.isNotNullAndNotZero(entry.getValue()))
                 .forEach(entry -> {
-                    var labelAsString = label.getLabel(language).replace("{1}", entry.getKey());
+                    var labelAsString = label.getLabel(language).replace("{0}", entry.getKey());
                     var decimalValue = entry.getValue().setScale(scale, BigDecimals.ROUNDING_MODE);
-                    var decimalValueAsString = bigDecimalFormatter.format(decimalValue, scale);
+                    var decimalValueAsString = decimalFormatter.format(decimalValue, scale);
                     sb
                             .append(MARKDOWN_LIST)
                             .append(labelAsString).append(": ")
@@ -361,16 +617,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             .append(decimalValueAsString).append(NEW_LINE);
                 });
         return sb;
-    }
-
-    /**
-     * Get history data from file.
-     *
-     * @param filename data file name
-     */
-    @Override
-    protected List<PortfolioReport> getHistoryFromFile(String filename) {
-        return new ArrayList<>();
     }
 
     /**
@@ -387,7 +633,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                 .filter(label -> Filter.columnsToHideFilter(columnsToHide, label))
                 .forEach(labelKey -> {
                     var labelValue = labelKey.getLabel(language);
-                    var width = widths.get(labelKey.getId());
+                    var width = widths.get(labelKey.name());
                     header.append(markdownSeparator).append(Strings.leftPad(labelValue, width));
                     headerSeparator.append(markdownSeparator).append("-".repeat(width));
                 });
@@ -420,12 +666,12 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * Calculates the with of the columns that are shown in the Markdown report.
      *
-     * @param portfolioReport the portfolio report
+     * @param portfolioReport portfolio report
      * @return length of the columns
      */
     private Map<String, Integer> calculateColumnWidth(PortfolioReport portfolioReport) {
         Map<String, Integer> widths = new HashMap<>();
-        LabelCollection.PORTFOLIO_TABLE_HEADERS.forEach(x -> widths.put(x.getId(), x.getLabel(language).length()));
+        LabelCollection.PORTFOLIO_TABLE_HEADERS.forEach(x -> widths.put(x.name(), x.getLabel(language).length()));
 
         portfolioReport.getPortfolios().forEach((portfolioName, portfolio) -> {
             updateWidth(widths, Label.HEADER_PORTFOLIO, portfolio.getName());

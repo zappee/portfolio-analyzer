@@ -2,7 +2,7 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.CombineInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.Filter;
@@ -80,7 +80,7 @@ public class CombineCommand implements Callable<Integer> {
 
         // parser
         var zone = ZoneId.of(outputArgGroup.getZone());
-        var parser = Parser.build(inputArgGroup);
+        var parser = TransactionParser.build(inputArgGroup);
         inputArgGroup.getFiles().forEach(filenameTemplate -> {
             var filename = LocalDateTimes.toString(zone, filenameTemplate, LocalDateTime.now());
             combine(parser.parse(filename), transactions, overwrite);

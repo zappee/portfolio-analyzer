@@ -85,7 +85,7 @@ public class Filter {
      * @return true if the column meet with the conditions
      */
     public static boolean columnsToHideFilter(List<String> columnsToHide, Label label) {
-        return !columnsToHide.contains(label.getId().split("_")[1]);
+        return !columnsToHide.contains(label.name().split("_")[1]);
     }
 
     /**

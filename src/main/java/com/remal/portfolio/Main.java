@@ -62,14 +62,4 @@ public final class Main {
         cmd.setHelpFactory(new CustomOptionRenderer());
         System.exit(cmd.execute(args));
     }
-
-    /**
-     * Utility classes should not have public constructors.
-     *
-     * @throws java.lang.UnsupportedOperationException if this method is called
-     */
-    private Main() {
-        throw new UnsupportedOperationException();
-    }
-
 }

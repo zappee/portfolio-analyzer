@@ -128,7 +128,7 @@ public class PriceArgGroup {
         @CommandLine.Option(
                 names = {"-I", "--decimal-format"},
                 description = "Format numbers and decimals in the report. Default: \"${DEFAULT-VALUE}\"",
-                defaultValue = "##################.########")
+                defaultValue = "###,###,###,###,###,###.########")
         private String decimalFormat;
 
         /**

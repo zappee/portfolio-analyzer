@@ -13,7 +13,7 @@
             <url>BSD (2-clause) licensed</url>
         </license>
         <license>
-            <url>Copyright (c) 2020-2021, Remal Software</url>
+            <url>Copyright (c) 2020-2022, Remal Software</url>
         </license>
     </licenses>
 
@@ -37,13 +37,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <json.simple.version>1.1.1</json.simple.version>
-        <logback.classic.version>1.2.11</logback.classic.version>
+        <logback.classic.version>1.4.0</logback.classic.version>
         <lombok.version>1.18.24</lombok.version>
         <maven.assembly.plugin.version>3.3.0</maven.assembly.plugin.version>
+        <maven.compiler.plugin.version>3.10.0</maven.compiler.plugin.version>
         <picocli.version>4.6.3</picocli.version>
         <poi.version>5.2.2</poi.version>
         <yahoo-finance-api.version>3.17.0</yahoo-finance-api.version>
-        <maven.compiler.plugin.version>3.10.0</maven.compiler.plugin.version>
     </properties>
 
     <dependencies>
@@ -118,16 +118,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <!-- set the Java version -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>17</source>
-                    <target>17</target>
-                </configuration>
             </plugin>
         </plugins>
     </build>

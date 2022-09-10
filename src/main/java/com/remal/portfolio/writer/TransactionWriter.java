@@ -3,9 +3,8 @@ package com.remal.portfolio.writer;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
 import com.remal.portfolio.model.Transaction;
-import com.remal.portfolio.parser.Parser;
+import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
-import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.PortfolioNameRenamer;
@@ -51,7 +50,6 @@ public class TransactionWriter extends Writer<Transaction> {
         writer.setLanguage(arguments.getLanguage());
         writer.setColumnsToHide(arguments.getColumnsToHide());
         writer.setDecimalFormat(arguments.getDecimalFormat());
-        writer.setDecimalGroupingSeparator(Character.MIN_VALUE);
         writer.setDateTimePattern(arguments.getDateTimePattern());
         writer.setZone(ZoneId.of(arguments.getZone()));
         writer.setFrom(LocalDateTimes.toLocalDateTime(arguments.getDateTimePattern(), arguments.getFrom()));
@@ -149,7 +147,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     .filter(label -> Filter.columnsToHideFilter(columnsToHide, label))
                     .forEach(labelKey -> {
                         var labelValue = labelKey.getLabel(language);
-                        var width = widths.get(labelKey.getId());
+                        var width = widths.get(labelKey.name());
                         header.append(markdownSeparator).append(Strings.leftPad(labelValue, width));
                         headerSeparator.append(markdownSeparator).append("-".repeat(width));
                     });
@@ -192,15 +190,8 @@ public class TransactionWriter extends Writer<Transaction> {
      */
     @Override
     protected List<Transaction> getHistoryFromFile(String filename) {
-        TransactionParserInputArgGroup inputArgGroup = new TransactionParserInputArgGroup();
-        inputArgGroup.setFile(filename);
-        inputArgGroup.setDateTimePattern(dateTimePattern);
-        inputArgGroup.setZone(zone.getId());
-        inputArgGroup.setMissingColumns(columnsToHide);
-        inputArgGroup.hasTitle(!hideTitle);
-        inputArgGroup.hasHeader(!hideHeader);
-
-        var parser = Parser.build(inputArgGroup);
+        var inputArgGroup = buildTransactionParserInputArgGroup(filename);
+        var parser = TransactionParser.build(inputArgGroup);
         return parser.parse(inputArgGroup.getFile());
     }
 

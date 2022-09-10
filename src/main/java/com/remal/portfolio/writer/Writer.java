@@ -5,6 +5,7 @@ import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.InventoryValuationType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.TransactionType;
+import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LocalDateTimes;
@@ -178,6 +179,7 @@ public abstract class Writer<T> {
         switch (fileType) {
             case CSV -> {
                 log.debug("> generating the CSV report...");
+                decimalFormat = BigDecimals.UNFORMATTED;
                 byte[] reportAsBytes = buildCsvReport(itemContainer).getBytes();
                 FileWriter.write(writeMode, filename, reportAsBytes);
                 log.debug(ITEMS_HAS_BEEN_PROCESSED, itemContainer.size());
@@ -226,14 +228,14 @@ public abstract class Writer<T> {
 
             var currentFullWidth = calculateBigDecimalWidth(widths, label);
             var labelWidth = label.getLabel(language).length();
-            widths.put(label.getId(), Math.max(labelWidth, currentFullWidth));
+            widths.put(label.name(), Math.max(labelWidth, currentFullWidth));
 
         } else {
             Optional<String> stringValue = getStringValue(value);
             var actualDataWidth = stringValue.orElse("").length();
             var labelWidth = label.getLabel(language).length();
-            var previousLength = widths.getOrDefault(label.getId(), 0);
-            widths.put(label.getId(), Math.max(previousLength, Math.max(labelWidth, actualDataWidth)));
+            var previousLength = widths.getOrDefault(label.name(), 0);
+            widths.put(label.name(), Math.max(previousLength, Math.max(labelWidth, actualDataWidth)));
         }
     }
 
@@ -257,7 +259,7 @@ public abstract class Writer<T> {
      * @return the value or an empty string
      */
     protected String getCell(Label label, Object cellValueAsObject, String separator) {
-        return columnsToHide.contains(label.getId())
+        return columnsToHide.contains(label.name())
                 ? ""
                 : getStringValue(cellValueAsObject).map(value -> value + separator).orElse(separator);
     }
@@ -272,7 +274,7 @@ public abstract class Writer<T> {
      */
     protected String getCell(Label label, Object value, Map<String, Integer> widths) {
         // LABEL_PORTFOLIO -> PORTFOLIO
-        if (columnsToHide.contains(label.getId().split("_")[1])) {
+        if (columnsToHide.contains(label.name().split("_")[1])) {
             return "";
         }
 
@@ -282,7 +284,7 @@ public abstract class Writer<T> {
             var labelWidth = label.getLabel(language).length();
             var wholeWidth = labelWidth > columnWidth
                     ? widths.get(getWholeWidthKey(label)) + labelWidth - columnWidth
-                    : widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
+                    : widths.getOrDefault(getWholeWidthKey(label), widths.get(label.name()));
 
             var parts = partsOfBigDecimal(BigDecimals.isNullOrZero(x) ? null : x);
             var spaces = (Objects.isNull(fractionalWidth) || fractionalWidth == 0)
@@ -293,7 +295,7 @@ public abstract class Writer<T> {
                     : Strings.rightPad(parts[0], wholeWidth) + "." + Strings.leftPad(parts[1], fractionalWidth);
             return markdownSeparator + valueAsFormattedString;
         } else {
-            var width = widths.get(label.getId());
+            var width = widths.get(label.name());
             return markdownSeparator + Strings.leftPad(getStringValue(value).orElse(""), width);
         }
     }
@@ -306,7 +308,7 @@ public abstract class Writer<T> {
      * @return the key for the Map
      */
     protected String getWholeWidthKey(Label label) {
-        return label.getId() + "-W";
+        return label.name() + "-W";
     }
 
     /**
@@ -317,7 +319,7 @@ public abstract class Writer<T> {
      * @return the key for the Map
      */
     protected String getFractionalWidthKey(Label label) {
-        return label.getId() + "-F";
+        return label.name() + "-F";
     }
 
     /**
@@ -326,7 +328,7 @@ public abstract class Writer<T> {
      * @param value the value
      * @return the string representation of the object
      */
-    private Optional<String> getStringValue(final Object value) {
+    protected Optional<String> getStringValue(final Object value) {
         if (Objects.isNull(value)) {
             return Optional.empty();
         }
@@ -361,6 +363,23 @@ public abstract class Writer<T> {
     }
 
     /**
+     * Build a new object instance.
+     *
+     * @param filename filename parameter
+     * @return the initialized object
+     */
+    protected TransactionParserInputArgGroup buildTransactionParserInputArgGroup(String filename) {
+        TransactionParserInputArgGroup inputArgGroup = new TransactionParserInputArgGroup();
+        inputArgGroup.setFile(filename);
+        inputArgGroup.setDateTimePattern(dateTimePattern);
+        inputArgGroup.setZone(zone.getId());
+        inputArgGroup.setMissingColumns(columnsToHide);
+        inputArgGroup.hasTitle(!hideTitle);
+        inputArgGroup.hasHeader(!hideHeader);
+        return inputArgGroup;
+    }
+
+    /**
      * Compute the full length of a decimal field.
      *
      * @param widths the list that keeps info about the columns
@@ -368,7 +387,7 @@ public abstract class Writer<T> {
      * @return the length of the decimal number
      */
     private int calculateBigDecimalWidth(Map<String, Integer> widths, Label label) {
-        var wholeWidth = widths.getOrDefault(getWholeWidthKey(label), widths.get(label.getId()));
+        var wholeWidth = widths.getOrDefault(getWholeWidthKey(label), widths.get(label.name()));
         var fractionalWidth = widths.get(getFractionalWidthKey(label));
         var hasDecimalPoint = Objects.nonNull(fractionalWidth) && fractionalWidth != 0;
         return hasDecimalPoint ? wholeWidth + fractionalWidth + 1 : wholeWidth;

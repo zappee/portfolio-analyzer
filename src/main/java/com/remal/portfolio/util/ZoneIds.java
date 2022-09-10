@@ -26,7 +26,8 @@ public class ZoneIds {
     public static void validate(String timezone) {
         try {
             if (Objects.nonNull(timezone)) {
-                ZoneId.of(timezone);
+                var zone = ZoneId.of(timezone);
+                log.debug("zone id is valid: \"{}\"", zone);
             }
         } catch (Exception e) {
             Logger.logErrorAndExit("Invalid time zone: '{}'.", timezone);

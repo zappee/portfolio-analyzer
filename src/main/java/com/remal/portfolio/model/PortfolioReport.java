@@ -1,6 +1,7 @@
 package com.remal.portfolio.model;
 
 import com.remal.portfolio.util.BigDecimals;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.math.BigDecimal;
@@ -12,18 +13,20 @@ import java.util.Map;
 /**
  * The portfolio report POJO.
  * <p>
- * Copyright (c) 2020-2021 Remal Software and Arnold Somogyi All rights reserved
+ * Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
  * BSD (2-clause) licensed
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PortfolioReport {
 
     /**
      * The date when the report was generated.
      */
-    private final LocalDateTime generated = LocalDateTime.now();
+    @EqualsAndHashCode.Include
+    private final LocalDateTime generated;
 
     /**
      * The currency of the report.
@@ -75,9 +78,11 @@ public class PortfolioReport {
      * Constructor.
      *
      * @param currency base currency
+     * @param generated the last trade date that is considered
      */
-    public PortfolioReport(CurrencyType currency) {
+    public PortfolioReport(CurrencyType currency, LocalDateTime generated) {
         this.currency = currency;
+        this.generated = generated;
     }
 
     /**

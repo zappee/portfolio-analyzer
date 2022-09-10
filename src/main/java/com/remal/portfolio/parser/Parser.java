@@ -1,5 +1,6 @@
 package com.remal.portfolio.parser;
 
+import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Price;
@@ -100,7 +101,7 @@ public abstract class Parser<T> {
     /**
      * Markdown separator.
      */
-    protected String markdownSeparator = "\\|";
+    protected String markdownSeparator = "|";
 
     /**
      * CSV separator.
@@ -108,30 +109,10 @@ public abstract class Parser<T> {
     protected String csvSeparator = ",";
 
     /**
-     * Builder that initializes a new writer instance.
-     *
-     * @param arguments input arguments
-     * @return          the parser instance
+     * Report language.
      */
-    public static Parser<Transaction> build(InputArgGroup arguments) {
-        // validating the input params
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getFrom());
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getTo());
-        ZoneIds.validate(arguments.getZone());
-
-        // initialize a parser
-        var zoneId = ZoneId.of(arguments.getZone());
-        Parser<Transaction> parser = new TransactionParser();
-        parser.hasTitle(arguments.hasTitle());
-        parser.hasHeader(arguments.hasHeader());
-        parser.setDateTimePattern(arguments.getDateTimePattern());
-        parser.setZone(zoneId);
-        parser.setFrom(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getFrom()));
-        parser.setTo(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getTo()));
-        parser.setMissingColumns(arguments.getMissingColumns());
-        parser.setSymbols(arguments.getSymbols());
-        return parser;
-    }
+    @Setter
+    protected String language = "en";
 
     /**
      * Builder that initializes a new writer instance.
@@ -144,6 +125,46 @@ public abstract class Parser<T> {
         Parser<Price> parser = new PriceParser();
         parser.setDateTimePattern(arguments.getDateTimePattern());
         parser.setZone(zoneId);
+        return parser;
+    }
+
+    /**
+     * Builds a parser instance.
+     *
+     * @param parserType parser type
+     * @param arguments parameters from the command line interface
+     * @param language report language
+     * @param baseCurrency base currency used in the report
+     * @return the parser instance
+     */
+    @SuppressWarnings("unchecked")
+    protected static <T> Parser<T> build(Class<T> parserType,
+                                         InputArgGroup arguments,
+                                         String language,
+                                         CurrencyType baseCurrency) {
+
+        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getFrom());
+        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getTo());
+        ZoneIds.validate(arguments.getZone());
+
+        Parser<T> parser;
+        if (parserType.isAssignableFrom(Transaction.class)) {
+            parser = (Parser<T>) new TransactionParser();
+        } else {
+            parser = (Parser<T>) new PortfolioSummaryParser(baseCurrency);
+        }
+
+        var zoneId = ZoneId.of(arguments.getZone());
+
+        parser.hasTitle(arguments.hasTitle());
+        parser.hasHeader(arguments.hasHeader());
+        parser.setDateTimePattern(arguments.getDateTimePattern());
+        parser.setZone(zoneId);
+        parser.setFrom(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getFrom()));
+        parser.setTo(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getTo()));
+        parser.setMissingColumns(arguments.getMissingColumns());
+        parser.setSymbols(arguments.getSymbols());
+        parser.setLanguage(language);
         return parser;
     }
 
@@ -222,13 +243,13 @@ public abstract class Parser<T> {
     /**
      * Get the value based on the missing/hidden columns.
      *
-     * @param index        the variable holds the index's value
-     * @param fields       the parsed line from the input file
+     * @param index the variable holds the index's value
+     * @param fields the parsed line from the input file
      * @param actualColumn column ID
-     * @return             the next index value
+     * @return the next index value
      */
     protected String getString(AtomicInteger index, String[] fields, Label actualColumn) {
-        if (missingColumns.contains(actualColumn.getId())) {
+        if (Objects.nonNull(actualColumn) && missingColumns.contains(actualColumn.name())) {
             return null;
         } else {
             var value = fields[index.getAndIncrement()];
@@ -245,7 +266,7 @@ public abstract class Parser<T> {
      * @return             the next index value
      */
     protected BigDecimal getBigDecimal(AtomicInteger index, String[] fields, Label actualColumn) {
-        if (missingColumns.contains(actualColumn.getId())) {
+        if (missingColumns.contains(actualColumn.name())) {
             return null;
         } else {
             return BigDecimals.valueOf(fields[index.getAndIncrement()].trim());
@@ -260,7 +281,7 @@ public abstract class Parser<T> {
      * @return       the next index value
      */
     protected LocalDateTime getLocalDateTime(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_TRADE_DATE.getId())) {
+        if (missingColumns.contains(Label.HEADER_TRADE_DATE.name())) {
             return null;
         } else {
             return LocalDateTimes.toLocalDateTime(zone, dateTimePattern, fields[index.getAndIncrement()].trim());

@@ -32,6 +32,11 @@ public class BigDecimals {
     public static final RoundingMode ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
     /**
+     * Decimal format without thousands separators.
+     */
+    public static final String UNFORMATTED = "##################.########";
+
+    /**
      * Convert decimal number to a formatted String.
      *
      * @param decimalFormat decimal format, e.g. '###,###.###'
@@ -65,17 +70,6 @@ public class BigDecimals {
             // remove spaces
             return new BigDecimal(s.replaceAll("\\s+",""));
         }
-    }
-
-    /**
-     * Convert a BigDecimal to double.
-     *
-     * @param decimal the BigDecimal to convert
-     * @return the double value
-     */
-    public static double valueOf(BigDecimal decimal) {
-        Objects.requireNonNull(decimal, "The decimal value can not be null.");
-        return decimal.doubleValue();
     }
 
     /**
@@ -116,31 +110,6 @@ public class BigDecimals {
      */
     public static boolean isNotNullAndNotZero(BigDecimal decimal) {
         return Objects.nonNull(decimal) && (decimal.compareTo(BigDecimal.ZERO) != 0);
-    }
-
-    /**
-     * Returns a default value if the object passed is {@code null}.
-     *
-     * @param object  the value to test, may be {@code null}
-     * @return {@code object} if it is not {@code null}, zero otherwise
-     */
-    public static BigDecimal nullToZero(final BigDecimal object) {
-        return object != null ? object : BigDecimal.ZERO;
-    }
-
-    /**
-     * Compute of the percent of the given two decimals.
-     *
-     * @param d1 first decimal value
-     * @param d2 second decimal value
-     * @param scale scale of the BigDecimal value to be returned
-     * @return the result in percent
-     */
-    public static BigDecimal percentOf(BigDecimal d1, BigDecimal d2, int scale) {
-        var hundred = new BigDecimal(100);
-        return BigDecimals.isNullOrZero(d1)
-                ? null
-                : hundred.multiply(d1).divide(d2, scale, RoundingMode.CEILING).subtract(hundred);
     }
 
     /**

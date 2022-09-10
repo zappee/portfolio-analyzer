@@ -22,7 +22,7 @@ public class Sorter {
     /**
      * Sorting portfolio report.
      *
-     * @param portfolioReport the report
+     * @param portfolioReport portfolio report
      */
     public static void sortPortfolioReport(PortfolioReport portfolioReport) {
         var sortedPortfolios = portfolioReport.getPortfolios()
@@ -57,6 +57,15 @@ public class Sorter {
      */
     public static Comparator<Transaction> tradeDateComparator() {
         return Comparator.comparing(Transaction::getTradeDate);
+    }
+
+    /**
+     * Sort the list of portfolio reports by created date.
+     *
+     * @return the comparator instance
+     */
+    public static Comparator<PortfolioReport> portfolioReportComparator() {
+        return Comparator.comparing(PortfolioReport::getGenerated);
     }
 
     /**
