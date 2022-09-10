@@ -19,9 +19,11 @@ If you have multiple accounts, then to keep up to date your own portfolio regist
 
 The `Remal Portfolio Analyzer` helps you to track the performance of your separated portfolios in one place with as less effort as possible.
 The tool downloads your daily trading transactions from the brokerage companies, merges them into a big ledger, and generates a portfolio summary report based on the live market price as often as you wish.
-The report can be any kind of diagram or a [Markdown](https://www.markdownguide.org/basic-syntax) or an Excel file.
+The report can be any kind of diagram or a [Markdown][markdown] or an Excel file.
 
 ## 2) How the tool works
 
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
+
+[markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
