@@ -25,10 +25,10 @@ The report can be any kind of diagram or a [Markdown][markdown] or an Excel file
 The `Remal Portfolio Analyzer` supports th following activities:
 * Downloading `trading history` directly from a brokerage company.
 * Trading history file transformation, i.e. converting timestamps between time zones, etc.
-* Merging multiple `trading history` files into one.
+* Combine multiple `trading history` files into one.
 * Showing the `trading history` files.
 * Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
-* Generating a real-time portfolio report.
+* Generating the portfolio report.
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
 * Calculating a new portfolio repor, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
 
