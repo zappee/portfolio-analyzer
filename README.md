@@ -32,6 +32,13 @@ The `Remal Portfolio Analyzer` supports th following activities:
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
 * Calculating a new portfolio repor, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
 
+The following flow shows how a general workflow looks like:
+
+<p align="center">
+  <img src="docs/images/remal-general-workflow.png" alt="general workflow" />
+</p>
+
+
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
