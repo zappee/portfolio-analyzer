@@ -22,7 +22,15 @@ The tool downloads your daily trading transactions from the brokerage companies,
 The report can be any kind of diagram or a [Markdown][markdown] or an Excel file.
 
 ## 2) How the tool works
-
+The `Remal Portfolio Analyzer` supports th following activities:
+* Downloading `trading history` directly from a brokerage company.
+* Trading history file transformation, i.e. converting timestamps between time zones, etc.
+* Merging multiple `trading history` files into one.
+* Showing the `trading history` files.
+* Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
+* Generating a real-time portfolio report.
+* Showing the portfolio report on charts (column, line, pie, bar, etc.).
+* Calculating a new portfolio repor, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
 
