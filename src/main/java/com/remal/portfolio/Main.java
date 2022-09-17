@@ -25,7 +25,7 @@ import picocli.CommandLine;
             PriceCommand.class,
             PortfolioCommand.class
         },
-        synopsisSubcommandLabel = "[coinbase | show | combine | price]",
+        synopsisSubcommandLabel = "[coinbase | show | combine | price | portfolio]",
         name = "java -jar portfolio-analyzer.jar",
         description = "Remal Portfolio Analyzer is a command-line tool that helps you to track your portfolio "
                 + "in one place and generate regular investment reports.%n",

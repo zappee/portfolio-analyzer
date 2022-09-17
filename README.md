@@ -22,8 +22,8 @@ The tool downloads your daily trading transactions from the brokerage companies,
 The report can be any kind of diagram or a [Markdown][markdown] or an Excel file.
 
 ## 2) How the tool works
-The `Remal Portfolio Analyzer` supports th following activities:
-* Downloading `trading history` directly from a brokerage company.
+The `Remal Portfolio Analyzer` supports the following activities:
+* Downloading the `trading-history` directly from a brokerage company.
 * Trading history file transformation, i.e. converting timestamps between time zones, etc.
 * Combine multiple `trading history` files into one.
 * Showing the `trading history` files.
@@ -37,6 +37,55 @@ The following flow shows how a general workflow looks like:
 <p align="center">
   <img src="docs/images/remal-general-workflow.png" alt="general workflow" />
 </p>
+
+## 3) How to execute the tool
+The `Remal Portfolio Analyzer` is a command-line tool (`CLI`) that accepts text input from the user to execute the functions.
+Today, the majority of applications have a graphical user interfaces (`GUI`), and most users never use command-line interfaces.
+However, CLI is still used to configure computers, install software, and access features that are not available in the graphical interface.
+The CLI applications provide us with many benefits that are unavailable, difficult to achieve, or incomplete with any GUI applications.
+These benefits are numerous, but four in particular may come immediately to mind:
+* Scalability
+* Scriptability
+* Simple design
+* Repeatable executions
+
+Considering the benefits of the CLI, this tool is just the right tool for the job.
+
+__The main operations that the `Remal Portfolio Analyzer` supports and the way of recall them is the following:__
+
+* Command to execute: `java -jar portfolio-analyzer.jar`
+* Result:
+    ```
+    Usage: java -jar portfolio-analyzer.jar [-hV] [coinbase | show | combine | price | portfolio]
+    Remal Portfolio Analyzer is a command-line tool that helps you to track your portfolio in one place and generate regular investment reports.
+    
+    -h, --help      Show this help message and exit.
+    -V, --version   Print version information and exit.
+    
+    Commands:
+    coinbase   Download your personal transactions from Coinbase.
+    show       Show transactions.
+    combine    Combine transactions coming from different sources.
+    price      Get the price of a stock.
+    portfolio  Generates portfolio summary report.
+    
+    Exit codes:
+    0    Successful execution.
+    1    An unexpected error appeared while executing this application.
+    
+    Please report issues at arnold.somogyi@gmail.com.
+    Documentation, source code: https://github.com/zappee/portfolio-analyzer
+    ```
+
+### 3.1) Downloading the trading-history data from a brokerage company 
+The tool can download the daily trading transactions from the following brokerage companies:
+* Coinbase: Crypto Currency marketplace
+
+
+## 4) Generating the portfolio summary diagram
+
+## 5) Installation and system requirements
+
 
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
