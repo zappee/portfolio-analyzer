@@ -19,18 +19,18 @@ If you have multiple accounts, then to keep up to date your own portfolio regist
 
 The `Remal Portfolio Analyzer` helps you to track the performance of your separated portfolios in one place with as less effort as possible.
 The tool downloads your daily trading transactions from the brokerage companies, merges them into a big ledger, and generates a portfolio summary report based on the live market price as often as you wish.
-The report can be any kind of diagram or a [Markdown][markdown] or an Excel file.
+The report can be any kind of diagram or a [Markdown (text)][markdown] or an Excel file.
 
 ## 2) How the tool works
 The `Remal Portfolio Analyzer` supports the following activities:
-* Downloading the `trading-history` directly from a brokerage company.
-* Trading history file transformation, i.e. converting timestamps between time zones, etc.
+* [Downloading the `trading-history` directly from a brokerage company.](#3.1-downloading-the-trading-history-data-from-a-brokerage-company)
+* Trading history file transformation, i.e. converting timestamps between time zones, etc.`
 * Combine multiple `trading history` files into one.
 * Showing the `trading history` files.
 * Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
 * Generating the portfolio report.
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
-* Calculating a new portfolio repor, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
+* Calculating a new portfolio report, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
 
 The following flow shows how a general workflow looks like:
 
@@ -77,17 +77,143 @@ __The main operations that the `Remal Portfolio Analyzer` supports and the way o
     Documentation, source code: https://github.com/zappee/portfolio-analyzer
     ```
 
-### 3.1) Downloading the trading-history data from a brokerage company 
+### 3.1 Downloading the trading-history data from a brokerage company
 The tool can download the daily trading transactions from the following brokerage companies:
 * Coinbase: Crypto Currency marketplace
+
+
+* Command to execute: `java -jar portfolio-analyzer.jar coinbase`
+  * Result:
+    ```
+    Usage: java -jar portfolio-analyzer.jar coinbase [-s] (-k=<key> -p=<passphrase> -e=<secret> [-b=<baseCurrency>] [-v=<inventoryValuation>] [-f=<from>]
+    [-t=<to>]) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>]
+    [-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>] [-T=<to>]]
+  
+    Download your personal transactions from Coinbase.
+  
+    -s, --silent             Perform actions without displaying any details.
+  
+    Input (Coinbase PRO API)
+    -k, --api-access-key     Coinbase PRO API key.
+    -p, --api-passphrase     Coinbase PRO API passphrase.
+    -e, --api-secret         Coinbase PRO API secret.
+    -b, --base-currency      The currency of your Coinbase account you are allowed to trade, e.g. "EUR", etc. Default: "EUR"
+    -v, --valuation          Default inventory valuation type. Candidates: FIFO, LIFO. Default: "FIFO"
+    -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+    -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  
+    Output:
+    -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
+    -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+    -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+    -E, --hide-title         Hide the report title.
+    -A, --hide-header        Hide the table header in the report.
+    -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
+    -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
+    TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
+    -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+    -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+    -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+    -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+    -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  
+    Please report issues at arnold.somogyi@gmail.com.
+    Documentation, source code: https://github.com/zappee/portfolio-analyzer
+    ```
+
+The following fields are mandatory, must be provided:
+
+| parameter name         | description                 |
+|------------------------|-----------------------------|
+| `-k, --api-access-key` | Coinbase PRO API key        |
+| `-p, --api-passphrase` | Coinbase PRO API passphrase |
+| `-e, --api-secret`     | Coinbase PRO API secret     |
+
+The article ['How to create an API key'][coinbase-api-key] describes the steps to obtain your personal API keys.
+
+The following command will download your transaction list from `Coinbase` and show the transactions on the screen:
+
+   ```
+   java -jar portfolio-analyzer.jar coinbase \
+      -k 94c...a1c \
+      -p 9fx...xy7 \
+      -e zuT...A==
+   ```
+_You must replace the API key values with your personal ones before the execution._
+
+The command produces a similar output:
+   ```
+   # Transaction report
+   _Generated: 2022-09-18 14:02:05_
+  
+   |portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
+   |---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
+   |default  |EUR    |DEPOSIT|                   |2022-01-18 08:51:51|    5 500         |     1   |              |EUR     |             |        |60dea8b3-b796|
+   |default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:44|        0.00640035|34 065.92|0.436067622144|EUR     |83bb62a9-c8a5|19094504|             |
+   |default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:49|        0.03359965|34 065.92|2.289205977856|EUR     |b0cd4543-0842|19067657|             |
+   |default  |BTC-EUR|SELL   |FIFO               |2022-04-12 13:57:33|        0.04      |37 178.52|2.9742816     |EUR     |06e93b40-f824|11160462|             |
+   |default  |ETH-EUR|BUY    |                   |2022-06-07 08:17:35|        1         | 1 645.07|3.29014       |EUR     |ca200a35-e23d|11653001|             |
+   |default  |BTC-EUR|BUY    |                   |2022-07-05 06:47:25|        0.025     |19 370.35|0.9685175     |EUR     |61787b51-d425|11355386|             |
+   |default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
+   ```
+
+The following commands downloads and save the transactions to a Markdown and a CSV file:
+
+* Markdown (text) format:
+   ```
+  java \
+     -jar portfolio-analyzer.jar coinbase \
+     -k 94...1c \
+     -p 9f...y7 \
+     -e zu...== \
+     -b EUR \
+     -O "'coinbase-transactions_'yyyy-MM-dd'.md'" \
+     -M OVERWRITE \
+     -E \
+     -R default:coinbase \
+     -L EN \
+     -D "yyyy-MM-dd HH:mm:ss" \
+     -Z GMT
+   ```
+* Excel format:
+   ```
+  java \
+     -jar portfolio-analyzer.jar coinbase \
+     -k 94...1c \
+     -p 9f...y7 \
+     -e zu...== \
+     -b EUR \
+     -O "'coinbase-transactions_'yyyy-MM-dd'.csv'" \
+     -M OVERWRITE \
+     -E \
+     -R default:coinbase \
+     -L EN \
+     -D "yyyy-MM-dd HH:mm:ss" \
+     -Z GMT
+   ```
+
+The *.csv cale can be opened as an Excel file.
+While opening the file use comma (`,`) for the CSV separator character.
+
+For the best user experience open the *.md file with a Markdown editor like [dillinger][dillinger], then you will get the following, wel formatted report:
+
+|portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
+|---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
+|default  |EUR    |DEPOSIT|                   |2022-01-18 08:51:51|    5 500         |     1   |              |EUR     |             |        |60dea8b3-b796|
+|default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:44|        0.00640035|34 065.92|0.436067622144|EUR     |83bb62a9-c8a5|19094504|             |
+|default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:49|        0.03359965|34 065.92|2.289205977856|EUR     |b0cd4543-0842|19067657|             |
+|default  |BTC-EUR|SELL   |FIFO               |2022-04-12 13:57:33|        0.04      |37 178.52|2.9742816     |EUR     |06e93b40-f824|11160462|             |
+|default  |ETH-EUR|BUY    |                   |2022-06-07 08:17:35|        1         | 1 645.07|3.29014       |EUR     |ca200a35-e23d|11653001|             |
+|default  |BTC-EUR|BUY    |                   |2022-07-05 06:47:25|        0.025     |19 370.35|0.9685175     |EUR     |61787b51-d425|11355386|             |
+|default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
 
 
 ## 4) Generating the portfolio summary diagram
 
 ## 5) Installation and system requirements
 
-
+[markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
+[coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
+[dillinger]: https://dillinger.io
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
-
-[markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
