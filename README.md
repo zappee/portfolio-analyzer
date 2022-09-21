@@ -131,7 +131,7 @@ The following fields are mandatory, must be provided:
 
 The article ['How to create an API key'][coinbase-api-key] describes the steps to obtain your personal API keys.
 
-The following command will download your transaction list from `Coinbase` and show the transactions on the screen:
+The command bellow will download your transaction list from `Coinbase` and show the transactions on the screen:
 
    ```
    java -jar portfolio-analyzer.jar coinbase \
@@ -141,7 +141,7 @@ The following command will download your transaction list from `Coinbase` and sh
    ```
 _You must replace the API key values with your personal ones before the execution._
 
-The command produces a similar output:
+You will get a similar output:
    ```
    # Transaction report
    _Generated: 2022-09-18 14:02:05_
