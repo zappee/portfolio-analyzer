@@ -207,6 +207,8 @@ For the best user experience open the `*.md` file with a Markdown editor like [d
 |default  |BTC-EUR|BUY    |                   |2022-07-05 06:47:25|        0.025     |19 370.35|0.9685175     |EUR     |61787b51-d425|11355386|             |
 |default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
 
+### 3.2) Trading history file transformation
+
 
 ## 4) Generating the portfolio summary diagram
 
