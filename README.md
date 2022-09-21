@@ -30,7 +30,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
 * Generating the portfolio report.
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
-* Calculating a new portfolio report, especially the average price, based on a simulated buy/selll transaction that you are planning to execute. 
+* Calculating a new portfolio report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
 
 The following flow shows how a general workflow looks like:
 
@@ -208,7 +208,58 @@ For the best user experience open the `*.md` file with a Markdown editor like [d
 |default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
 
 ### 3.2) Trading history file transformation
+There is a possibility to convert the data in the transaction file.
+You can
+* rename the `portfolio name`
+* convert the `trade date` between different timezones
+* change date-time format of the `trade date`
+* change the way how decimal numbers show in `quantity`, `price` and `fee` columns
+* hide any columns
+* filter the data by `trade-date`
 
+
+Command: `java -jar portfolio-analyzer.jar show`
+Result:
+  ```
+  Usage: java -jar portfolio-analyzer.jar show [-s] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>] [-t=<to>]
+  [-m=<missingColumns>]... -i=<file>) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E]
+  [-A] [-L=<language>] [-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>]
+  [-T=<to>]]
+
+  Show transactions.
+
+  -s, --silent             Perform actions without displaying any details.
+
+  Input:
+  -i, --input-file         File with transactions. Accepted extensions: .txt, .md and .csv
+  -e, --has-title          The report file contains title.
+  -a, --has-header         The table has a header in the report.
+  -p, --portfolio          Portfolio name filter.
+  -c, --symbol             Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
+  -d, --in-date-pattern    Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
+  -z, --in-timezone        The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -m, --missing-columns    Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
+
+  Output:
+  -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
+  -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+  -E, --hide-title         Hide the report title.
+  -A, --hide-header        Hide the table header in the report.
+  -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
+  -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
+                           TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
+  -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+  -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+  -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+
+  Please report issues at arnold.somogyi@gmail.com.
+  Documentation, source code: https://github.com/zappee/portfolio-analyzer
+  ```
 
 ## 4) Generating the portfolio summary diagram
 
