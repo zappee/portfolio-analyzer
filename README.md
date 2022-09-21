@@ -192,10 +192,10 @@ The following commands download and save your transaction history to a Markdown 
      -Z GMT
    ```
 
-The *.csv cale can be opened as an Excel file.
+The `*.csv` file can be opened as an Excel file.
 While opening the file use comma (`,`) for the CSV separator character.
 
-For the best user experience open the *.md file with a Markdown editor like [dillinger][dillinger], then you will get the following, wel formatted report:
+For the best user experience open the `*.md` file with a Markdown editor like [dillinger][dillinger], then you will get the following, wel formatted report:
 
 |portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
 |---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
