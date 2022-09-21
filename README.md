@@ -121,7 +121,7 @@ The tool can download the daily trading transactions from the following brokerag
     Documentation, source code: https://github.com/zappee/portfolio-analyzer
     ```
 
-The following fields are mandatory, must be provided:
+The following fields are mandatory and must be provided:
 
 | parameter name         | description                 |
 |------------------------|-----------------------------|
@@ -157,7 +157,7 @@ You will get a similar output:
    |default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
    ```
 
-The following commands downloads and save the transactions to a Markdown and a CSV file:
+The following commands download and save your transaction history to a Markdown and a CSV file:
 
 * Markdown (text) format:
    ```
