@@ -77,7 +77,7 @@ __The main operations that the `Remal Portfolio Analyzer` supports and the way o
     Documentation, source code: https://github.com/zappee/portfolio-analyzer
     ```
 
-### 3.1 Downloading the trading-history data from a brokerage company
+### 3.1) Downloading the trading-history data from a brokerage company
 The tool can download the daily trading transactions from the following brokerage companies:
 * Coinbase: Crypto Currency marketplace
 
