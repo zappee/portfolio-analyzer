@@ -24,7 +24,7 @@ The report can be any kind of diagram or a [Markdown (text)][markdown] or an Exc
 ## 2) How the tool works
 The `Remal Portfolio Analyzer` supports the following activities:
 * [Downloading the `trading-history` directly from a brokerage company.](#31-downloading-the-trading-history-data-from-a-brokerage-company)
-* Trading history file transformation, i.e. converting timestamps between time zones, etc.`
+* [Trading history file transformation, i.e. converting timestamps between time zones, etc.](#32-trading-history-file-transformation)
 * Combine multiple `trading history` files into one.
 * Showing the `trading history` files.
 * Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
