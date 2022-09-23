@@ -26,7 +26,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * [Combine multiple `trading-history` files into one.](#33-combine-multiple-trading-history-files-into-one)
 * [Showing the `trading history` files.](#34-showing-the-trading-history-file)
 * [Downloading the real time market price based on the provided `ticker/symbol` from market data-provider.](#35-downloading-the-real-time-market-price-of-a-company)
-* Generating the portfolio report.
+* [Generating the portfolio report.](#36-generating-the-portfolio-report)
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
 * Calculating a new portfolio report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
 
@@ -272,6 +272,7 @@ This is how it works:
 <p align="center"><img src="docs/images/remal-generate-overall-portfolio-report.png" alt="generate overall portfolio report" /></p>
 
 Command that activates the `combine` command: `java -jar portfolio-analyzer.jar combine`
+
 Result:
   ```
   Usage: java -jar portfolio-analyzer.jar combine [-q] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>]
@@ -341,7 +342,136 @@ The following simple command prints the transaction history data stored in a `cs
 Please check [paragraph 3.2](#32-trading-history-file-transformation) for more information. 
 
 ### 3.5) Downloading the real time market price of a company
-sdsdsdds
+The `Remal Portfolio Analyzer` able to download real market prices of and known company.
+In order to you can use this feature, you need to know the company's symbol/ticker name.
+If you do not know that three character length symbol then search for it on the internet.
+
+Popular symbols:
+* `BTC-EUR`: Bitcoin price in euro
+* `ETH-EUR`: Ethereum price in euro
+* `AMZN`: Anazon
+* `TSLA`: Tesla
+* `USDEUR=X`: USD/EUR exchange rate
+
+Command that you can use to download market price of a company: `java -jar portfolio-analyzer.jar price`
+
+Result:
+  ```
+  Usage: java -jar portfolio-analyzer.jar price [-q] [-P=<priceHistoryFile>] (-i=<symbol> [-c=<tradeDate>] [-t=<dateTimePattern>] (-d=<dataProvider> |
+                                                -p=<dataProviderFile>)) [[-U=<multiplicity>] [-M=<writeMode>] [-L=<language>] [-I=<decimalFormat>]
+                                                [-D=<dateTimePattern>] [-Z=<zone>]]
+  
+  Get the price of a stock.
+  
+    -q, --quiet                In this mode log wont be shown.
+    -P, --price-history        Storing the price in a file, e.g. "'price_'yyyy'.md'". Accepted extensions: .txt, .md and .csv
+  
+  Input:
+    -i, --symbol               The product id that represents the company's stock.
+    -c, --date                 The price of a stock on a certain date in the past.
+    -t, --date-pattern         Pattern for parsing the provided date. Default: "yyyy-MM-dd HH:mm:ss".
+    -d, --data-provider        Retrieve the market price using the provider. Candidates: YAHOO, COINBASE_PRO, NOT_DEFINED.
+    -p, --data-provider-file   Path to a *.properties file to get the data provider name  used to retrieve the market price.
+  
+  Output:
+    -U, --multiplicity         Controls the price export to file. Candidates: ONE_MINUTE, FIVE_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS,
+                                 ONE_DAY, MANY. Default: ONE_HOUR.
+    -M, --file-mode            How to write the history file to disk. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+    -L, --language             Two-letter ISO-639-1 language code that controls the report language. Default: EN.
+    -I, --decimal-format       Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+    -D, --out-date-pattern     Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+    -Z, --timezone             The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  ```
+
+The following command will download the Amazon stock price from Yahoo:
+```
+java \
+  -jar portfolio-analyzer.jar price \
+  -i AMZN \
+  -d YAHOO \
+  -c "2022-09-14 18:00:00"
+ ```
+
+Result:
+  ```
+|symbol|price     |trade date         |request date       |data provider|
+|------|----------|-------------------|-------------------|-------------|
+|AMZN  |128.550003|2022-09-14 00:00:00|2022-09-14 18:00:00|YAHOO        |
+  ```
+
+If you are interested in the real-time price then do not use the `date` filter.
+If you wish, you can save the result to a Markdown or a CSV file as well.
+
+For the better user experience you can define a `data-provider-dictionary` file and use it via the `--data-provider-file` parameter.
+This dictionary file is also used by the tool when you generate the portfolio summary report.
+
+The dictionary is a file with `key-value` pairs where the `key` is the `symbol` of the company and the `value` represents the `data-privider`:
+* `AMZN=YAHOO`
+
+In a complicated case, when the company's symbol that you use in your transaction history does not match with the symbol that is used by the data provider you must use the following value:
+* `USD-EUR=YAHOO;USDEUR=X`
+
+Sometimes the symbol that is used locally does not match with the company's international symbol name.
+For example the symbol of `OTP Bank` that is used in the [Budapest Stock Exchange](bux) is OTP.
+But Yahoo knows this company as `OTP.BD`.
+In this case you must place a special definition in the dictionary file for this company, otherwise the portfolio summary generator may fail. 
+* `OTP=YAHOO;OTP.BD`
+
+The following example shows how a dictionary file may look like:
+```
+# cryptos
+AVAX-EUR=COINBASE_PRO
+BTC-EUR=COINBASE_PRO
+DOGE-EUR=COINBASE_PRO
+ETH-EUR=COINBASE_PRO
+SHIB-EUR=COINBASE_PRO
+SOL-EUR=COINBASE_PRO
+
+# stocks
+AMZN=YAHOO
+MASTERPLAST=YAHOO;MAST.BD
+MOL=YAHOO;MOL.BD
+OPUS=YAHOO;OPUS.BD
+OTP=YAHOO;OTP.BD
+TSLA=YAHOO
+XRP-EUR=YAHOO
+
+# currencies
+EUR-HUF=YAHOO;EURHUF=X
+HUF-EUR=YAHOO;HUFEUR=X
+USD-EUR=YAHOO;USDEUR=X
+```
+
+This command uses the dictionary file, so you provide the path to the dictionary file:
+```
+java \
+  -jar portfolio-analyzer.jar price \
+  -i AMZN \
+  -p "'docs/market-data-providers.properties'" \
+  -c "2022-09-14 18:00:00"
+ ```
+
+If you save the price that the tool downloads to a `price-history` file then you can control the number of prices within a period with the `multiplicity` parameter.
+That way can keep your price-history fila as small as possible.
+Otherwise, the history file can be huge quickly, especially is you use this command line tool from a loop.
+
+Another cool feature of the `price` command is that if you use price-history file and the requested price exists in the history, then the tool will not connect to the internet to download the price.
+Instead of it, the tool will take the price from the history file.
+
+The benefit of using the price-history file is the followings:
+* That way you can use the tool on a computer where you have no internet connection.
+* During the portfolio summary report generation, it is possible that the tool tries to download the same price multiple time. After the first download, the price will be stored in the history file. Then the next time the tool take the price from the history file. This can degrees the portfolio report generation time dramatically.
+
+If you get a `[ERROR] Price not found` error message, then you need to use a different date because the date-provider that you use has no price for this time.
+
+### 3.6) Generating the portfolio report
+
+
+You can find a sample dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
+
+
+
+
 dfsddsf
 
 ## 4) Generating the portfolio summary diagram
@@ -351,5 +481,6 @@ dfsddsf
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
 [dillinger]: https://dillinger.io
+[bux]: https://www.bse.hu
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
