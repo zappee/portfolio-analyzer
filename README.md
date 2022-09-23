@@ -442,7 +442,7 @@ HUF-EUR=YAHOO;HUFEUR=X
 USD-EUR=YAHOO;USDEUR=X
 ```
 
-The following example shows you how to define the path to dictionary file:
+The following example shows you how to define the path to a dictionary file:
 ```
 java \
   -jar portfolio-analyzer.jar price \
@@ -451,9 +451,9 @@ java \
   -c "2022-09-14 18:00:00"
  ```
 
-If you save the price that the tool downloads to a `price-history` file then you can control the number of prices within a period with the `multiplicity` parameter.
-That way can keep your price-history fila as small as possible.
-Otherwise, the history file can be huge quickly, especially is you use this command line tool from a loop.
+If you wish to save the price that the tool downloaded to a `price-history` file, then you can control the number of prices within a period with the `multiplicity` parameter.
+That way you can keep your price-history fila as small as possible.
+Otherwise, the history file can be huge quickly, especially if you call this command from a loop.
 
 Another cool feature of the `price` command is that if you use price-history file and the requested price exists in the history, then the tool will not connect to the internet to download the price.
 Instead of it, the tool will take the price from the history file.
