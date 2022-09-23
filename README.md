@@ -25,7 +25,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * [Trading history file transformation, i.e. converting timestamps between time zones, etc.](#32-trading-history-file-transformation)
 * [Combine multiple `trading-history` files into one.](#33-combine-multiple-trading-history-files-into-one)
 * [Showing the `trading history` files.](#34-showing-the-trading-history-file)
-* Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
+* [Downloading the real time market price based on the provided `ticker/symbol` from market data-provider.](#35-downloading-the-real-time-market-price-of-a-company)
 * Generating the portfolio report.
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
 * Calculating a new portfolio report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
@@ -339,6 +339,10 @@ The following simple command prints the transaction history data stored in a `cs
    ```
 
 Please check [paragraph 3.2](#32-trading-history-file-transformation) for more information. 
+
+### 3.5) Downloading the real time market price of a company
+sdsdsdds
+dfsddsf
 
 ## 4) Generating the portfolio summary diagram
 
