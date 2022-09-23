@@ -26,7 +26,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * [Combine multiple `trading-history` files into one.](#33-combine-multiple-trading-history-files-into-one)
 * [Showing the `trading history` files.](#34-showing-the-trading-history-file)
 * [Downloading the real time market price based on the provided `ticker/symbol` from market data-provider.](#35-downloading-the-real-time-market-price-of-a-company)
-* [Generating the portfolio report.](#36-generating-the-portfolio-report)
+* [Generating the portfolio summary report.](#36-generating-the-portfolio-summary-report)
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
 * Calculating a new portfolio report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
 
@@ -465,9 +465,59 @@ The benefit of using the price-history file is the followings:
 
 If you get a `[ERROR] Price not found` error message, then you need to use a different date and time because the data-provider that you use has no price for this time.
 
-### 3.6) Generating the portfolio report
+### 3.6) Generating the portfolio summary report
+Once you have the transaction-history file that contains all your trade transactions that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
 
-dfsddsf
+Command that activates the `portfolio` report generator: `java -jar portfolio-analyzer.jar portfolio`
+
+Result:
+```
+Usage: java -jar portfolio-analyzer.jar portfolio [-q] [-P=<priceHistoryFile>] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>]
+                                                  [-z=<zone>] [-f=<from>] [-t=<to>] [-m=<missingColumns>]... -i=<file> [-l=<dataProviderFile>])
+                                                  [[-B=<baseCurrency>] [-O=<portfolioReportFile>] [-S=<portfolioSummaryFile>] [-M=<writeMode>]
+                                                  [-U=<multiplicity>] [-J] [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>] [-I=<decimalFormat>]
+                                                  [-D=<dateTimePattern>] [-Z=<zone>] [-C=<columnsToHide>]...]
+
+Generates portfolio summary report.
+
+  -q, --quiet                In this mode log wont be shown.
+  -P, --price-history        Storing the price in a file, e.g. "'price_'yyyy'.md'". Accepted extensions: .txt, .md and .csv
+
+Input:
+  -i, --input-file           File with transactions. Accepted extensions: .txt, .md and .csv
+  -l, --data-provider-file   Path to a *.properties file to get the data provider name used to retrieve the market price.
+  -e, --has-title            The report file contains title.
+  -a, --has-header           The table has a header in the report.
+  -p, --portfolio            Portfolio name filter.
+  -c, --symbol               Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
+  -d, --in-date-pattern      Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
+  -z, --in-timezone          The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -f, --in-from              Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -t, --in-to                Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -m, --missing-columns      Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
+
+Output:
+  -B, --base-currency        The currency of the portfolio report, e.g. "EUR", etc. Default: "EUR"
+  -O, --portfolio-report     Write the portfolio report to file (i.e. "'tmp/'yyyy-MM-dd'_portfolio-report.md'"). Accepted extensions: .txt, .md and .csv
+  -S, --summary-report       Write the portfolio summary report to file , i.e. "'tmp/'yyyy-MM-dd'_portfolio-summary-report.md'". Accepted extensions: .txt, .
+                               md and .csv
+  -M, --file-mode            How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -U, --multiplicity         Controls the price export to file. Candidates: ONE_MINUTE, FIVE_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS,
+                               ONE_DAY, MANY. Default: ONE_HOUR.
+  -J, --show-transactions    Show the relevant transactions.
+  -R, --replace              Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+  -E, --hide-title           Hide the report title.
+  -A, --hide-header          Hide the table header in the report.
+  -L, --language             Two-letter ISO-639-1 language code that controls the report language. Default: EN
+  -I, --decimal-format       Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+  -D, --out-date-pattern     Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+  -Z, --out-timezone         The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -C, --columns-to-hide      Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, QUANTITY, AVG_PRICE,
+                               INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, PROFIT_LOSS, PROFIT_LOSS_PERCENT, COSTS, DEPOSITS, WITHDRAWALS, TOTAL_CASH,
+                               TOTAL_EXCHANGE_RATE, TOTAL_DEPOSIT, TOTAL_WITHDRAWAL, TOTAL_INVESTMENT, TOTAL_MARKET_VALUE, TOTAL_PROFIT_LOSS
+  ```
+
+
 
 ## 4) Generating the portfolio summary diagram
 
