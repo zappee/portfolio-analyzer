@@ -328,6 +328,16 @@ Example command that combines three different transaction files into one:
 ### 3.4) Showing the trading history file
 The `show` command can be used to show the content of the transaction history file on the screen.
 The same command can be also used to transform history file content as well.
+
+The following simple command prints the transaction history data stored in a `csv` file on the screen:
+  ```
+  java \
+    -jar portfolio-analyzer.jar show \
+    -i "'daily-coinbase-transactions_'yyyy-MM-dd'.csv'" \
+    -a \
+    -C "ORDER_ID, TRADE_ID, TRANSFER_ID"
+   ```
+
 Please check [paragraph 3.2](#32-trading-history-file-transformation) for more information. 
 
 ## 4) Generating the portfolio summary diagram
