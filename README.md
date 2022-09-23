@@ -27,8 +27,8 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * [Showing the `trading history` files.](#34-showing-the-trading-history-file)
 * [Downloading the real time market price based on the provided `ticker/symbol` from market data-provider.](#35-downloading-the-real-time-market-price-of-a-company)
 * [Generating the portfolio summary report.](#36-generating-the-portfolio-summary-report)
-* Showing the portfolio report on charts (column, line, pie, bar, etc.).
-* Calculating a new portfolio report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
+* Showing the portfolio summary report on charts (column, line, pie, bar, etc.).
+* Calculating a new portfolio summary report, especially the average price, based on a simulated buy/sell transaction that you are planning to execute. 
 
 The following flow shows how a general workflow looks like:
 
