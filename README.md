@@ -442,7 +442,7 @@ HUF-EUR=YAHOO;HUFEUR=X
 USD-EUR=YAHOO;USDEUR=X
 ```
 
-This command uses the dictionary file, so you provide the path to the dictionary file:
+The following example shows you how to define the path to dictionary file:
 ```
 java \
   -jar portfolio-analyzer.jar price \
