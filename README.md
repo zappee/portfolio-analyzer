@@ -47,70 +47,71 @@ These benefits are numerous, but four in particular may come immediately to mind
 
 Considering the benefits of the CLI, this tool is just the right tool for the job.
 
-__The main operations that the `Remal Portfolio Analyzer` supports and the way of recall them is the following:__
+The main operations that the `Remal Portfolio Analyzer` supports and the way of recall them is the following: `java -jar portfolio-analyzer.jar`
 
-* Command that shows the application help: `java -jar portfolio-analyzer.jar`
-* Result:
-    ```
-    Usage: java -jar portfolio-analyzer.jar [-hV] [coinbase | show | combine | price | portfolio]
-    Remal Portfolio Analyzer is a command-line tool that helps you to track your portfolio in one place and generate regular investment reports.
-    
-    -h, --help      Show this help message and exit.
-    -V, --version   Print version information and exit.
-    
-    Commands:
-    coinbase   Download your personal transactions from Coinbase.
-    show       Show transactions.
-    combine    Combine transactions coming from different sources.
-    price      Get the price of a stock.
-    portfolio  Generates portfolio summary report.
-    
-    Exit codes:
-    0    Successful execution.
-    1    An unexpected error appeared while executing this application.
-    
-    Please report issues at arnold.somogyi@gmail.com.
-    Documentation, source code: https://github.com/zappee/portfolio-analyzer
-    ```
+Result:
+```
+Usage: java -jar portfolio-analyzer.jar [-hV] [coinbase | show | combine | price | portfolio]
+Remal Portfolio Analyzer is a command-line tool that helps you to track your portfolio in one place and generate regular investment reports.
+
+  -h, --help      Show this help message and exit.
+  -V, --version   Print version information and exit.
+
+Commands:
+  coinbase   Download your personal transactions from Coinbase.
+  show       Show transactions.
+  combine    Combine transactions coming from different sources.
+  price      Get the price of a stock.
+  portfolio  Generates portfolio summary report.
+
+Exit codes:
+  0    Successful execution.
+  1    An unexpected error appeared while executing this application.
+
+Please report issues at arnold.somogyi@gmail.com.
+Documentation, source code: https://github.com/zappee/portfolio-analyzer
+```
 
 ### 3.1) Downloading the trading-history data from a brokerage company
 The tool can download the daily trading transactions from the following brokerage companies:
 * Coinbase: Crypto Currency marketplace
-* Command that activates the `coinbase` trading history download: `java -jar portfolio-analyzer.jar coinbase`
-  * Result:
-    ```
-    Usage: java -jar portfolio-analyzer.jar coinbase [-s] (-k=<key> -p=<passphrase> -e=<secret> [-b=<baseCurrency>] [-v=<inventoryValuation>] [-f=<from>]
-    [-t=<to>]) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>]
-    [-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>] [-T=<to>]]
-  
-    Download your personal transactions from Coinbase.
-  
-      -s, --silent             Perform actions without displaying any details.
-  
-    Input (Coinbase PRO API)
-      -k, --api-access-key     Coinbase PRO API key.
-      -p, --api-passphrase     Coinbase PRO API passphrase.
-      -e, --api-secret         Coinbase PRO API secret.
-      -b, --base-currency      The currency of your Coinbase account you are allowed to trade, e.g. "EUR", etc. Default: "EUR"
-      -v, --valuation          Default inventory valuation type. Candidates: FIFO, LIFO. Default: "FIFO"
-      -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-      -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-  
-    Output:
-      -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
-      -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
-      -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
-      -E, --hide-title         Hide the report title.
-      -A, --hide-header        Hide the table header in the report.
-      -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
-      -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
-      TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
-      -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
-      -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
-      -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-      -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-      -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    ```
+
+The command that activates the `coinbase` trading history download: `java -jar portfolio-analyzer.jar coinbase`
+
+Result:
+```
+Usage: java -jar portfolio-analyzer.jar coinbase [-s] (-k=<key> -p=<passphrase> -e=<secret> [-b=<baseCurrency>] [-v=<inventoryValuation>] [-f=<from>]
+[-t=<to>]) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>]
+[-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>] [-T=<to>]]
+
+Download your personal transactions from Coinbase.
+
+  -s, --silent             Perform actions without displaying any details.
+
+Input (Coinbase PRO API)
+  -k, --api-access-key     Coinbase PRO API key.
+  -p, --api-passphrase     Coinbase PRO API passphrase.
+  -e, --api-secret         Coinbase PRO API secret.
+  -b, --base-currency      The currency of your Coinbase account you are allowed to trade, e.g. "EUR", etc. Default: "EUR"
+  -v, --valuation          Default inventory valuation type. Candidates: FIFO, LIFO. Default: "FIFO"
+  -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+
+Output:
+  -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
+  -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+  -E, --hide-title         Hide the report title.
+  -A, --hide-header        Hide the table header in the report.
+  -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
+  -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
+                           TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
+  -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+  -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+  -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+```
 
 The following fields are mandatory and must be provided:
 
@@ -133,20 +134,20 @@ The command bellow downloads your personal transaction history from `Coinbase` a
 _You must replace the API key values with your personal ones before the execution._
 
 You will get a similar output:
-   ```
-   # Transaction report
-   _Generated: 2022-09-18 14:02:05_
-  
-   |portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
-   |---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
-   |default  |EUR    |DEPOSIT|                   |2022-01-18 08:51:51|    5 500         |     1   |              |EUR     |             |        |60dea8b3-b796|
-   |default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:44|        0.00640035|34 065.92|0.436067622144|EUR     |83bb62a9-c8a5|19094504|             |
-   |default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:49|        0.03359965|34 065.92|2.289205977856|EUR     |b0cd4543-0842|19067657|             |
-   |default  |BTC-EUR|SELL   |FIFO               |2022-04-12 13:57:33|        0.04      |37 178.52|2.9742816     |EUR     |06e93b40-f824|11160462|             |
-   |default  |ETH-EUR|BUY    |                   |2022-06-07 08:17:35|        1         | 1 645.07|3.29014       |EUR     |ca200a35-e23d|11653001|             |
-   |default  |BTC-EUR|BUY    |                   |2022-07-05 06:47:25|        0.025     |19 370.35|0.9685175     |EUR     |61787b51-d425|11355386|             |
-   |default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
-   ```
+```
+# Transaction report
+_Generated: 2022-09-18 14:02:05_
+
+|portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
+|---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
+|default  |EUR    |DEPOSIT|                   |2022-01-18 08:51:51|    5 500         |     1   |              |EUR     |             |        |60dea8b3-b796|
+|default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:44|        0.00640035|34 065.92|0.436067622144|EUR     |83bb62a9-c8a5|19094504|             |
+|default  |BTC-EUR|BUY    |                   |2022-02-02 09:15:49|        0.03359965|34 065.92|2.289205977856|EUR     |b0cd4543-0842|19067657|             |
+|default  |BTC-EUR|SELL   |FIFO               |2022-04-12 13:57:33|        0.04      |37 178.52|2.9742816     |EUR     |06e93b40-f824|11160462|             |
+|default  |ETH-EUR|BUY    |                   |2022-06-07 08:17:35|        1         | 1 645.07|3.29014       |EUR     |ca200a35-e23d|11653001|             |
+|default  |BTC-EUR|BUY    |                   |2022-07-05 06:47:25|        0.025     |19 370.35|0.9685175     |EUR     |61787b51-d425|11355386|             |
+|default  |ETH-EUR|BUY    |                   |2022-08-27 10:30:09|        1.5       | 1 515.51|4.54653       |EUR     |f8e65f80-30fc|14563886|             |
+```
 
 The following commands download and save your transaction history to a Markdown and a CSV file:
 
@@ -158,7 +159,7 @@ The following commands download and save your transaction history to a Markdown 
      -p 9f...y7 \
      -e zu...== \
      -b EUR \
-     -O "'coinbase-transactions_'yyyy-MM-dd'.md'" \
+     -O "'docs/coinbase-transactions_'yyyy-MM-dd'.md'" \
      -M OVERWRITE \
      -E \
      -R default:coinbase \
@@ -174,7 +175,7 @@ The following commands download and save your transaction history to a Markdown 
      -p 9f...y7 \
      -e zu...== \
      -b EUR \
-     -O "'coinbase-transactions_'yyyy-MM-dd'.csv'" \
+     -O "'docs/coinbase-transactions_'yyyy-MM-dd'.csv'" \
      -M OVERWRITE \
      -E \
      -R default:coinbase \
@@ -212,44 +213,45 @@ You can
 * convert `*.md` formatted file to a `*.csv` content
 
 Command that activates the `transform` command: `java -jar portfolio-analyzer.jar show`
+
 Result:
-  ```
-  Usage: java -jar portfolio-analyzer.jar show [-s] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>] [-t=<to>]
-  [-m=<missingColumns>]... -i=<file>) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E]
-  [-A] [-L=<language>] [-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>]
-  [-T=<to>]]
+```
+Usage: java -jar portfolio-analyzer.jar show [-s] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>] [-t=<to>]
+[-m=<missingColumns>]... -i=<file>) [[-O=<outputFile>] [-M=<writeMode>] [-R=<replaces>[,<replaces>...]]... [-E]
+[-A] [-L=<language>] [-C=<columnsToHide>]... [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>]
+[-T=<to>]]
 
-  Show transactions.
+Show transactions.
 
-    -s, --silent             Perform actions without displaying any details.
+  -s, --silent             Perform actions without displaying any details.
 
-  Input:
-    -i, --input-file         File with transactions. Accepted extensions: .txt, .md and .csv
-    -e, --has-title          The report file contains title.
-    -a, --has-header         The table has a header in the report.
-    -p, --portfolio          Portfolio name filter.
-    -c, --symbol             Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
-    -d, --in-date-pattern    Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
-    -z, --in-timezone        The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-    -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -m, --missing-columns    Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
+Input:
+  -i, --input-file         File with transactions. Accepted extensions: .txt, .md and .csv
+  -e, --has-title          The report file contains title.
+  -a, --has-header         The table has a header in the report.
+  -p, --portfolio          Portfolio name filter.
+  -c, --symbol             Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
+  -d, --in-date-pattern    Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
+  -z, --in-timezone        The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -m, --missing-columns    Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
 
-  Output:
-    -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
-    -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
-    -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
-    -E, --hide-title         Hide the report title.
-    -A, --hide-header        Hide the table header in the report.
-    -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
-    -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
-                             TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
-    -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
-    -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
-    -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-    -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-  ```
+Output:
+  -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
+  -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+  -E, --hide-title         Hide the report title.
+  -A, --hide-header        Hide the table header in the report.
+  -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
+  -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION,
+                           TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
+  -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+  -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+  -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+```
 
 ### 3.3) Combine multiple trading-history files into one
 As that was mentioned earlier, the `Remal Portfolio Analyzer` can download your transaction history from the brokerage companies.
@@ -274,57 +276,57 @@ This is how it works:
 Command that activates the `combine` command: `java -jar portfolio-analyzer.jar combine`
 
 Result:
-  ```
-  Usage: java -jar portfolio-analyzer.jar combine [-q] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>]
-                                                  [-t=<to>] [-m=<missingColumns>]... [-i=<files>...]... [-o]) [[-O=<outputFile>] [-M=<writeMode>]
-                                                  [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>] [-C=<columnsToHide>]...
-                                                  [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>] [-T=<to>]]
-  
-  Combine transactions coming from different sources.
-  
-    -q, --quiet              In this mode log wont be shown.
-  
-  Input:
-    -i, --input-files        Comma separated list of files with transactions to be combined. Accepted extensions: .txt, .md and .csv
-    -o, --overwrite          Overwrite the same transactions while combining them.
-    -e, --has-title          The report file contains title.
-    -a, --has-header         The table has a header in the report.
-    -p, --portfolio          Portfolio name filter.
-    -c, --symbol             Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
-    -d, --in-date-pattern    Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
-    -z, --in-timezone        The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-    -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -m, --missing-columns    Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
-  
-  Output:
-    -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
-    -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
-    -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
-    -E, --hide-title         Hide the report title.
-    -A, --hide-header        Hide the table header in the report.
-    -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
-    -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE,
-                               VALUATION, TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
-    -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
-    -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
-    -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-    -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-    -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-  ```
+```
+Usage: java -jar portfolio-analyzer.jar combine [-q] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>]
+                                                [-t=<to>] [-m=<missingColumns>]... [-i=<files>...]... [-o]) [[-O=<outputFile>] [-M=<writeMode>]
+                                                [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>] [-C=<columnsToHide>]...
+                                                [-I=<decimalFormat>] [-D=<dateTimePattern>] [-Z=<zone>] [-F=<from>] [-T=<to>]]
+
+Combine transactions coming from different sources.
+
+  -q, --quiet              In this mode log wont be shown.
+
+Input:
+  -i, --input-files        Comma separated list of files with transactions to be combined. Accepted extensions: .txt, .md and .csv
+  -o, --overwrite          Overwrite the same transactions while combining them.
+  -e, --has-title          The report file contains title.
+  -a, --has-header         The table has a header in the report.
+  -p, --portfolio          Portfolio name filter.
+  -c, --symbol             Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
+  -d, --in-date-pattern    Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
+  -z, --in-timezone        The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -f, --in-from            Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -t, --in-to              Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -m, --missing-columns    Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
+
+Output:
+  -O, --output-file        Write report to file (i.e. "'tmp/'yyyy-MM-dd'_report.md'"). Accepted extensions: .txt, .md and .csv
+  -M, --file-mode          How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -R, --replace            Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
+  -E, --hide-title         Hide the report title.
+  -A, --hide-header        Hide the table header in the report.
+  -L, --language           Two-letter ISO-639-1 language code that controls the report language. Default: EN
+  -C, --columns-to-hide    Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, TYPE,
+                             VALUATION, TRADE_DATE, QUANTITY, PRICE, FEE, CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID
+  -I, --decimal-format     Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
+  -D, --out-date-pattern   Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
+  -Z, --out-timezone       The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
+  -F, --out-from           Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+  -T, --out-to             Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
+```
 
 Example command that combines three different transaction files into one:
-  ```
-  java \
-    -jar portfolio-analyzer.jar combine \
-    -i "'daily-coinbase-transactions_'yyyy-MM-dd'.md', 'coinbase-corrections.md', 'ib-transactions.md'" \
-    -a \
-    -o \
-    -O "'transactions-report_'yyyy-MM-dd'.md'" \
-    -M OVERWRITE \
-    -L EN \
-    -Z GMT
-   ```
+```
+java \
+  -jar portfolio-analyzer.jar combine \
+  -i "'docs/daily-coinbase-transactions_'yyyy-MM-dd'.md', 'coinbase-corrections.md', 'ib-transactions.md'" \
+  -a \
+  -o \
+  -O "'docs/transactions-report_'yyyy-MM-dd'.md'" \
+  -M OVERWRITE \
+  -L EN \
+  -Z GMT
+ ```
 
 ### 3.4) Showing the trading history file
 The `show` command can be used to show the content of the transaction history file on the screen.
@@ -333,10 +335,10 @@ The same command can be also used to transform history file content as well.
 The following simple command prints the transaction history data stored in a `csv` file on the screen:
   ```
   java \
-    -jar portfolio-analyzer.jar show \
-    -i "'daily-coinbase-transactions_'yyyy-MM-dd'.csv'" \
-    -a \
-    -C "ORDER_ID, TRADE_ID, TRANSFER_ID"
+     -jar portfolio-analyzer.jar show \
+     -i "'docs/daily-coinbase-transactions_'yyyy-MM-dd'.csv'" \
+     -a \
+     -C "ORDER_ID, TRADE_ID, TRANSFER_ID"
    ```
 
 Please check [paragraph 3.2](#32-trading-history-file-transformation) for more information. 
@@ -386,18 +388,18 @@ Result:
 The following command will download the Amazon stock price from Yahoo:
 ```
 java \
-  -jar portfolio-analyzer.jar price \
-  -i AMZN \
-  -d YAHOO \
-  -c "2022-09-14 18:00:00"
+   -jar portfolio-analyzer.jar price \
+   -i AMZN \
+   -d YAHOO \
+   -c "2022-09-14 18:00:00"
  ```
 
 Result:
-  ```
+```
 |symbol|price     |trade date         |request date       |data provider|
 |------|----------|-------------------|-------------------|-------------|
 |AMZN  |128.550003|2022-09-14 00:00:00|2022-09-14 18:00:00|YAHOO        |
-  ```
+```
 
 If you are interested in the real-time price then do not use the `date` filter.
 If you wish, you can save the result to a Markdown or a CSV file as well.
@@ -446,10 +448,10 @@ You can download a ready for use dictionary file here: [docs/market-data-provide
 The following example shows you how to define the path to a dictionary file:
 ```
 java \
-  -jar portfolio-analyzer.jar price \
-  -i AMZN \
-  -p "'docs/market-data-providers.properties'" \
-  -c "2022-09-14 18:00:00"
+   -jar portfolio-analyzer.jar price \
+   -i AMZN \
+   -p "'docs/market-data-providers.properties'" \
+   -c "2022-09-14 18:00:00"
  ```
 
 If you wish to save the price that the tool downloaded to a `price-history` file, then you can control the number of prices within a period with the `multiplicity` parameter.
@@ -517,11 +519,44 @@ Output:
                                TOTAL_EXCHANGE_RATE, TOTAL_DEPOSIT, TOTAL_WITHDRAWAL, TOTAL_INVESTMENT, TOTAL_MARKET_VALUE, TOTAL_PROFIT_LOSS
   ```
 
+This command generates and saves the portfolio summary report to a Markdown file based on your transaction history file and the realtime market data, that will be downloaded from the internet while generating the report:
+```
+java \
+   -jar portfolio-analyzer.jar portfolio \
+   -i "'docs/transactions-report_2022-07-12.md'" \
+   -e \
+   -a \
+   -l "docs/market-data-providers.properties" \
+   -B EUR \
+   -P "'docs/market-price-history.md'" \
+   -L EN \
+   -M OVERWRITE \
+   -U ONE_HOUR \
+   -O "'docs/summary.md'"
+```
+
+```
+java \
+   -jar portfolio-analyzer.jar portfolio \
+   -i "'docs/transactions-report_2022-07-12.md'" \
+   -e \
+   -a \
+   -l "docs/market-data-providers.properties" \
+   -B EUR \
+   -P "'docs/market-price-history.md'" \
+   -L EN \
+   -C "PORTFOLIO, SYMBOL, PROFIT_LOSS, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL" \
+   -M OVERWRITE \
+   -U ONE_HOUR \
+   -O "'docs/summary.csv'"
+ ```
 
 
-## 4) Generating the portfolio summary diagram
+## 4) Generating a portfolio summary diagram
 
-## 5) Installation and system requirements
+## 5) Way to generate automatically your daily portfolio summary after the market closed
+
+## 6) Installation and system requirements
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
