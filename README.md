@@ -441,6 +441,7 @@ EUR-HUF=YAHOO;EURHUF=X
 HUF-EUR=YAHOO;HUFEUR=X
 USD-EUR=YAHOO;USDEUR=X
 ```
+You can find a sample dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
 
 The following example shows you how to define the path to a dictionary file:
 ```
@@ -455,7 +456,7 @@ If you wish to save the price that the tool downloaded to a `price-history` file
 That way you can keep your price-history fila as small as possible.
 Otherwise, the history file can be huge quickly, especially if you call this command from a loop.
 
-Another cool feature of the `price` command is that if you use price-history file and the requested price exists in the history, then the tool will not connect to the internet to download the price.
+Another cool feature of the `price` command is that if you use a price-history file and the requested price exists in the history, then the tool will not connect to the internet to download the price.
 Instead of it, the tool will take the price from the history file.
 
 The benefit of using the price-history file is the followings:
@@ -465,12 +466,6 @@ The benefit of using the price-history file is the followings:
 If you get a `[ERROR] Price not found` error message, then you need to use a different date because the date-provider that you use has no price for this time.
 
 ### 3.6) Generating the portfolio report
-
-
-You can find a sample dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
-
-
-
 
 dfsddsf
 
