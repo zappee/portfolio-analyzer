@@ -319,7 +319,7 @@ Example command that combines three different transaction files into one:
 ```
 java \
   -jar portfolio-analyzer.jar combine \
-  -i "'docs/daily-coinbase-transactions_'yyyy-MM-dd'.md', 'coinbase-corrections.md', 'ib-transactions.md'" \
+  -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions.md'" \
   -a \
   -o \
   -O "'docs/transactions-report_'yyyy-MM-dd'.md'" \
@@ -336,7 +336,7 @@ The following simple command prints the transaction history data stored in a `cs
   ```
   java \
      -jar portfolio-analyzer.jar show \
-     -i "'docs/daily-coinbase-transactions_'yyyy-MM-dd'.csv'" \
+     -i "'docs/coinbase-transactions_'yyyy-MM-dd'.csv'" \
      -a \
      -C "ORDER_ID, TRADE_ID, TRANSFER_ID"
    ```
@@ -523,7 +523,7 @@ This command generates and saves the portfolio summary report to a Markdown file
 ```
 java \
    -jar portfolio-analyzer.jar portfolio \
-   -i "'docs/transactions-report_2022-07-12.md'" \
+   -i "'docs/transactions-report_2022-07-13.md'" \
    -e \
    -a \
    -l "docs/market-data-providers.properties" \
@@ -538,7 +538,7 @@ java \
 ```
 java \
    -jar portfolio-analyzer.jar portfolio \
-   -i "'docs/transactions-report_2022-07-12.md'" \
+   -i "'docs/transactions-report_2022-07-13.md'" \
    -e \
    -a \
    -l "docs/market-data-providers.properties" \
