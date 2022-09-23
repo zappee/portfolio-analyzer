@@ -554,7 +554,7 @@ java \
 
 ## 4) Generating a portfolio summary diagram
 
-## 5) Generate your daily portfolio summary after the market closed
+## 5) Generating your daily portfolio summary after the market closed
 
 ## 6) Installation and system requirements
 
