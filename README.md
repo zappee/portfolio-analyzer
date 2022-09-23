@@ -466,7 +466,7 @@ The benefit of using the price-history file is the followings:
 If you get a `[ERROR] Price not found` error message, then you need to use a different date and time because the data-provider that you use has no price for this time.
 
 ### 3.6) Generating the portfolio summary report
-Once you have the transaction-history file that contains all your trade transactions that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
+Once you have the transaction-history file that contains all of your trades that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
 
 Command that activates the `portfolio` report generator: `java -jar portfolio-analyzer.jar portfolio`
 
