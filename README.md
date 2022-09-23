@@ -441,7 +441,7 @@ EUR-HUF=YAHOO;EURHUF=X
 HUF-EUR=YAHOO;HUFEUR=X
 USD-EUR=YAHOO;USDEUR=X
 ```
-You can find a sample dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
+You can find a ready for use dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
 
 The following example shows you how to define the path to a dictionary file:
 ```
