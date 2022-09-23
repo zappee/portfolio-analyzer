@@ -412,7 +412,7 @@ In a complicated case, when the company's symbol that you use in your transactio
 * `USD-EUR=YAHOO;USDEUR=X`
 
 Sometimes the symbol that is used locally does not match with the company's international symbol name.
-For example the symbol of `OTP Bank` that is used in the [Budapest Stock Exchange](bux) is OTP.
+For example the symbol of `OTP Bank` that is used in the [Budapest Stock Exchange](bux) is `OTP`.
 But Yahoo knows this company as `OTP.BD`.
 In this case you must place a special definition in the dictionary file for this company, otherwise the portfolio summary generator may fail. 
 * `OTP=YAHOO;OTP.BD`
