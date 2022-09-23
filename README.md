@@ -463,7 +463,7 @@ The benefit of using the price-history file is the followings:
 * That way you can use the tool on a computer where you have no internet connection.
 * During the portfolio summary report generation, it is possible that the tool tries to download the same price multiple time. After the first download, the price will be stored in the history file. Then the next time the tool take the price from the history file. This can degrees the portfolio report generation time dramatically.
 
-If you get a `[ERROR] Price not found` error message, then you need to use a different date because the date-provider that you use has no price for this time.
+If you get a `[ERROR] Price not found` error message, then you need to use a different date and time because the data-provider that you use has no price for this time.
 
 ### 3.6) Generating the portfolio report
 
