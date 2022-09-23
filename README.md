@@ -24,7 +24,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 * [Downloading the `trading-history` directly from a brokerage company.](#31-downloading-the-trading-history-data-from-a-brokerage-company)
 * [Trading history file transformation, i.e. converting timestamps between time zones, etc.](#32-trading-history-file-transformation)
 * [Combine multiple `trading-history` files into one.](#33-combine-multiple-trading-history-files-into-one)
-* Showing the `trading history` files.
+* [Showing the `trading history` files.](#3-showing-the-trading-history-file)
 * Downloading the real time market price based on the provided `ticker/symbol` from market data-provider. 
 * Generating the portfolio report.
 * Showing the portfolio report on charts (column, line, pie, bar, etc.).
@@ -209,6 +209,7 @@ You can
 * filter the data by `trade-date`
 * filter the data by `symbol`
 * set the report language
+* convert `*.md` formatted file to a `*.csv` content
 
 Command that activates the `transform` command: `java -jar portfolio-analyzer.jar show`
 Result:
@@ -323,6 +324,11 @@ Example command that combines three different transaction files into one:
     -L EN \
     -Z GMT
    ```
+
+### 3.4) Showing the trading history file
+The `show` command can be used to show the content of the transaction history file on the screen.
+The same command can be also used to transform history file content as well.
+Please check [paragraph 3.2](#32-trading-history-file-transformation) for more information. 
 
 ## 4) Generating the portfolio summary diagram
 
