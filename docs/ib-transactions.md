@@ -17,6 +17,6 @@
 |Interactive Brokers|GS	   |SELL	|FIFO               |2016-09-14 00:00:00|  100   |  120.00|7.95|USD     |06e93b40-25|1116042562|           |
 |Interactive Brokers|UHAL  |SELL	|FIFO               |2016-10-21 00:00:00|  667   |   95.00|7.95|USD     |ca200a35-26|1165302601|           |
 |Interactive Brokers|WNC   |BUY		|                   |2017-02-05 00:00:00|1 541   |   13.22|3.95|USD     |61787b51-27|1135532786|           |
-|Interactive Brokers|MMM   |DIVIDENT|                   |2017-02-16 00:00:00|   50   |    3.00|0.00|USD     |f8e65f80-28|1457542889|           |
-|Interactive Brokers|AAPL  |DIVIDENT|                   |2017-04-01 00:00:00|    1   |1 822.00|0.00|USD     |f8e65f80-29|1457542989|           |
+|Interactive Brokers|MMM   |DIVIDEND|                   |2017-02-16 00:00:00|   50   |    3.00|0.00|USD     |f8e65f80-28|1457542889|           |
+|Interactive Brokers|AAPL  |DIVIDEND|                   |2017-04-01 00:00:00|    1   |1 822.00|0.00|USD     |f8e65f80-29|1457542989|           |
 |Interactive Brokers|MU	   |BUY		|                   |2018-12-24 00:00:00|   20   |   29.02|4.95|USD     |f8e65f80-30|1457543089|           |

@@ -64,7 +64,7 @@ public class BigDecimals {
      * @return the BigDecimal object
      */
     public static BigDecimal valueOf(String s) {
-        if (Objects.isNull(s)) {
+        if (Objects.isNull(s) || s.isEmpty()) {
             return null;
         } else {
             // remove spaces

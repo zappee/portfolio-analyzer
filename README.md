@@ -328,6 +328,8 @@ java \
   -Z GMT
  ```
 
+During the combine the value of the `order id `, `trade id` and `transfer id` must be unique, otherwise the second transaction with the same identifier will be skipped. 
+
 ### 3.4) Showing the trading history file
 The `show` command can be used to show the content of the transaction history file on the screen.
 The same command can be also used to transform history file content as well.
@@ -557,6 +559,14 @@ java \
 ## 5) Generating your daily portfolio summary after the market closed
 
 ## 6) Installation and system requirements
+
+## Appendix 1) Supported transaction types
+* `BUY`: Buy trade
+* `SELL`: Sell trade
+* `DEPOSIT`: Money deposit
+* `WITHDRAWAL`: Money withdrawal
+* `FEE`: Fees, like monthly account fee, money holding fee, etc.
+* `DIVIDEND`: Distribution of corporate profits to eligible shareholders
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
