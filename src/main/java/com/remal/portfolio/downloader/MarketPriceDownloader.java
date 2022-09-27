@@ -2,12 +2,14 @@ package com.remal.portfolio.downloader;
 
 import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.DataProviderType;
+import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.PortfolioReport;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.parser.PriceParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
+import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.writer.PriceWriter;
@@ -58,33 +60,57 @@ public class MarketPriceDownloader {
     private final ZoneId zone;
 
     /**
-     * Parameters for parsing the price history file.
+     * The report language.
      */
-    private final PortfolioArgGroup.OutputArgGroup priceHistoryWriterPrams;
+    private final String language;
 
     /**
-     * Builder method.
+     * The decimal format that controls the format of numbers in the
+     * report.
+     */
+    private final String decimalFormat;
+
+    /**
+     * Pattern for formatting date and time in the report.
+     */
+    private final String dateTimePattern;
+
+    /**
+     * Controls the price export to file.
+     */
+    private final MultiplicityType multiplicity;
+
+    /**
+     * The file open mode.
+     */
+    private final FileWriter.WriteMode writeMode;
+
+    /**
+     * Constructor
      *
      * @param priceHistoryFile path to the price history file
      * @param inputArgGroup parameters from the command line
      * @param outputArgGroup parameters from the command line
-     * @return the initialized downloader instance
      */
-    public static MarketPriceDownloader build(String priceHistoryFile,
-                                              PriceArgGroup.InputArgGroup inputArgGroup,
-                                              PriceArgGroup.OutputArgGroup outputArgGroup) {
-
-        var zone = ZoneId.of(outputArgGroup.getZone());
+    public MarketPriceDownloader(String priceHistoryFile,
+                                 PriceArgGroup.InputArgGroup inputArgGroup,
+                                 PriceArgGroup.OutputArgGroup outputArgGroup) {
         var now = LocalDateTime.now();
-        return new MarketPriceDownloader(
-                zone,
-                inputArgGroup.getDataProviderArgGroup().getDataProvider(),
-                LocalDateTimes.toString(zone, inputArgGroup.getDataProviderArgGroup().getDataProviderFile(), now),
-                LocalDateTimes.toString(zone, priceHistoryFile, now));
+        var dataProviderArgGroup = inputArgGroup.getDataProviderArgGroup();
+
+        this.zone = ZoneId.of(outputArgGroup.getZone());
+        this.dataProviderFromCli = dataProviderArgGroup.getDataProvider();
+        this.dataProviderFile = LocalDateTimes.toString(zone, dataProviderArgGroup.getDataProviderFile(), now);
+        this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
+        this.language = outputArgGroup.getLanguage();
+        this.decimalFormat = outputArgGroup.getDecimalFormat();
+        this.dateTimePattern = outputArgGroup.getDateTimePattern();
+        this.multiplicity = outputArgGroup.getMultiplicity();
+        this.writeMode = outputArgGroup.getWriteMode();
     }
 
     /**
-     * Builder method.
+     * Constructor.
      *
      * @param priceHistoryFile path to the price history file
      * @param inputArgGroup parameters from the command line
@@ -95,30 +121,16 @@ public class MarketPriceDownloader {
                                  PortfolioArgGroup.OutputArgGroup outputArgGroup) {
 
         var now = LocalDateTime.now();
+
         this.zone = ZoneId.of(outputArgGroup.getZone());
         this.dataProviderFromCli = null;
         this.dataProviderFile = LocalDateTimes.toString(zone, inputArgGroup.getDataProviderFile(), now);
         this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
-        this.priceHistoryWriterPrams = outputArgGroup;
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param zone time zone info
-     * @param dataProviderFromCli market data provider name from the command line
-     * @param dataProviderFile path to the market data provider configuration file
-     * @param priceHistoryFile path to the price history file
-     */
-    public MarketPriceDownloader(ZoneId zone,
-                                 DataProviderType dataProviderFromCli,
-                                 String dataProviderFile,
-                                 String priceHistoryFile) {
-        this.zone = zone;
-        this.dataProviderFromCli = dataProviderFromCli;
-        this.dataProviderFile = dataProviderFile;
-        this.priceHistoryFile = priceHistoryFile;
-        this.priceHistoryWriterPrams = null;
+        this.language = outputArgGroup.getLanguage();
+        this.decimalFormat = outputArgGroup.getDecimalFormat();
+        this.dateTimePattern = outputArgGroup.getDateTimePattern();
+        this.multiplicity = outputArgGroup.getMultiplicity();
+        this.writeMode = outputArgGroup.getWriteMode();
     }
 
     /**
@@ -242,12 +254,12 @@ public class MarketPriceDownloader {
      */
     private void writeToHistoryFile(String priceHistoryFile, Price price) {
         var writer = new PriceWriter();
-        writer.setLanguage(priceHistoryWriterPrams.getLanguage());
-        writer.setDecimalFormat(priceHistoryWriterPrams.getDecimalFormat());
-        writer.setDateTimePattern(priceHistoryWriterPrams.getDateTimePattern());
-        writer.setZone(ZoneId.of(priceHistoryWriterPrams.getZone()));
-        writer.setMultiplicity(priceHistoryWriterPrams.getMultiplicity());
-        writer.write(priceHistoryWriterPrams.getWriteMode(), priceHistoryFile, price);
+        writer.setLanguage(language);
+        writer.setDecimalFormat(decimalFormat);
+        writer.setDateTimePattern(dateTimePattern);
+        writer.setZone(zone);
+        writer.setMultiplicity(multiplicity);
+        writer.write(writeMode, priceHistoryFile, price);
     }
 
     /**

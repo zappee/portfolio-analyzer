@@ -9,11 +9,11 @@ Investors diversificate investments and build portfolio while investing money on
 Diversification is the practice of spreading your investments around so that your exposure to any one type of asset is limited.
 This practice is designed to help reduce the volatility of your portfolio over time.
 
-While you are building your portfolio usually you end up in a situation where you need to manage multiple brokerage accounts parallelly.
-For example, you use `Brokerage A` company to trade with cryptocurrencies, then you open another account with `Brokerage B` where you trade on the US market and probably you will open other accounts for the European market.
+While you are building your portfolio usually you end up in a situation where you need to manage multiple brokerage accounts parallel.
+For example, you use `Brokerage A` company to trade with cryptocurrencies, then you open another account with `Brokerage B` where you trade on the US market, and probably you will open other accounts for the European market.
 If you have multiple accounts, then to keep up to date your own portfolio register and build an overall `portfolio summary` report is hard and requires hard manual administration.
 
-<p align="center"><img src="docs/images/remal-portfolio-diversification.png" alt="portfolio administration" /></p>
+<p style="text-align: center;"><img src="docs/images/remal-portfolio-diversification.png" alt="portfolio administration" /></p>
 
 The `Remal Portfolio Analyzer` helps you to track the performance of your separated portfolios in one place with as less effort as possible.
 The tool downloads your daily trading transactions from the brokerage companies, merges them into a big ledger, and generates a portfolio summary report based on the live market price as often as you wish.
@@ -32,7 +32,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 
 The following flow shows how a general workflow looks like:
 
-<p align="center"><img src="docs/images/remal-general-workflow.png" alt="general workflow" /></p>
+<p style="text-align: center;"><img src="docs/images/remal-general-workflow.png" alt="general workflow" /></p>
 
 ## 3) How to execute the tool
 The `Remal Portfolio Analyzer` is a command-line tool (`CLI`) that accepts text input from the user to execute the functions.
@@ -47,7 +47,7 @@ These benefits are numerous, but four in particular may come immediately to mind
 
 Considering the benefits of the CLI, this tool is just the right tool for the job.
 
-The main operations that the `Remal Portfolio Analyzer` supports and the way of recall them is the following: `java -jar portfolio-analyzer.jar`
+The main operations that the `Remal Portfolio Analyzer` supports and the way of recall them is the following: `java -jar bin/portfolio-analyzer.jar`
 
 Result:
 ```
@@ -76,7 +76,7 @@ Documentation, source code: https://github.com/zappee/portfolio-analyzer
 The tool can download the daily trading transactions from the following brokerage companies:
 * Coinbase: Crypto Currency marketplace
 
-The command that activates the `coinbase` trading history download: `java -jar portfolio-analyzer.jar coinbase`
+The command that activates the `coinbase` trading history download: `java -jar bin/portfolio-analyzer.jar coinbase`
 
 Result:
 ```
@@ -121,12 +121,12 @@ The following fields are mandatory and must be provided:
 | `-p, --api-passphrase` | Coinbase PRO API passphrase |
 | `-e, --api-secret`     | Coinbase PRO API secret     |
 
-The article ['How to create an API key'][coinbase-api-key] describes the steps to obtain your personal API keys.
+The article [How to create an API key][coinbase-api-key] describes the steps to obtain your personal API keys.
 
 The command bellow downloads your personal transaction history from `Coinbase` and show the transactions on the screen:
 
    ```
-   java -jar portfolio-analyzer.jar coinbase \
+   java -jar bin/portfolio-analyzer.jar coinbase \
       -k 94c...a1c \
       -p 9fx...xy7 \
       -e zuT...A==
@@ -154,7 +154,7 @@ The following commands download and save your transaction history to a Markdown 
 * Markdown (text) format:
    ```
   java \
-     -jar portfolio-analyzer.jar coinbase \
+     -jar bin/portfolio-analyzer.jar coinbase \
      -k 94...1c \
      -p 9f...y7 \
      -e zu...== \
@@ -170,7 +170,7 @@ The following commands download and save your transaction history to a Markdown 
 * Excel format:
    ```
   java \
-     -jar portfolio-analyzer.jar coinbase \
+     -jar bin/portfolio-analyzer.jar coinbase \
      -k 94...1c \
      -p 9f...y7 \
      -e zu...== \
@@ -212,7 +212,7 @@ You can
 * set the report language
 * convert `*.md` formatted file to a `*.csv` content
 
-Command that activates the `transform` command: `java -jar portfolio-analyzer.jar show`
+Command that activates the `transform` command: `java -jar bin/portfolio-analyzer.jar show`
 
 Result:
 ```
@@ -271,9 +271,9 @@ This is how it works:
 6. Generate the overall portfolio summary report
 7. Generate your charts based on the portfolio summary report (*.csv file) 
 
-<p align="center"><img src="docs/images/remal-generate-overall-portfolio-report.png" alt="generate overall portfolio report" /></p>
+<p style="text-align: center;"><img src="docs/images/remal-generate-overall-portfolio-report.png" alt="generate overall portfolio report" /></p>
 
-Command that activates the `combine` command: `java -jar portfolio-analyzer.jar combine`
+Command that activates the `combine` command: `java -jar bin/portfolio-analyzer.jar combine`
 
 Result:
 ```
@@ -318,7 +318,7 @@ Output:
 Example command that combines three different transaction files into one:
 ```
 java \
-  -jar portfolio-analyzer.jar combine \
+  -jar bin/portfolio-analyzer.jar combine \
   -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions.md'" \
   -a \
   -o \
@@ -337,7 +337,7 @@ The same command can be also used to transform history file content as well.
 The following simple command prints the transaction history data stored in a `csv` file on the screen:
   ```
   java \
-     -jar portfolio-analyzer.jar show \
+     -jar bin/portfolio-analyzer.jar show \
      -i "'docs/coinbase-transactions_'yyyy-MM-dd'.csv'" \
      -a \
      -C "ORDER_ID, TRADE_ID, TRANSFER_ID"
@@ -353,11 +353,11 @@ If you do not know that three character length symbol then search for it on the 
 Popular symbols:
 * `BTC-EUR`: Bitcoin price in euro
 * `ETH-EUR`: Ethereum price in euro
-* `AMZN`: Anazon
+* `AMZN`: Amazon
 * `TSLA`: Tesla
 * `USDEUR=X`: USD/EUR exchange rate
 
-Command that you can use to download market price of a company: `java -jar portfolio-analyzer.jar price`
+Command that you can use to download market price of a company: `java -jar bin/portfolio-analyzer.jar price`
 
 Result:
   ```
@@ -390,7 +390,7 @@ Result:
 The following command will download the Amazon stock price from Yahoo:
 ```
 java \
-   -jar portfolio-analyzer.jar price \
+   -jar bin/portfolio-analyzer.jar price \
    -i AMZN \
    -d YAHOO \
    -c "2022-09-14 18:00:00"
@@ -416,7 +416,7 @@ In a complicated case, when the company's symbol that you use in your transactio
 * `USD-EUR=YAHOO;USDEUR=X`
 
 Sometimes the symbol that is used locally does not match with the company's international symbol name.
-For example the symbol of `OTP Bank` that is used in the [Budapest Stock Exchange](bux) is `OTP`.
+For example the symbol of `OTP Bank` that is used in the [Budapest Stock Exchange][bux] is `OTP`.
 But Yahoo knows this company as `OTP.BD`.
 In this case you must place a special definition in the dictionary file for this company, otherwise the portfolio summary generator may fail. 
 * `OTP=YAHOO;OTP.BD`
@@ -450,7 +450,7 @@ You can download a ready for use dictionary file here: [docs/market-data-provide
 The following example shows you how to define the path to a dictionary file:
 ```
 java \
-   -jar portfolio-analyzer.jar price \
+   -jar bin/portfolio-analyzer.jar price \
    -i AMZN \
    -p "'docs/market-data-providers.properties'" \
    -c "2022-09-14 18:00:00"
@@ -467,12 +467,24 @@ The benefit of using the price-history file is the followings:
 * That way you can use the tool on a computer where you have no internet connection.
 * During the portfolio summary report generation, it is possible that the tool tries to download the same price multiple time. After the first download, the price will be stored in the history file. Then the next time the tool take the price from the history file. This can degrees the portfolio report generation time dramatically.
 
+The following command shows ho to use `data-provider-file` and `price-history` file together:  
+```
+java \
+   -jar bin/portfolio-analyzer.jar price \
+   -i AMZN \
+   -p "'docs/market-data-providers.properties'" \
+   -c "2022-09-14 18:00:00" \
+   -P docs/price-history.md \
+   -M APPEND \
+   -U FIVE_MINUTES
+ ```
+
 If you get a `[ERROR] Price not found` error message, then you need to use a different date and time because the data-provider that you use has no price for this time.
 
 ### 3.6) Generating the portfolio summary report
 Once you have the transaction-history file that contains all of your trades that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
 
-Command that activates the `portfolio` report generator: `java -jar portfolio-analyzer.jar portfolio`
+Command that activates the `portfolio` report generator: `java -jar bin/portfolio-analyzer.jar portfolio`
 
 Result:
 ```
@@ -524,7 +536,7 @@ Output:
 This command generates and saves the portfolio summary report to a Markdown file based on your transaction history file and the realtime market data, that will be downloaded from the internet while generating the report:
 ```
 java \
-   -jar portfolio-analyzer.jar portfolio \
+   -jar bin/portfolio-analyzer.jar portfolio \
    -i "'docs/transactions-report_2022-07-13.md'" \
    -e \
    -a \
@@ -539,7 +551,7 @@ java \
 
 ```
 java \
-   -jar portfolio-analyzer.jar portfolio \
+   -jar bin/portfolio-analyzer.jar portfolio \
    -i "'docs/transactions-report_2022-07-13.md'" \
    -e \
    -a \
@@ -560,6 +572,14 @@ java \
 
 ## 6) Installation and system requirements
 
+## 7) Troubleshooting
+
+debug:
+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+
+
+
+
 ## Appendix 1) Supported transaction types
 * `BUY`: Buy trade
 * `SELL`: Sell trade
@@ -567,6 +587,10 @@ java \
 * `WITHDRAWAL`: Money withdrawal
 * `FEE`: Fees, like monthly account fee, money holding fee, etc.
 * `DIVIDEND`: Distribution of corporate profits to eligible shareholders
+
+## Appendix 2) Fields in the portfolio summary report
+
+
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key

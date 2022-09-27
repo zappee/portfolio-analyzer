@@ -14,6 +14,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -173,21 +174,25 @@ public class PriceWriter extends Writer<Price> {
      * @param multiplicity controls how to add the price to the list
      */
     public static void reduceBasedOnMultiplicity(List<Price> prices, MultiplicityType multiplicity) {
-        var correction = 1; // avoid the overlapping of the intervals
-
         log.debug("> multiplicity: {}", multiplicity.name());
         log.debug("> number of items before the reduce: {}", prices.size());
 
-        prices.removeIf(price -> {
-            var intervalEnd = price.getTradeDate();
-            var intervalStart = intervalEnd.minusSeconds(multiplicity.getRangeLengthInSec() - correction);
-            var itemCount = prices
+        List<Price> reducedPrices = new ArrayList<>();
+        prices.forEach(price -> {
+            var intervalStart = price.getTradeDate();
+            var intervalEnd = intervalStart.plusSeconds(multiplicity.getRangeLengthInSec());
+            var itemCount = reducedPrices
                     .stream()
                     .filter(x -> x.getSymbol().equals(price.getSymbol()))
-                    .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getTradeDate()))
+                    .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getRequestDate()))
                     .count();
-            return multiplicity != MultiplicityType.MANY && itemCount > 1;
+            if (multiplicity != MultiplicityType.MANY && itemCount == 0) {
+                reducedPrices.add(price);
+            }
         });
+        prices.clear();
+        prices.addAll(reducedPrices);
+
         log.debug("> number of items after the reduce: {}", prices.size());
     }
 }

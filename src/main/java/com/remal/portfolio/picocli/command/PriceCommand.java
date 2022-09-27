@@ -77,7 +77,7 @@ public class PriceCommand implements Callable<Integer> {
         Logger.setSilentMode(quietMode);
         ZoneIds.validate(outputArgGroup.getZone());
 
-        var priceDownloader = MarketPriceDownloader.build(priceHistoryFile, inputArgGroup, outputArgGroup);
+        var priceDownloader = new MarketPriceDownloader(priceHistoryFile, inputArgGroup, outputArgGroup);
         var tradeDate = Calendars.fromString(inputArgGroup.getTradeDate(), inputArgGroup.getDateTimePattern());
         var price = priceDownloader.getMarketPrice(inputArgGroup.getSymbol(), tradeDate);
 

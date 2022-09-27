@@ -9,6 +9,7 @@ import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,6 +97,9 @@ public class PriceParser extends Parser<Price> {
                     });
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, file, e.getMessage());
+        } catch (NoSuchFileException e) {
+            log.warn("file not found: {}", file);
+            return prices;
         } catch (Exception e) {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, file, e.toString());
         }
