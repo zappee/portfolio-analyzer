@@ -13,7 +13,7 @@ While you are building your portfolio usually you end up in a situation where yo
 For example, you use `Brokerage A` company to trade with cryptocurrencies, then you open another account with `Brokerage B` where you trade on the US market, and probably you will open other accounts for the European market.
 If you have multiple accounts, then to keep up to date your own portfolio register and build an overall `portfolio summary` report is hard and requires hard manual administration.
 
-<p style="text-align: center;"><img src="docs/images/remal-portfolio-diversification.png" alt="portfolio administration" /></p>
+<p align="center"><img src="docs/images/remal-portfolio-diversification.png" alt="portfolio administration" /></p>
 
 The `Remal Portfolio Analyzer` helps you to track the performance of your separated portfolios in one place with as less effort as possible.
 The tool downloads your daily trading transactions from the brokerage companies, merges them into a big ledger, and generates a portfolio summary report based on the live market price as often as you wish.
@@ -32,7 +32,7 @@ The `Remal Portfolio Analyzer` supports the following activities:
 
 The following flow shows how a general workflow looks like:
 
-<p style="text-align: center;"><img src="docs/images/remal-general-workflow.png" alt="general workflow" /></p>
+<p align="center"><img src="docs/images/remal-general-workflow.png" alt="general workflow" /></p>
 
 ## 3) How to execute the tool
 The `Remal Portfolio Analyzer` is a command-line tool (`CLI`) that accepts text input from the user to execute the functions.
@@ -271,7 +271,7 @@ This is how it works:
 6. Generate the overall portfolio summary report
 7. Generate your charts based on the portfolio summary report (*.csv file) 
 
-<p style="text-align: center;"><img src="docs/images/remal-generate-overall-portfolio-report.png" alt="generate overall portfolio report" /></p>
+<p align="center"><img src="docs/images/remal-generate-overall-portfolio-report.png" alt="generate overall portfolio report" /></p>
 
 Command that activates the `combine` command: `java -jar bin/portfolio-analyzer.jar combine`
 
