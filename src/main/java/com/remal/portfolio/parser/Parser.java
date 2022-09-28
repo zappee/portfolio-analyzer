@@ -101,7 +101,7 @@ public abstract class Parser<T> {
     /**
      * Markdown separator.
      */
-    protected String markdownSeparator = "\\|";
+    protected String markdownSeparator = "|";
 
     /**
      * CSV separator.

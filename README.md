@@ -348,7 +348,7 @@ Please check [paragraph 3.2](#32-trading-history-file-transformation) for more i
 ### 3.5) Downloading the real time market price of a company
 The `Remal Portfolio Analyzer` is able to download real market prices of and known company.
 In order to you can use this feature, you need to know the company's symbol/ticker name.
-If you do not know that three character length symbol then search for it on the internet.
+If you do not know that four character length symbols you need, then search for them on the internet.
 
 Popular symbols:
 * `BTC-EUR`: Bitcoin price in euro

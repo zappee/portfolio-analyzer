@@ -2,13 +2,10 @@ package com.remal.portfolio.picocli.command;
 
 import com.remal.portfolio.Main;
 import com.remal.portfolio.downloader.MarketPriceDownloader;
-import com.remal.portfolio.model.Price;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.ZoneIds;
-import com.remal.portfolio.writer.PriceWriter;
-import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
@@ -81,10 +78,7 @@ public class PriceCommand implements Callable<Integer> {
         var tradeDate = Calendars.fromString(inputArgGroup.getTradeDate(), inputArgGroup.getDateTimePattern());
         var price = priceDownloader.getMarketPrice(inputArgGroup.getSymbol(), tradeDate);
 
-        if (price.isPresent()) {
-            Writer<Price> writer = PriceWriter.build(outputArgGroup);
-            writer.write(outputArgGroup.getWriteMode(), priceHistoryFile, price.get());
-        } else {
+        if (price.isEmpty()) {
             Logger.logErrorAndExit("Price not found.");
         }
 

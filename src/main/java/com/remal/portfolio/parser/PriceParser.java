@@ -5,7 +5,6 @@ import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.util.Logger;
-import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.nio.file.Files;
@@ -14,6 +13,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -77,14 +77,14 @@ public class PriceParser extends Parser<Price> {
      */
     private List<Price> parseTextFile(String file, String separator) {
         List<Price> prices = new ArrayList<>();
-
         try (Stream<String> stream = Files.lines(Path.of(file))) {
             var skipRows = getFirstDataRow(com.remal.portfolio.util.Files.getFileType(file));
             stream
                     .skip(skipRows)
                     .forEach(line -> {
-                        var fields = line.split(separator, -1);
-                        var index = new AtomicInteger(1);
+                        line = line.startsWith(separator) ? line.substring(1) : line;
+                        var fields = line.split(Pattern.quote(separator), -1);
+                        var index = new AtomicInteger();
                         Price p = Price
                                 .builder()
                                 .symbol(getString(index, fields, Label.HEADER_SYMBOL))
@@ -104,10 +104,7 @@ public class PriceParser extends Parser<Price> {
             Logger.logErrorAndExit(LOG_ERROR_GENERAL, file, e.toString());
         }
 
-        return prices
-                .stream()
-                .sorted(Sorter.priceComparator())
-                .toList();
+        return prices;
     }
 
     /**

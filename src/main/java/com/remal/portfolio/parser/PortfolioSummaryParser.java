@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -76,7 +77,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
         LinkedList<String> map = new LinkedList<>();
         map.add(Label.HEADER_REQUEST_DATE.name());
 
-        var labels = firstLine.split(csvSeparator);
+        var labels = firstLine.split(Pattern.quote(csvSeparator));
         Arrays.stream(labels).forEach(label ->
                 LabelCollection.PRODUCT_SUMMARY_FOOTER.forEach(labelFromCollection ->
                         Arrays.stream(CurrencyType.values()).forEach(currency -> {
@@ -97,7 +98,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
-                        var cells = line.split(csvSeparator, -1);
+                        var cells = line.split(Pattern.quote(csvSeparator), -1);
                         var generated = getLocalDateTime(new AtomicInteger(), cells);
                         var portfolioReport = new PortfolioReport(baseCurrency, generated);
                         AtomicInteger index = new AtomicInteger();

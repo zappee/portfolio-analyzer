@@ -6,18 +6,17 @@ import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
-import com.remal.portfolio.util.Filter;
-import com.remal.portfolio.util.Sorter;
 import com.remal.portfolio.util.Strings;
-import com.remal.portfolio.util.ZoneIds;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Generate transaction reports.
@@ -35,26 +34,6 @@ public class PriceWriter extends Writer<Price> {
      */
     @Setter
     private MultiplicityType multiplicity;
-
-    /**
-     * Builder that initializes a new writer instance.
-     *
-     * @param arguments input arguments
-     * @return the writer instance
-     */
-    public static Writer<Price> build(PriceArgGroup.OutputArgGroup arguments) {
-        // validating the output params
-        ZoneIds.validate(arguments.getZone());
-
-        //  initialize
-        var writer = new PriceWriter();
-        writer.setLanguage(arguments.getLanguage());
-        writer.setDecimalFormat(arguments.getDecimalFormat());
-        writer.setDateTimePattern(arguments.getDateTimePattern());
-        writer.setZone(ZoneId.of(arguments.getZone()));
-        writer.setMultiplicity(arguments.getMultiplicity());
-        return writer;
-    }
 
     /**
      * Generate the CSV report.
@@ -75,8 +54,6 @@ public class PriceWriter extends Writer<Price> {
 
         // data
         prices
-                .stream()
-                .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> report
                     .append(getCell(Label.HEADER_SYMBOL, productPrice.getSymbol(), csvSeparator))
                     .append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), csvSeparator))
@@ -96,10 +73,7 @@ public class PriceWriter extends Writer<Price> {
      */
     @Override
     protected String buildMarkdownReport(List<Price> prices) {
-        if (prices.size() > 1) {
-            reduceBasedOnMultiplicity(prices, multiplicity);
-        }
-
+        reduceBasedOnMultiplicity(prices, multiplicity);
         var widths = calculateColumnWidth(prices);
 
         // table header
@@ -120,8 +94,6 @@ public class PriceWriter extends Writer<Price> {
 
         // data
         prices
-                .stream()
-                .sorted(Sorter.priceComparator())
                 .forEach(productPrice -> {
                     report.append(getCell(Label.HEADER_SYMBOL, productPrice.getSymbol(), widths));
                     report.append(getCell(Label.HEADER_PRICE, productPrice.getUnitPrice(), widths));
@@ -177,22 +149,27 @@ public class PriceWriter extends Writer<Price> {
         log.debug("> multiplicity: {}", multiplicity.name());
         log.debug("> number of items before the reduce: {}", prices.size());
 
+        prices.sort(Comparator.comparing(Price::getRequestDate));
+
         List<Price> reducedPrices = new ArrayList<>();
-        prices.forEach(price -> {
-            var intervalStart = price.getTradeDate();
-            var intervalEnd = intervalStart.plusSeconds(multiplicity.getRangeLengthInSec());
-            var itemCount = reducedPrices
-                    .stream()
-                    .filter(x -> x.getSymbol().equals(price.getSymbol()))
-                    .filter(x -> Filter.dateBetweenFilter(intervalStart, intervalEnd, x.getRequestDate()))
-                    .count();
-            if (multiplicity != MultiplicityType.MANY && itemCount == 0) {
+        Map<String, LocalDateTime> rangeEnds = new HashMap<>();
+
+        for (Price price : prices) {
+            var symbol = price.getSymbol();
+            var rangeEnd = rangeEnds.get(symbol);
+            if (Objects.isNull(rangeEnd)) {
                 reducedPrices.add(price);
+                rangeEnds.put(symbol, price.getRequestDate().plusSeconds(multiplicity.getRangeLengthInSec()));
+            } else {
+                if (price.getRequestDate().isAfter(rangeEnd)) {
+                    reducedPrices.add(price);
+                    rangeEnds.put(symbol, price.getTradeDate().plusSeconds(multiplicity.getRangeLengthInSec()));
+                }
             }
-        });
+        }
+
         prices.clear();
         prices.addAll(reducedPrices);
-
         log.debug("> number of items after the reduce: {}", prices.size());
     }
 }

@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
+import java.util.regex.Pattern;
 
 /**
  * This is a formatter class that can after the proper initialization to
@@ -20,7 +21,7 @@ public class BigDecimalFormatter {
     /**
      * Decimal separator.
      */
-    private static final String SPLIT_REGEXP = "\\.";
+    private static final String DECIMAL_SEPARATOR = ".";
 
     /**
      * The longest whole part.
@@ -69,7 +70,7 @@ public class BigDecimalFormatter {
                             decimalGroupingSeparator,
                             value.setScale(scale, BigDecimals.ROUNDING_MODE))
                     .trim();
-            var parts = valueAsString.split(SPLIT_REGEXP);
+            var parts = valueAsString.split(Pattern.quote(DECIMAL_SEPARATOR));
             int actualWhole;
             int actualFractional;
             if (parts.length == 1) {
@@ -97,7 +98,7 @@ public class BigDecimalFormatter {
                 decimalFormat,
                 decimalGroupingSeparator,
                 decimal.setScale(scale, BigDecimals.ROUNDING_MODE));
-        var parts = formattedDecimal.split(SPLIT_REGEXP);
+        var parts = formattedDecimal.split(Pattern.quote(DECIMAL_SEPARATOR));
         var sb = new StringBuilder();
 
         if (parts.length == 1) {
@@ -111,7 +112,6 @@ public class BigDecimalFormatter {
                     .append(".")
                     .append(parts[1]);
         }
-
         return sb.toString();
     }
 }

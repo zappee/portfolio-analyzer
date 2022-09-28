@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 /**
  * Common functionalities that is used by the report writers.
@@ -411,27 +412,13 @@ public abstract class Writer<T> {
         var valueAsString = formatter.format(value);
 
         var decimalSeparator = decimalFormatSymbols.getDecimalSeparator();
-        var splitValue = valueAsString.split(escapeDecimalSeparator(decimalSeparator));
+        var splitValue = valueAsString.split(Pattern.quote(String.valueOf(decimalSeparator)));
 
         var parts = new String[2];
         parts[0] = splitValue[0];
         parts[1] = splitValue.length == 2 ? splitValue[1] : "";
 
         return parts;
-    }
-
-    /**
-     * Escape the special character in order to it can be used as a regexp expression.
-     *
-     * @param charToEscape special character to escape
-     * @return the escaped special character
-     */
-    private String escapeDecimalSeparator(char charToEscape) {
-        if (charToEscape == '.') {
-            return "\\" + charToEscape;
-        } else {
-            return String.valueOf(charToEscape);
-        }
     }
 
     /**

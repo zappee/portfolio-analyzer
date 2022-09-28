@@ -63,20 +63,6 @@ public class Filter {
     }
 
     /**
-     * Check whether the date is in the interval or not.
-     *
-     * @param rangeBegin start of the interval
-     * @param rangeEnd end of the interval
-     * @param dateToCheck the date to check whether is in the interval or not
-     * @return true if the date is between the interval
-     */
-    public static boolean dateBetweenFilter(LocalDateTime rangeBegin,
-                                            LocalDateTime rangeEnd,
-                                            LocalDateTime dateToCheck) {
-        return !dateToCheck.isBefore(rangeBegin) && !dateToCheck.isAfter(rangeEnd);
-    }
-
-    /**
      * Columns to hide filter.
      * The filter converts the alias name before the use: "LABEL_PORTFOLIO" -> "PORTFOLIO"
      *

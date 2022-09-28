@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -120,7 +121,7 @@ public class TransactionParser extends Parser<Transaction> {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
-                        var fields = line.split(separator, -1);
+                        var fields = line.split(Pattern.quote(separator), -1);
                         var index = new AtomicInteger(startColumn);
                         Transaction t = Transaction
                                 .builder()
