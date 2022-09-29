@@ -187,11 +187,15 @@ public class LocalDateTimes {
      * @return the converted object
      */
     public static Calendar toCalendar(LocalDateTime datetimeToConvert) {
-        Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();
-        Date date = Date.from(instant);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        return calendar;
+        if (Objects.isNull(datetimeToConvert)) {
+            return null;
+        } else {
+            Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();
+            Date date = Date.from(instant);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            return calendar;
+        }
     }
 
     /**

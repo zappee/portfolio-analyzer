@@ -72,7 +72,7 @@ public class Portfolio {
                     .quantity(transaction.getQuantity().multiply(transaction.getPrice()))
                     .fee(null)
                     .build();
-            products.get(currency).addTransaction(cloned);
+            addTransactionToProduct(currency, cloned);
 
         } else if (transaction.getType() == TransactionType.SELL || transaction.getType() == TransactionType.DIVIDEND) {
             var clonedTransaction = transaction.toBuilder().type(TransactionType.CREDIT).build();
@@ -88,7 +88,20 @@ public class Portfolio {
                     .quantity(transaction.getFee())
                     .price(BigDecimal.ONE)
                     .build();
-            products.get(currency).addTransaction(cloned);
+            addTransactionToProduct(currency, cloned);
         }
+    }
+
+    /**
+     * Add a transaction to the product.
+     *
+     * @param currency currency
+     * @param transaction the transaction to be added
+     */
+    private void addTransactionToProduct(String currency, Transaction transaction) {
+        var product = products.computeIfAbsent(
+                currency,
+                p -> new Product(transaction.getPortfolio(), currency, transaction.getCurrency()));
+        product.addTransaction(transaction);
     }
 }

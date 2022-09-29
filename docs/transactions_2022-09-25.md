@@ -1,8 +1,9 @@
 # Transaction report
-_Generated: 2022-09-25 17:09:05_
+_Generated: 2022-09-29 01:01:55_
 
 |portfolio          |symbol  |type    |inventory valuation|trade date         |quantity          |price          |fee       |currency|order id     |trade id  |transfer id                         |
 |-------------------|--------|--------|-------------------|-------------------|------------------|---------------|----------|--------|-------------|----------|------------------------------------|
+|Interactive Brokers|USD     |DEPOSIT |                   |2015-12-31 23:00:00|   20 000         |     1         |          |USD     |83bbd2a9-a1  |1c09e51104|                                    |
 |Interactive Brokers|ORCL    |BUY     |                   |2016-01-02 23:00:00|      386.2       |    25.87      |7.95      |USD     |83bb62a9-11  |1909451104|                                    |
 |Interactive Brokers|BAC     |BUY     |                   |2016-01-03 23:00:00|    1 722.8       |     5.8       |7.95      |USD     |84345a9a-12  |3459451233|                                    |
 |Interactive Brokers|WDC     |BUY     |                   |2016-01-04 23:00:00|      322.5       |    30.98      |7.95      |USD     |84345a9a-13  |3459451333|                                    |
@@ -12,9 +13,7 @@ _Generated: 2022-09-25 17:09:05_
 |Interactive Brokers|MSFT    |BUY     |                   |2016-05-06 22:00:00|      373.3       |    26.77      |7.95      |USD     |ca200a35-17  |1165301701|                                    |
 |Interactive Brokers|IBM     |BUY     |                   |2016-07-10 22:00:00|      326         |    30.65      |7.95      |USD     |61787b51-18  |1135531886|                                    |
 |Interactive Brokers|GS      |BUY     |                   |2016-07-10 22:00:00|      104.8       |    95.36      |7.95      |USD     |f8e65f80-19  |1457541989|                                    |
-|Interactive Brokers|YHOO    |BUY     |                   |2016-07-10 22:00:00|      219         |    45.63      |7.95      |USD     |83bb62a9-20  |1909452004|                                    |
 |Interactive Brokers|NFLX    |BUY     |                   |2016-07-10 22:00:00|      135         |    74         |7.95      |USD     |84345a9a-21  |3459452133|                                    |
-|Interactive Brokers|YHOO    |SELL    |FIFO               |2016-09-13 22:00:00|      667         |    13.75      |7.95      |USD     |84345a9a-22  |3459452233|                                    |
 |Interactive Brokers|IBM     |SELL    |FIFO               |2016-09-13 22:00:00|      326         |    99         |7.95      |USD     |83bb62a9-23  |1909452304|                                    |
 |Interactive Brokers|ORCL    |BUY     |                   |2016-09-13 22:00:00|      100         |   100         |7.95      |USD     |b0cd4543-24  |1906762457|                                    |
 |Interactive Brokers|GS      |SELL    |FIFO               |2016-09-13 22:00:00|      100         |   120         |7.95      |USD     |06e93b40-25  |1116042562|                                    |

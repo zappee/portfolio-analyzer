@@ -150,7 +150,10 @@ public class Product {
      * @return value of the profit and loss
      */
     public BigDecimal getProfitAndLoss() {
-        return getMarketValue().subtract(getInvestedAmount());
+        var investedAmount = getInvestedAmount();
+        return Objects.nonNull(investedAmount)
+                ? getMarketValue().subtract(investedAmount)
+                : null;
     }
 
     /**
@@ -229,7 +232,10 @@ public class Product {
                 amountInvested.set(amountInvested.get().add(price.multiply(volume)));
                 sharesBought.set(sharesBought.get().add(volume));
             });
-            averagePrice = amountInvested.get().divide(sharesBought.get(), MathContext.DECIMAL64);
+
+            if (BigDecimals.isNotNullAndNotZero(amountInvested.get())) {
+                averagePrice = amountInvested.get().divide(sharesBought.get(), MathContext.DECIMAL64);
+            }
         }
     }
 

@@ -322,7 +322,7 @@ java \
   -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions.md'" \
   -a \
   -o \
-  -O "'docs/transactions-report_'yyyy-MM-dd'.md'" \
+  -O "'docs/transactions_'yyyy-MM-dd'.md'" \
   -M OVERWRITE \
   -L EN \
   -Z GMT
@@ -348,7 +348,7 @@ Please check [paragraph 3.2](#32-trading-history-file-transformation) for more i
 ### 3.5) Downloading the real time market price of a company
 The `Remal Portfolio Analyzer` is able to download real market prices of and known company.
 In order to you can use this feature, you need to know the company's symbol/ticker name.
-If you do not know that four character length symbols you need, then search for them on the internet.
+If you do not know the symbols you need, then search for them on the internet.
 
 Popular symbols:
 * `BTC-EUR`: Bitcoin price in euro
@@ -482,7 +482,7 @@ java \
 If you get a `[ERROR] Price not found` error message, then you need to use a different date and time because the data-provider that you use has no price for this time.
 
 ### 3.6) Generating the portfolio summary report
-Once you have the transaction-history file that contains all of your trades that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
+Once you have the transaction file that contains all of your trades that you have executed, you can generate a `portfolio summary report` that shows you the performance of your portfolio.
 
 Command that activates the `portfolio` report generator: `java -jar bin/portfolio-analyzer.jar portfolio`
 
@@ -537,32 +537,36 @@ This command generates and saves the portfolio summary report to a Markdown file
 ```
 java \
    -jar bin/portfolio-analyzer.jar portfolio \
-   -i "'docs/transactions-report_2022-07-13.md'" \
+   -i "'docs/transactions_2022-09-25.md'" \
    -e \
    -a \
-   -l "docs/market-data-providers.properties" \
+   -l "'docs/market-data-providers.properties'" \
+   -t "2022-09-28 23:00:00" \
    -B EUR \
-   -P "'docs/market-price-history.md'" \
+   -P "'docs/price-history.md'" \
    -L EN \
-   -M OVERWRITE \
+   -M APPEND \
    -U ONE_HOUR \
-   -O "'docs/summary.md'"
+   -O "'docs/portfolio-summary.md'"
 ```
+
+This command generates a CSV portfolio summary report:
 
 ```
 java \
    -jar bin/portfolio-analyzer.jar portfolio \
-   -i "'docs/transactions-report_2022-07-13.md'" \
+   -i "'docs/transactions_2022-09-25.md'" \
    -e \
    -a \
-   -l "docs/market-data-providers.properties" \
+   -l "'docs/market-data-providers.properties'" \
+   -t "2022-09-28 23:00:00" \
    -B EUR \
-   -P "'docs/market-price-history.md'" \
+   -P "'docs/price-history.md'" \
    -L EN \
    -C "PORTFOLIO, SYMBOL, PROFIT_LOSS, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, COST_TOTAL, DEPOSIT_TOTAL, WITHDRAWAL_TOTAL" \
-   -M OVERWRITE \
+   -M APPEND \
    -U ONE_HOUR \
-   -O "'docs/summary.csv'"
+   -O "'docs/portfolio-summary.csv'"
  ```
 
 

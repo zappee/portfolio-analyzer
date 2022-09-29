@@ -7,8 +7,6 @@ import com.remal.portfolio.util.Calendars;
 import lombok.extern.slf4j.Slf4j;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
-import yahoofinance.histquotes.HistoricalQuote;
-import yahoofinance.histquotes.Interval;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -16,7 +14,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Calendar;
-import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -90,20 +88,17 @@ public class YahooDownloader implements Downloader {
         Optional<Price> marketPrice = Optional.empty();
         try {
             var stock = YahooFinance.get(symbol);
-            var clonedRequestedTradeDate = (Calendar) requestedTradeDate.clone();
-            List<HistoricalQuote> historicalQuotes = stock.getHistory(clonedRequestedTradeDate, Interval.DAILY);
-            if (historicalQuotes.isEmpty()) {
+            if (Objects.isNull(stock)) {
                 log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
-                var historicalQuote = historicalQuotes.get(0);
                 marketPrice = Optional.of(Price
                         .builder()
                         .symbol(symbol)
-                        .unitPrice(historicalQuote.getClose())
+                        .unitPrice(stock.getQuote().getPrice())
                         .dataProvider(DATA_PROVIDER)
                         .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
                         .tradeDate(LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(historicalQuote.getDate().getTimeInMillis()),
+                                Instant.ofEpochMilli(stock.getQuote().getLastTradeTime().getTimeInMillis()),
                                 ZoneId.systemDefault()))
                         .build());
             }

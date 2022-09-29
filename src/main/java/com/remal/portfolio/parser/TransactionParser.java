@@ -121,24 +121,26 @@ public class TransactionParser extends Parser<Transaction> {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
-                        var fields = line.split(Pattern.quote(separator), -1);
-                        var index = new AtomicInteger(startColumn);
-                        Transaction t = Transaction
-                                .builder()
-                                .portfolio(getString(index, fields, Label.HEADER_PORTFOLIO))
-                                .symbol(getString(index, fields, Label.HEADER_SYMBOL))
-                                .type(getTransactionType(index, fields))
-                                .inventoryValuation(getInventoryValuationType(index, fields))
-                                .tradeDate(getLocalDateTime(index, fields))
-                                .quantity(getBigDecimal(index, fields, Label.HEADER_QUANTITY))
-                                .price(getBigDecimal(index, fields, Label.HEADER_PRICE))
-                                .fee(getBigDecimal(index, fields, Label.HEADER_FEE))
-                                .currency(getCurrencyType(index, fields))
-                                .orderId(getString(index, fields, Label.HEADER_ORDER_ID))
-                                .tradeId(getString(index, fields, Label.HEADER_TRADE_DATE))
-                                .transferId(getString(index, fields, Label.HEADER_TRANSFER_ID))
-                                .build();
-                        transactions.add(t);
+                        if (!line.isBlank()) {
+                            var fields = line.split(Pattern.quote(separator), -1);
+                            var index = new AtomicInteger(startColumn);
+                            Transaction t = Transaction
+                                    .builder()
+                                    .portfolio(getString(index, fields, Label.HEADER_PORTFOLIO))
+                                    .symbol(getString(index, fields, Label.HEADER_SYMBOL))
+                                    .type(getTransactionType(index, fields))
+                                    .inventoryValuation(getInventoryValuationType(index, fields))
+                                    .tradeDate(getLocalDateTime(index, fields))
+                                    .quantity(getBigDecimal(index, fields, Label.HEADER_QUANTITY))
+                                    .price(getBigDecimal(index, fields, Label.HEADER_PRICE))
+                                    .fee(getBigDecimal(index, fields, Label.HEADER_FEE))
+                                    .currency(getCurrencyType(index, fields))
+                                    .orderId(getString(index, fields, Label.HEADER_ORDER_ID))
+                                    .tradeId(getString(index, fields, Label.HEADER_TRADE_DATE))
+                                    .transferId(getString(index, fields, Label.HEADER_TRANSFER_ID))
+                                    .build();
+                            transactions.add(t);
+                        }
                     });
         }
         return transactions;

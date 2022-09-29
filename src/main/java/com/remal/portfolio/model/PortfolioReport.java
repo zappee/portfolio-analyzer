@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * The portfolio report POJO.
@@ -121,7 +122,11 @@ public class PortfolioReport {
                     var symbol = productEntry.getValue().getCurrency().name();
                     var investedAmount = product.getInvestedAmount();
                     var marketValue = product.getMarketValue();
-                    investments.put(symbol, investedAmount.add(investments.getOrDefault(symbol, BigDecimal.ZERO)));
+
+                    if (Objects.nonNull(investedAmount)) {
+                        investments.put(symbol, investedAmount.add(investments.getOrDefault(symbol, BigDecimal.ZERO)));
+                    }
+
                     marketValues.put(symbol, marketValue.add(marketValues.getOrDefault(symbol, BigDecimal.ZERO)));
                 })
         );
