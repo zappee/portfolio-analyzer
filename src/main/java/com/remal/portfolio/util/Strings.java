@@ -2,6 +2,8 @@ package com.remal.portfolio.util;
 
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
+
 /**
  * Tool that works with String objects.
  * <p>
@@ -48,11 +50,28 @@ public class Strings {
     /**
      * Generate a fixed length space.
      *
-     * @param size size of the space
+     * @param repeat number of times to repeat whitespace
      * @return the space
      */
-    public static String space(final int size) {
-        return leftPad(null, size);
+    public static String space(final int repeat) {
+        return leftPad(null, repeat);
+    }
+
+    /**
+     * Generate a fixed length space.
+     *
+     * @param ch character to repeat
+     * @param repeat number of times to repeat char, negative treated as zero
+     * @return the space
+     */
+    public static String repeat(final char ch, final int repeat) {
+        if (repeat <= 0) {
+            return "";
+        }
+
+        var buf = new char[repeat];
+        Arrays.fill(buf, ch);
+        return new String(buf);
     }
 
     /**

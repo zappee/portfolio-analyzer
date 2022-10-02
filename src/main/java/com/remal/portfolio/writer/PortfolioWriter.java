@@ -56,6 +56,11 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     private static final String MARKDOWN_LIST = "* ";
 
     /**
+     * Markdown horizontal line.
+     */
+    private static final String MARKDOWN_HR = Strings.repeat('-', 50) + NEW_LINE;
+
+    /**
      * Decimal number formatter.
      */
     private BigDecimalFormatter decimalFormatter;
@@ -443,13 +448,12 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_EXCHANGE_RATE.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
                     .append(showMapValue(portfolioReport.getExchangeRates(), labelWidth));
         }
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
+                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getDeposits(),
@@ -460,7 +464,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
+                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getWithdrawals(),
@@ -471,7 +475,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_INVESTMENT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
+                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getInvestments(),
@@ -482,7 +486,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_MARKET_VALUE.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
+                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getMarketValues(),
@@ -493,7 +497,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_PROFIT_LOSS.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(NEW_LINE)
+                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getProfitLoss(),
@@ -514,15 +518,45 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     private BigDecimalFormatter initializeDecimalFormatter(PortfolioReport portfolioReport) {
         var formatter = new BigDecimalFormatter(decimalFormat, decimalGroupingSeparator);
 
-        portfolioReport.getExchangeRates().forEach(formatter.get(BigDecimals.SCALE_FOR_EXCHANGE_RATE));
-        portfolioReport.getCashInPortfolio().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
-        portfolioReport.getDeposits().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
-        portfolioReport.getWithdrawals().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
-        portfolioReport.getInvestments().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
-        portfolioReport.getMarketValues().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
-        portfolioReport.getProfitLoss().forEach(formatter.get(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getPortfolios().forEach((name, portfolio) ->
+                portfolio.getProducts().forEach((ticker, product) -> {
+                    if (CurrencyType.isValid(ticker)) {
+                        var exchangeRateTicker = ticker + "-" + baseCurrency;
+                        var rate = portfolioReport.getExchangeRates().get(exchangeRateTicker);
+                        updateFieldMaxLength(product.getDeposits(), formatter, rate);
+                        updateFieldMaxLength(product.getWithdrawals(), formatter, rate);
+                        updateFieldMaxLength(product.getInvestedAmount(), formatter, rate);
+                        updateFieldMaxLength(product.getMarketValue(), formatter, rate);
+                        updateFieldMaxLength(product.getProfitAndLoss(), formatter, rate);
+                    }
+                })
+        );
+
+        portfolioReport.getExchangeRates().forEach(formatter.getBiConsumer(BigDecimals.SCALE_FOR_EXCHANGE_RATE));
+        portfolioReport.getCashInPortfolio().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getDeposits().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getWithdrawals().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getInvestments().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getMarketValues().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
+        portfolioReport.getProfitLoss().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
 
         return formatter;
+    }
+
+    /**
+     * Updates the maximum length of the fields in the markdown report.
+     *
+     * @param valueToExchange the value that will be exchange to the base currency
+     * @param formatter the BigDecimal formatter
+     * @param exchangeRate exchange rate used to convert values to the base currency
+     */
+    private void updateFieldMaxLength(BigDecimal valueToExchange,
+                                      BigDecimalFormatter formatter,
+                                      BigDecimal exchangeRate) {
+        if (Objects.nonNull(valueToExchange) && Objects.nonNull(exchangeRate)) {
+            var valueInBaseCurrency = valueToExchange.multiply(exchangeRate);
+            formatter.updateFieldMaxLength(valueInBaseCurrency, BigDecimals.SCALE_FOR_EXCHANGE_RATE);
+        }
     }
 
     /**
@@ -534,6 +568,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      */
     private StringBuilder showMapValue(Map<String, BigDecimal> valuesToShow, int labelWidth) {
         return new StringBuilder()
+                .append(valuesToShow.isEmpty() ? "" : MARKDOWN_HR)
                 .append(mapToString(
                         Label.LABEL_TOTAL_EXCHANGE_RATE,
                         labelWidth,

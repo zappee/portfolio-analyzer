@@ -62,28 +62,36 @@ public class BigDecimalFormatter {
      * @param scale scale of the BigDecimal value to be returned
      * @return the consumer
      */
-    public BiConsumer<String, BigDecimal> get(int scale) {
-        return (symbol, value) -> {
-            var valueAsString = BigDecimals
-                    .toString(
-                            decimalFormat,
-                            decimalGroupingSeparator,
-                            value.setScale(scale, BigDecimals.ROUNDING_MODE))
-                    .trim();
-            var parts = valueAsString.split(Pattern.quote(DECIMAL_SEPARATOR));
-            int actualWhole;
-            int actualFractional;
-            if (parts.length == 1) {
-                actualWhole = parts[0].length();
-                actualFractional = 0;
-            } else {
-                actualWhole = parts[0].length();
-                actualFractional = parts[1].length();
-            }
+    public BiConsumer<String, BigDecimal> getBiConsumer(int scale) {
+        return (symbol, value) -> updateFieldMaxLength(value, scale);
+    }
 
-            wholeLength.set(Math.max(wholeLength.get(), actualWhole));
-            fractionalLength.set(Math.max(fractionalLength.get(), actualFractional));
-        };
+    /**
+     * Updates the maximum length of the fields in the markdown report.
+     *
+     * @param value decimal value
+     * @param scale scale
+     */
+    public void updateFieldMaxLength(BigDecimal value, int scale) {
+        var valueAsString = BigDecimals
+                .toString(
+                        decimalFormat,
+                        decimalGroupingSeparator,
+                        value.setScale(scale, BigDecimals.ROUNDING_MODE))
+                .trim();
+        var parts = valueAsString.split(Pattern.quote(DECIMAL_SEPARATOR));
+        int actualWhole;
+        int actualFractional;
+        if (parts.length == 1) {
+            actualWhole = parts[0].length();
+            actualFractional = 0;
+        } else {
+            actualWhole = parts[0].length();
+            actualFractional = parts[1].length();
+        }
+
+        wholeLength.set(Math.max(wholeLength.get(), actualWhole));
+        fractionalLength.set(Math.max(fractionalLength.get(), actualFractional));
     }
 
     /**

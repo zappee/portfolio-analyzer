@@ -132,11 +132,17 @@ public class PortfolioReport {
         );
 
         profitLoss.clear();
-        marketValues.forEach((symbol, marketValue) -> {
-            var investment = investments.get(symbol);
-            var profit = marketValue.subtract(investment);
-            profitLoss.put(symbol, profitLoss.getOrDefault(symbol, BigDecimal.ZERO).add(profit));
-        });
+        marketValues
+                .entrySet()
+                .stream()
+                .filter(marketValueEntry -> !CurrencyType.isValid(marketValueEntry.getKey()))
+                .forEach(marketValueEntry -> {
+                    var symbol = marketValueEntry.getKey();
+                    var marketValue = marketValueEntry.getValue();
+                    var investment = investments.get(symbol);
+                    var profit = marketValue.subtract(investment);
+                    profitLoss.put(symbol, profitLoss.getOrDefault(symbol, BigDecimal.ZERO).add(profit));
+                });
     }
 
     /**

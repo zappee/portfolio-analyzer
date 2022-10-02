@@ -138,10 +138,23 @@ public class Product {
      * @return value of the invested amount
      */
     public BigDecimal getInvestedAmount() {
+        if (isCurrency()) {
+            return null;
+        }
+
         var avgPrice = getAveragePrice();
         return Objects.isNull(avgPrice)
                 ? null
                 : quantity.multiply(avgPrice).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+    }
+
+    /**
+     * Check whether the product is a currency or not.
+     *
+     * @return true if it is a currency product
+     */
+    public boolean isCurrency() {
+        return CurrencyType.isValid(symbol);
     }
 
     /**
@@ -167,8 +180,10 @@ public class Product {
         if (Objects.isNull(investedAmount)) {
             return null;
         } else {
-            var pl = getMarketValue().divide(investedAmount, MathContext.DECIMAL64).subtract(BigDecimal.ONE);
-            return pl.multiply(hundred).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+            return getMarketValue()
+                    .divide(investedAmount, MathContext.DECIMAL64)
+                    .multiply(hundred)
+                    .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
         }
     }
 
