@@ -319,7 +319,7 @@ Example command that combines three different transaction files into one:
 ```
 java \
   -jar bin/portfolio-analyzer.jar combine \
-  -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions.md'" \
+  -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions_2018-12-24.md'" \
   -a \
   -o \
   -O "'docs/transactions_'yyyy-MM-dd'.md'" \

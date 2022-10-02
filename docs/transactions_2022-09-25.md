@@ -1,5 +1,5 @@
 # Transaction report
-_Generated: 2022-09-29 01:01:55_
+_Generated: 2022-10-02 22:07:36_
 
 |portfolio          |symbol  |type    |inventory valuation|trade date         |quantity          |price          |fee       |currency|order id     |trade id  |transfer id                         |
 |-------------------|--------|--------|-------------------|-------------------|------------------|---------------|----------|--------|-------------|----------|------------------------------------|
@@ -12,15 +12,14 @@ _Generated: 2022-09-29 01:01:55_
 |Interactive Brokers|MMM     |BUY     |                   |2016-05-05 22:00:00|      155         |    34         |          |USD     |06e93b40-16  |1116041662|                                    |
 |Interactive Brokers|MSFT    |BUY     |                   |2016-05-06 22:00:00|      373.3       |    26.77      |7.95      |USD     |ca200a35-17  |1165301701|                                    |
 |Interactive Brokers|IBM     |BUY     |                   |2016-07-10 22:00:00|      326         |    30.65      |7.95      |USD     |61787b51-18  |1135531886|                                    |
-|Interactive Brokers|GS      |BUY     |                   |2016-07-10 22:00:00|      104.8       |    95.36      |7.95      |USD     |f8e65f80-19  |1457541989|                                    |
-|Interactive Brokers|NFLX    |BUY     |                   |2016-07-10 22:00:00|      135         |    74         |7.95      |USD     |84345a9a-21  |3459452133|                                    |
-|Interactive Brokers|IBM     |SELL    |FIFO               |2016-09-13 22:00:00|      326         |    99         |7.95      |USD     |83bb62a9-23  |1909452304|                                    |
+|Interactive Brokers|GS      |BUY     |                   |2016-07-11 22:00:00|      104.8       |    95.36      |7.95      |USD     |f8e65f80-19  |1457541989|                                    |
+|Interactive Brokers|NFLX    |BUY     |                   |2016-07-12 22:00:00|      135         |    74         |7.95      |USD     |84345a9a-21  |3459452133|                                    |
+|Interactive Brokers|IBM     |SELL    |FIFO               |2016-09-12 22:00:00|      326         |    99         |7.95      |USD     |83bb62a9-23  |1909452304|                                    |
 |Interactive Brokers|ORCL    |BUY     |                   |2016-09-13 22:00:00|      100         |   100         |7.95      |USD     |b0cd4543-24  |1906762457|                                    |
-|Interactive Brokers|GS      |SELL    |FIFO               |2016-09-13 22:00:00|      100         |   120         |7.95      |USD     |06e93b40-25  |1116042562|                                    |
+|Interactive Brokers|GS      |SELL    |FIFO               |2016-09-14 22:00:00|      100         |   120         |7.95      |USD     |06e93b40-25  |1116042562|                                    |
 |Interactive Brokers|UHAL    |SELL    |FIFO               |2016-10-20 22:00:00|      667         |    95         |7.95      |USD     |ca200a35-26  |1165302601|                                    |
 |Interactive Brokers|WNC     |BUY     |                   |2017-02-04 23:00:00|    1 541         |    13.22      |3.95      |USD     |61787b51-27  |1135532786|                                    |
 |Interactive Brokers|MMM     |DIVIDEND|                   |2017-02-15 23:00:00|       50         |     3         |          |USD     |f8e65f80-28  |1457542889|                                    |
-|Interactive Brokers|AAPL    |DIVIDEND|                   |2017-03-31 22:00:00|        1         | 1 822         |          |USD     |f8e65f80-29  |1457542989|                                    |
 |Interactive Brokers|MU      |BUY     |                   |2018-12-23 23:00:00|       20         |    29.02      |4.95      |USD     |f8e65f80-30  |1457543089|                                    |
 |Coinbase           |EUR     |DEPOSIT |                   |2021-01-15 15:34:13|      500         |     1         |          |EUR     |             |          |45dea8b3-f234                       |
 |Coinbase           |BTC-EUR |BUY     |                   |2021-02-11 06:34:19|        0.01      |36 933         |0.73866   |EUR     |83bb62a9-c8a5|19094504  |                                    |
