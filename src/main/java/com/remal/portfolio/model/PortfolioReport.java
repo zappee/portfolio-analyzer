@@ -132,17 +132,18 @@ public class PortfolioReport {
         );
 
         profitLoss.clear();
-        marketValues
-                .entrySet()
-                .stream()
-                .filter(marketValueEntry -> !CurrencyType.isValid(marketValueEntry.getKey()))
-                .forEach(marketValueEntry -> {
-                    var symbol = marketValueEntry.getKey();
-                    var marketValue = marketValueEntry.getValue();
-                    var investment = investments.get(symbol);
-                    var profit = marketValue.subtract(investment);
-                    profitLoss.put(symbol, profitLoss.getOrDefault(symbol, BigDecimal.ZERO).add(profit));
-                });
+        portfolios
+                .forEach((name, portfolio) -> portfolio.getProducts()
+                        .entrySet()
+                        .stream()
+                        .filter(entry -> !CurrencyType.isValid(entry.getKey()))
+                        .filter(entry -> BigDecimals.isNotNullAndNotZero(entry.getValue().getQuantity()))
+                        .forEach(entry -> {
+                            var product = entry.getValue();
+                            var symbol = product.getCurrency().name();
+                            var pl = product.getProfitAndLoss();
+                            profitLoss.put(symbol, profitLoss.getOrDefault(symbol, BigDecimal.ZERO).add(pl));
+                        }));
     }
 
     /**

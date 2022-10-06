@@ -58,7 +58,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * Markdown horizontal line.
      */
-    private static final String MARKDOWN_HR = Strings.repeat('-', 50) + NEW_LINE;
+    private static final String MARKDOWN_HR = Strings.repeat('-', 52) + NEW_LINE;
 
     /**
      * Decimal number formatter.
