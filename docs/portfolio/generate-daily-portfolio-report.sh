@@ -99,7 +99,7 @@ function generate_chart {
 # ----------------------------------------------------------
 # main program starts here
 # ----------------------------------------------------------
-# download_coinbase_transactions
+#download_coinbase_transactions
 combine_transactions
 generate_reports
 generate_chart
