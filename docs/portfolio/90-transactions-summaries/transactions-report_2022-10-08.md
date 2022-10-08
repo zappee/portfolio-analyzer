@@ -1,5 +1,5 @@
 # Transaction report
-_Generated: 2022-10-02 22:07:36_
+_Generated: 2022-10-08 20:34:50_
 
 |portfolio          |symbol  |type    |inventory valuation|trade date         |quantity          |price          |fee       |currency|order id     |trade id  |transfer id                         |
 |-------------------|--------|--------|-------------------|-------------------|------------------|---------------|----------|--------|-------------|----------|------------------------------------|

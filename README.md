@@ -649,10 +649,13 @@ java \
 ## 4) Generating your daily portfolio summary after the market closed
 Thanks to the command line interface, you can generate easily your personal portfolio performance riport and charts after the market closes.
 The only thing you need to do is to add your `Remal Portfolio Analyzer` commands into a bash script and execute this script every weekday from `cron`.
-You can find a sample script (`docs/scripts/generate-portfolio-report.sh`) under the directory that generates portfolio performance reports and the performance chart.
-
-
-e benefit of the command line
+You can find a complete example under the `docs/portfolio/` directory.
+The `docs/portfolio/generate-daily-portfolio-report.sh` generates the daily portfolio performance reports and the performance chart.
+Usage:
+```
+$ cd docs/portfolio/
+$ ./generate-daily-portfolio-report.sh
+```
 
 ## 4) Generating a portfolio summary diagram
 

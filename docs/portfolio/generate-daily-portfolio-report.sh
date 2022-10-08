@@ -11,18 +11,19 @@
 #  author: arnold.somogyi@gmail.comm
 #  since 2021 October
 # ##############################################################################
-coinbase_daily_transaction="'portfolio/10-coinbase-transactions/coinbase-transactions_'yyyy-MM-dd'.md'"
-coinbase_correction_shib="'portfolio/11-coinbase-corrections/coinbase-corrections-shib.md'"
-ib_transactions="'portfolio/20-interactive-brokers-transactions/interactive-brokers-transactions.md'"
-daily_transaction_summary="'portfolio/90-transactions-summaries/transactions-report_'yyyy-MM-dd'.md'"
-daily_portfolio_summary="'portfolio/91-portfolio-summaries/portfolio-summary_'yyyy-MM-dd'.md'"
-daily_portfolio_report="'portfolio/92-portfolio-report/portfolio-report_'yyyy-MM-dd'.csv'"
-daily_price_history="'portfolio/93-price-histories/price-history_'yyyy-MM-dd'.md'"
-data_providers="'portfolio/market-data-providers.properties'"
+coinbase_daily_transaction="'10-coinbase-transactions/coinbase-transactions_2022-08-27.md'"
+coinbase_correction_shib="'11-coinbase-corrections/coinbase-corrections-shib.md'"
+ib_transactions="'20-interactive-brokers-transactions/interactive-brokers-transactions.md'"
+daily_transaction_summary="'90-transactions-summaries/transactions-report_'yyyy-MM-dd'.md'"
+daily_portfolio_summary="'91-portfolio-summaries/portfolio-summary_'yyyy-MM-dd'.md'"
+portfolio_report="'92-portfolio-report/portfolio-report.csv'"
+daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
+data_providers="'market-data-providers.properties'"
 
+portfolio_analyzer="../../bin/portfolio-analyzer-0.1.13.jar"
 coinbase_api_access_key="9...c"
 coinbase_api_passphrase="9...7"
-coinbase_api_secret="z...A=="
+coinbase_api_secret="z...="
 
 # ----------------------------------------------------------
 # downloading transactions from coinbase
@@ -30,7 +31,7 @@ coinbase_api_secret="z...A=="
 function download_coinbase_transactions {
     printf "downloading transactions from coinbase...\n"
     java \
-        -jar bin/portfolio-analyzer-0.1.13.jar coinbase \
+        -jar $portfolio_analyzer coinbase \
         -k $coinbase_api_access_key \
         -p $coinbase_api_passphrase \
         -e $coinbase_api_secret \
@@ -51,7 +52,7 @@ function download_coinbase_transactions {
 function combine_transactions {
     printf "combine transaction data files...\n"
     java \
-        -jar bin/portfolio-analyzer-0.1.13.jar combine \
+        -jar $portfolio_analyzer combine \
         -i "$coinbase_daily_transaction, $coinbase_correction_shib, $ib_transactions" \
         -a \
         -o \
@@ -70,7 +71,7 @@ function generate_reports {
 
     local date=$(date +%Y-%m-%d)
     java \
-       -jar bin/portfolio-analyzer-0.1.13.jar portfolio \
+       -jar $portfolio_analyzer portfolio \
        -i "$daily_transaction_summary" \
        -e \
        -a \
@@ -82,7 +83,7 @@ function generate_reports {
        -M APPEND \
        -U ONE_HOUR \
        -O "$daily_portfolio_summary" \
-       -S "$daily_portfolio_report"
+       -S "$portfolio_report"
     printf "\n"
 }
 
@@ -97,7 +98,7 @@ function generate_chart {
 # ----------------------------------------------------------
 # main program starts here
 # ----------------------------------------------------------
-download_coinbase_transactions
+# download_coinbase_transactions
 combine_transactions
 generate_reports
 generate_chart
