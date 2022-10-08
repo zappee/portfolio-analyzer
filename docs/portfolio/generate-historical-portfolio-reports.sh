@@ -17,27 +17,31 @@
 #  since 2021 Jun
 # ##############################################################################
 
-start="2018-01-18"
-end="2022-08-01"
-transactionReport="'tmp/transactions-report_2022-07-12.md'"
-dataProvidersRegistry="'docs/provider.properties'"
-priceHistory="'tmp/price-history.md'"
-jar="target/portfolio-analyzer-0.1.13.jar"
+start="2016-01-01"
+end="2018-12-31"
+
+ib_transactions="'20-interactive-brokers-transactions/interactive-brokers-transactions.md'"
+portfolio_report="'92-portfolio-report/portfolio-report.csv'"
+daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
+data_providers="'market-data-providers.properties'"
+
+jar="'market-data-providers.properties'"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     echo "Trade date: $start"
     java \
         -jar "$jar" portfolio \
-        -i "$transactionReport" \
+        -i "$ib_transactions" \
         -e \
         -a \
-        -l "$dataProvidersRegistry" \
+        -l "$data_providers" \
         -t "$start 23:59:59" \
         -L EN \
-        -P "$priceHistory" \
+        -P "$daily_price_history" \
         -M APPEND \
         -U ONE_DAY \
-        -O "'tmp/portfolio/portfolio-report_$start.md'"
+        -O "'91-portfolio-summaries/portfolio-summary_$start.md'" \
+        -S "$portfolio_report"
     start=$(date -I -d "$start + 1 day")
     # read -r -p "Press enter to continue"
 done

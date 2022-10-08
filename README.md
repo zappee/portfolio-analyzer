@@ -657,11 +657,14 @@ $ cd docs/portfolio/
 $ ./generate-daily-portfolio-report.sh
 ```
 
-## 4) Generating a portfolio summary diagram
+## 5) Generating historical portfolio summaries
 
-## 6) Installation and system requirements
 
-## 7) Troubleshooting
+## 6) Generating a portfolio summary diagram
+
+## 7) Installation and system requirements
+
+## 8) Troubleshooting
 
 debug:
 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005

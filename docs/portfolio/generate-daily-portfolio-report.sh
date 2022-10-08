@@ -20,10 +20,11 @@ portfolio_report="'92-portfolio-report/portfolio-report.csv'"
 daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
 data_providers="'market-data-providers.properties'"
 
-portfolio_analyzer="../../bin/portfolio-analyzer-0.1.13.jar"
 coinbase_api_access_key="9...c"
 coinbase_api_passphrase="9...7"
 coinbase_api_secret="z...="
+
+jar="../../bin/portfolio-analyzer-0.1.13.jar"
 
 # ----------------------------------------------------------
 # downloading transactions from coinbase
@@ -31,7 +32,7 @@ coinbase_api_secret="z...="
 function download_coinbase_transactions {
     printf "downloading transactions from coinbase...\n"
     java \
-        -jar $portfolio_analyzer coinbase \
+        -jar "$jar" coinbase \
         -k $coinbase_api_access_key \
         -p $coinbase_api_passphrase \
         -e $coinbase_api_secret \
@@ -52,7 +53,7 @@ function download_coinbase_transactions {
 function combine_transactions {
     printf "combine transaction data files...\n"
     java \
-        -jar $portfolio_analyzer combine \
+        -jar $jar combine \
         -i "$coinbase_daily_transaction, $coinbase_correction_shib, $ib_transactions" \
         -a \
         -o \
@@ -71,7 +72,7 @@ function generate_reports {
 
     local date=$(date +%Y-%m-%d)
     java \
-       -jar $portfolio_analyzer portfolio \
+       -jar $jar portfolio \
        -i "$daily_transaction_summary" \
        -e \
        -a \
