@@ -106,13 +106,12 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param filename the report file name
      * @param portfolioReport the report
      */
-    public void writeSummary(FileWriter.WriteMode writeMode, String filename, final PortfolioReport portfolioReport) {
+    public void writePortfolioReport(FileWriter.WriteMode writeMode, String filename, final PortfolioReport portfolioReport) {
         if (Objects.nonNull(filename) && Files.getFileType(filename) == FileType.CSV) {
-            log.debug("> writing the report to \"{}\", write-mode: {}...", filename, writeMode);
-            generatePortfolioSummaryCsvReport(writeMode, filename, portfolioReport);
+            log.debug("> writing the portfolio report to \"{}\", write-mode: {}...", filename, writeMode);
+            generatePortfolioCsvReport(writeMode, filename, portfolioReport);
         } else {
-            log.info("> skipping the portfolio summary report generation: filename is empty or file type is not "
-                    + "supported");
+            log.warn("> skipping the portfolio report generation: filename is empty or file type is not supported");
         }
     }
 
@@ -260,9 +259,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param filename the report file name
      * @param portfolioReport portfolio report
      */
-    private void generatePortfolioSummaryCsvReport(FileWriter.WriteMode writeMode,
-                                                   String filename,
-                                                   final PortfolioReport portfolioReport) {
+    private void generatePortfolioCsvReport(FileWriter.WriteMode writeMode,
+                                            String filename,
+                                            final PortfolioReport portfolioReport) {
 
         var inputArgGroup = buildTransactionParserInputArgGroup(filename);
         var parser = PortfolioSummaryParser.build(baseCurrency, language, inputArgGroup);
@@ -324,8 +323,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             columnInfo.put(Label.LABEL_TOTAL_PROFIT_LOSS, Set.of(baseCurrency.name()));
         });
 
-        var report = generatePortfolioSummaryCsvHeader(columnInfo)
-                + generatePortfolioSummaryCsvData(columnInfo, reportHistory);
+        var report = generatePortfolioCsvReportHeader(columnInfo);
+        report += generatePortfolioCsvReportData(columnInfo, reportHistory);
+
         FileWriter.write(writeMode, filename, report.getBytes());
     }
 
@@ -335,7 +335,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param columnInfo the map that contains info about the report columns
      * @return the header
      */
-    private String generatePortfolioSummaryCsvHeader(LinkedHashMap<Label, Set<String>> columnInfo) {
+    private String generatePortfolioCsvReportHeader(LinkedHashMap<Label, Set<String>> columnInfo) {
         var sb = new StringBuilder();
         sb.append(Label.HEADER_REQUEST_DATE.getLabel(language)).append(csvSeparator);
 
@@ -356,8 +356,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param portfolioReports portfolio report
      * @return the report
      */
-    private String generatePortfolioSummaryCsvData(LinkedHashMap<Label, Set<String>> columnInfo,
-                                                   List<PortfolioReport> portfolioReports) {
+    private String generatePortfolioCsvReportData(LinkedHashMap<Label, Set<String>> columnInfo,
+                                                  List<PortfolioReport> portfolioReports) {
         decimalFormat = BigDecimals.UNFORMATTED;
         var sb = new StringBuilder();
 

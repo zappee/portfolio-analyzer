@@ -9,6 +9,7 @@ import com.remal.portfolio.util.Logger;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,6 +67,15 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
      */
     @Override
     protected List<PortfolioReport> parseCsvFile(String fileName) {
+        List<PortfolioReport> portfolioReports = new ArrayList<>();
+
+        // validation
+        File file = new File(fileName);
+        if (!file.exists() || file.length() == 0) {
+            return portfolioReports;
+        }
+
+        // read and process the header
         String firstLine = "";
         try (FileReader fileReader = new FileReader(fileName)) {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -92,7 +102,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
                 )
         );
 
-        List<PortfolioReport> portfolioReports = new ArrayList<>();
+        // read data
         try (Stream<String> stream = Files.lines(Path.of(fileName))) {
             var skipRows = 1;
             stream
@@ -112,7 +122,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
                                         .put(cellConfig[1], getBigDecimal(index, cells, Label.HEADER_EMPTY));
                                 case LABEL_TOTAL_EXCHANGE_RATE -> portfolioReport
                                         .getExchangeRates()
-                                        .put(cellConfig[1], getBigDecimal(index, cells, Label.HEADER_EMPTY));
+                                        .put(cellConfig[1] + "-" + baseCurrency, getBigDecimal(index, cells, Label.HEADER_EMPTY));
                                 case LABEL_TOTAL_DEPOSIT_PER_CURRENCY -> portfolioReport
                                         .getDeposits()
                                         .put(cellConfig[1], getBigDecimal(index, cells, Label.HEADER_EMPTY));

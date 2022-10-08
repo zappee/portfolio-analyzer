@@ -44,8 +44,8 @@ public class PortfolioArgGroup {
          * Set the output file name.
          */
         @CommandLine.Option(
-                names = {"-O", "--portfolio-report"},
-                description = "Write the portfolio report to file (i.e. \"'tmp/'yyyy-MM-dd'_portfolio-report.md'\"). "
+                names = {"-O", "--portfolio-summary"},
+                description = "Write the portfolio summary to a file (i.e. \"'tmp/'yyyy-MM-dd'_portfolio-summary.md'\"). "
                         + "Accepted extensions: .txt, .md and .csv")
         private String portfolioReportFile;
 
@@ -53,10 +53,10 @@ public class PortfolioArgGroup {
          * Set the output file name.
          */
         @CommandLine.Option(
-                names = {"-S", "--summary-report"},
-                description = "Write the portfolio summary report to file "
-                        + ", i.e. \"'tmp/'yyyy-MM-dd'_portfolio-summary-report.md'\". "
-                        + "Accepted extensions: .txt, .md and .csv")
+                names = {"-S", "--portfolio-report"},
+                description = "Write the portfolio report to a CSV file "
+                        + ", i.e. \"'tmp/'yyyy-MM-dd'_portfolio-report.csv'\". "
+                        + "Accepted extensions: .csv")
         private String portfolioSummaryFile;
 
         /**

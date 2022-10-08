@@ -120,7 +120,7 @@ public class PortfolioCommand implements Callable<Integer> {
 
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
         writer.write(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
-        writer.writeSummary(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
+        writer.writePortfolioReport(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
         return CommandLine.ExitCode.OK;
     }
 }
