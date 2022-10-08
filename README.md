@@ -319,7 +319,7 @@ Example command that combines three different transaction files into one:
 ```
 java \
   -jar bin/portfolio-analyzer.jar combine \
-  -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections.md', 'docs/ib-transactions_2018-12-24.md'" \
+  -i "'docs/coinbase-transactions_'yyyy-MM-dd'.md', 'docs/coinbase-corrections-shib.md', 'docs/ib-transactions_2018-12-24.md'" \
   -a \
   -o \
   -O "'docs/transactions_'yyyy-MM-dd'.md'" \
@@ -646,9 +646,15 @@ java \
    -S "'docs/portfolio-report.csv'"
 ```
 
-## 4) Generating a portfolio summary diagram
+## 4) Generating your daily portfolio summary after the market closed
+Thanks to the command line interface, you can generate easily your personal portfolio performance riport and charts after the market closes.
+The only thing you need to do is to add your `Remal Portfolio Analyzer` commands into a bash script and execute this script every weekday from `cron`.
+You can find a sample script (`docs/scripts/generate-portfolio-report.sh`) under the directory that generates portfolio performance reports and the performance chart.
 
-## 5) Generating your daily portfolio summary after the market closed
+
+e benefit of the command line
+
+## 4) Generating a portfolio summary diagram
 
 ## 6) Installation and system requirements
 
