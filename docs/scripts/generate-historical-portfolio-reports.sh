@@ -1,6 +1,6 @@
 #!/bin/bash
 # ##############################################################################
-#   Portfolio history generator
+#  Portfolio history generator
 #
 #  This script can be used to generate an initial portfolio report CSV or Excel
 #  file. Once you have this report with historical data back to the past
@@ -8,7 +8,7 @@
 #  from i.e. Linux cron scheduler.
 #
 #  Determine how long this bash script takes to run:
-#     time bin/historical-portfolio-report.sh
+#     time bin/generate-historical-portfolio-reports.sh
 #
 #  Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved
 #  BSD (2-clause) licensed
