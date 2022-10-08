@@ -116,7 +116,9 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
     @Override
     public Optional<Price> getPrice(final String symbol, final Calendar requestedTradeDate) {
         var maxRepetitions = 20;
+        var multiplicity = 1.5;
         var repetitions = 0;
+        var delay = 1.0;
 
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
         var marketPrice = download(symbol, actualTradeDate);
@@ -130,7 +132,9 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
 
         // trying to move back in time a little for the first available price
         while (marketPrice.isEmpty() && repetitions < maxRepetitions) {
-            actualTradeDate.add(Calendar.MINUTE, -1);
+            delay = delay * multiplicity;
+            var amount = (int)(delay * -1);
+            actualTradeDate.add(Calendar.MINUTE, amount);
             marketPrice = download(symbol, actualTradeDate);
             repetitions++;
         }
