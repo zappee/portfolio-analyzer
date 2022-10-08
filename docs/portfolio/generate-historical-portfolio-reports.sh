@@ -25,7 +25,7 @@ portfolio_report="'92-portfolio-report/portfolio-report.csv'"
 daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
 data_providers="'market-data-providers.properties'"
 
-jar="'market-data-providers.properties'"
+jar="../../bin/portfolio-analyzer-0.1.13.jar"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     echo "Trade date: $start"
@@ -43,5 +43,5 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         -O "'91-portfolio-summaries/portfolio-summary_$start.md'" \
         -S "$portfolio_report"
     start=$(date -I -d "$start + 1 day")
-    # read -r -p "Press enter to continue"
+    read -r -p "Press enter to continue"
 done
