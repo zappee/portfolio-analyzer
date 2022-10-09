@@ -453,7 +453,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_DEPOSIT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getDeposits(),
@@ -464,7 +463,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_WITHDRAWAL.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getWithdrawals(),
@@ -475,7 +473,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_INVESTMENT.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getInvestments(),
@@ -486,7 +483,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_MARKET_VALUE.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getMarketValues(),
@@ -497,7 +493,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         if (!columnsToHide.contains(Label.LABEL_TOTAL_PROFIT_LOSS.name().replace(PREFIX_TO_REMOVE, ""))) {
             sb
-                    .append(MARKDOWN_HR)
                     .append(showSummaryPerCurrencyAndTotal(
                             portfolioReport.getExchangeRates(),
                             portfolioReport.getProfitLoss(),
@@ -594,6 +589,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         } else {
             var labelAsString = labelForTotal.getLabel(language).replace("{0}", baseCurrency.name());
             return new StringBuilder()
+                    .append(MARKDOWN_HR)
                     .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT))
                     .append(MARKDOWN_LIST).append(labelAsString)
                     .append(": ")
