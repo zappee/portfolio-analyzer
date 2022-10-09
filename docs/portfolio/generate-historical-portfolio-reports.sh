@@ -32,7 +32,7 @@ jar="../../bin/portfolio-analyzer-0.1.13.jar"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     day=$(date --date $start  +%A)
-    echo "Trade date: $start ($day)"
+    printf "\nTrade date: %s (%s)\n" "$start" "$day"
     java \
         -jar "$jar" portfolio \
         -i "$daily_transaction_summary" \
