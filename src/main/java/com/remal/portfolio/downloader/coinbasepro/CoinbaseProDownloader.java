@@ -5,6 +5,7 @@ import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
+import com.remal.portfolio.util.Sleep;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -115,11 +116,8 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
      */
     @Override
     public Optional<Price> getPrice(final String symbol, final Calendar requestedTradeDate) {
-        var maxRepetitions = 20;
-        var multiplicity = 1.5;
         var repetitions = 0;
         var delay = 1.0;
-
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
         var marketPrice = download(symbol, actualTradeDate);
 
@@ -127,14 +125,16 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         if (marketPrice.isEmpty()) {
             actualTradeDate.set(Calendar.SECOND, 0);
             actualTradeDate.set(Calendar.MILLISECOND, 0);
+            Sleep.sleep(SLEEP_IN_MILLISECOND);
             marketPrice = download(symbol, actualTradeDate);
         }
 
         // trying to move back in time a little for the first available price
-        while (marketPrice.isEmpty() && repetitions < maxRepetitions) {
-            delay = delay * multiplicity;
+        while (marketPrice.isEmpty() && repetitions < MAX_REPETITIONS) {
+            delay = delay * MULTIPLICITY;
             var amount = (int)(delay * -1);
             actualTradeDate.add(Calendar.MINUTE, amount);
+            Sleep.sleep(SLEEP_IN_MILLISECOND);
             marketPrice = download(symbol, actualTradeDate);
             repetitions++;
         }

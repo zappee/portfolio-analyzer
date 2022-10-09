@@ -31,6 +31,22 @@ public interface Downloader {
     String DOWNLOAD_ERROR = "error while downloading the price of \"{}\", provider: \"{}\", {}";
 
     /**
+     * The number of repetitions in price downloader in case of error.
+     */
+    int MAX_REPETITIONS = 20;
+
+    /**
+     * The time multiplier that determines the next trade date that is used when trying
+     * to download the price again in case of error.
+     */
+    double MULTIPLICITY = 1.5;
+
+    /**
+     * The value of the delay between price downloads in case of error.
+     */
+    long SLEEP_IN_MILLISECOND = 300;
+
+    /**
      * Downloads the latest price of a stock.
      *
      * @param symbol product name
