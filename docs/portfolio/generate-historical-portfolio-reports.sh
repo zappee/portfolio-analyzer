@@ -20,7 +20,7 @@
 start="2016-01-01"
 end="2018-12-31"
 
-ib_transactions="'20-interactive-brokers-transactions/interactive-brokers-transactions.md'"
+daily_transaction_summary="'90-transactions-summaries/transactions-report_2022-10-08.md'"
 portfolio_report="'92-portfolio-report/portfolio-report.csv'"
 daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
 data_providers="'market-data-providers.properties'"
@@ -28,10 +28,11 @@ data_providers="'market-data-providers.properties'"
 jar="../../bin/portfolio-analyzer-0.1.13.jar"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
-    echo "Trade date: $start"
+    day=$(date --date $start  +%A)
+    echo "Trade date: $start ($day)"
     java \
         -jar "$jar" portfolio \
-        -i "$ib_transactions" \
+        -i "$daily_transaction_summary" \
         -e \
         -a \
         -l "$data_providers" \
@@ -42,6 +43,6 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         -U ONE_DAY \
         -O "'91-portfolio-summaries/portfolio-summary_$start.md'" \
         -S "$portfolio_report"
-    start=$(date -I -d "$start + 1 day")
-    read -r -p "Press enter to continue"
+    start=$(date -I -d "$start + 7 day")
+    #read -r -p "Press enter to continue"
 done
