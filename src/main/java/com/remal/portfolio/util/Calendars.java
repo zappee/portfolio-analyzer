@@ -95,6 +95,18 @@ public class Calendars {
     }
 
     /**
+     * Returns a string representation of the object.
+     *
+     * @param calendar the calendar to convert to string
+     * @return a string representation of the object
+     */
+    public static String toString(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        dateFormat.setTimeZone(calendar.getTimeZone());
+        return dateFormat.format(calendar.getTime());
+    }
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws UnsupportedOperationException if this method is called

@@ -223,27 +223,21 @@ public class MarketPriceDownloader {
      * @return the market price
      */
     public Optional<Price> getMarketPrice(final String symbol, final Calendar requestedTradeDate) {
-        var tradeDate = requestedTradeDate;
-        if (Objects.isNull(tradeDate)) {
-            tradeDate = Calendar.getInstance();
-        }
+        var tradeDate = Objects.isNull(requestedTradeDate) ? Calendar.getInstance() : requestedTradeDate;
+        var dataProviderConfiguration = getDataProviderConfiguration(symbol);
+        var dataProvider = getDataProvider(dataProviderConfiguration);
+        var realSymbol = getSymbolAlias(symbol, dataProviderConfiguration);
+        var price = getPriceFromHistory(realSymbol, tradeDate);
 
-        if (Objects.isNull(priceHistoryFile)) {
-            return getPriceFromDataProvider(symbol, tradeDate);
+        if (price.isEmpty()) {
+            log.info("price does not exists in the history");
+            price = getPriceFromDataProvider(dataProvider, realSymbol, tradeDate);
         } else {
-            var dataProviderConfiguration = getDataProviderConfiguration(symbol);
-            var symbolAliasName = getSymbolAlias(symbol, dataProviderConfiguration);
-            var price = getPriceFromHistory(symbolAliasName, tradeDate);
-            if (price.isEmpty()) {
-                log.info("price does not exists in the history");
-                price = getPriceFromDataProvider(symbol, tradeDate);
-            } else {
-                log.info("price exists in the history: {}", price);
-            }
-
-            price.ifPresent(p -> writeToHistoryFile(priceHistoryFile, p));
-            return price;
+            log.info("price exists in the history: {}", price);
         }
+
+        price.ifPresent(p -> writeToHistoryFile(priceHistoryFile, p));
+        return price;
     }
 
     /**
@@ -273,45 +267,47 @@ public class MarketPriceDownloader {
         var parser = new PriceParser();
         parser.setZone(zone);
 
-        var prices = parser.parse(priceHistoryFile);
-        var requestedTradeDateAsLocalDateTime = requestedTradeDate
-                .toInstant()
-                .atZone(requestedTradeDate.getTimeZone().toZoneId())
-                .toLocalDateTime();
-
-        return prices
-                .stream()
-                .filter(price -> price.getSymbol().equals(symbol))
-                .filter(price -> price.getRequestDate().isEqual(requestedTradeDateAsLocalDateTime))
-                .findFirst();
+        if (Objects.nonNull(priceHistoryFile)) {
+            var prices = parser.parse(priceHistoryFile);
+            var requestedTradeDateAsLocalDateTime = requestedTradeDate
+                    .toInstant()
+                    .atZone(requestedTradeDate.getTimeZone().toZoneId())
+                    .toLocalDateTime();
+            return prices
+                    .stream()
+                    .filter(price -> price.getSymbol().equals(symbol))
+                    .filter(price -> price.getRequestDate().isEqual(requestedTradeDateAsLocalDateTime))
+                    .findFirst();
+        } else {
+            return Optional.empty();
+        }
     }
 
     /**
      * Downloads the market price from the data provider.
      *
+     * @param dataProvider the market data provider
      * @param symbol product price
      * @param requestedTradeDate the trade date
      * @return the price if exist
      */
-    private Optional<Price> getPriceFromDataProvider(final String symbol, final Calendar requestedTradeDate) {
-        Optional<Price> price = Optional.empty();
-        var symbolAliasName = symbol;
-
-        DataProviderType dataProvider = dataProviderFromCli;
-
-        if (Objects.isNull(dataProvider)) {
-            var dataProviderConfiguration = getDataProviderConfiguration(symbol);
-            dataProvider = getDataProvider(dataProviderConfiguration);
-            symbolAliasName = getSymbolAlias(symbol, dataProviderConfiguration);
+    private Optional<Price> getPriceFromDataProvider(final DataProviderType dataProvider,
+                                                     final String symbol,
+                                                     final Calendar requestedTradeDate) {
+        Downloader downloader;
+        if (Objects.nonNull(dataProviderFromCli)) {
+            downloader = Downloader.get().get(dataProviderFromCli);
+        } else {
+            downloader = Downloader.get().get(dataProvider);
         }
 
-        var downloader = Downloader.get().get(dataProvider);
+        Optional<Price> price = Optional.empty();
         if (Objects.isNull(downloader)) {
             Logger.logErrorAndExit("Unknown market data downloader: '{}'", dataProvider);
         } else {
             price = Objects.isNull(requestedTradeDate)
-                    ? downloader.getPrice(symbolAliasName)
-                    : downloader.getPrice(symbolAliasName, requestedTradeDate);
+                    ? downloader.getPrice(symbol)
+                    : downloader.getPrice(symbol, requestedTradeDate);
         }
         return price;
     }

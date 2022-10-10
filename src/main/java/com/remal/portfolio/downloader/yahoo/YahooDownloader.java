@@ -8,6 +8,7 @@ import com.remal.portfolio.util.Sleep;
 import lombok.extern.slf4j.Slf4j;
 import yahoofinance.Stock;
 import yahoofinance.YahooFinance;
+import yahoofinance.histquotes.Interval;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -132,8 +133,8 @@ public class YahooDownloader implements Downloader {
      * @return the product's market price
      */
     private Optional<Price> download(final String symbol, final Calendar requestedTradeDate) {
-        var message = "< getting the price of \"{}\" at {}, provider: \"{}\"...";
-        log.debug(message, symbol, Calendars.toUtcString(requestedTradeDate), DATA_PROVIDER);
+        log.debug("< getting the price of \"{}\" at {}, provider: \"{}\"...", symbol,
+                Calendars.toString(requestedTradeDate), DATA_PROVIDER);
 
         Optional<Price> marketPrice = Optional.empty();
         try {
@@ -141,16 +142,20 @@ public class YahooDownloader implements Downloader {
             if (Objects.isNull(stock)) {
                 log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
-                marketPrice = Optional.of(Price
-                        .builder()
-                        .symbol(symbol)
-                        .unitPrice(stock.getQuote().getPrice())
-                        .dataProvider(DATA_PROVIDER)
-                        .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
-                        .tradeDate(LocalDateTime.ofInstant(
-                                Instant.ofEpochMilli(stock.getQuote().getLastTradeTime().getTimeInMillis()),
-                                ZoneId.systemDefault()))
-                        .build());
+                var priceHistory = stock.getHistory(requestedTradeDate, Interval.DAILY);
+                var historicalQuote = priceHistory.stream().findFirst();
+                if (historicalQuote.isPresent()) {
+                    marketPrice = Optional.of(Price
+                            .builder()
+                            .symbol(symbol)
+                            .unitPrice(historicalQuote.get().getClose())
+                            .dataProvider(DATA_PROVIDER)
+                            .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
+                            .tradeDate(LocalDateTime.ofInstant(
+                                    Instant.ofEpochMilli(historicalQuote.get().getDate().getTimeInMillis()),
+                                    ZoneId.systemDefault()))
+                            .build());
+                }
             }
         } catch (IOException e) {
             log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
