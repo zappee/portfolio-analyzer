@@ -30,9 +30,10 @@ set autoscale x
 set autoscale y
 set xtics format "%b %d"
 
-# x line configuration
+# x axis configuration
 set xdata time
 set timefmt "%Y-%m-%d %H:%M:%S"
+set format x "%Y-%m-%d"
 
 # output format
 set terminal pngcairo size 1280,720
