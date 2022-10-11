@@ -707,15 +707,32 @@ Installation documents:
 * OpenJDK 17: [link](https://openjdk.org/projects/jdk/17) 
 
 ## 8) Troubleshooting
+* turn on the Java remote debug:
+  * `-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005`
 
 ## 9) How to Contribute
+Asking for help is one of the easiest and most efficient ways to contribute to Open Source projects, if you do it right.
+With the right questions, on good forums, you often help other users as well.
+Also, you might toward attention to something that needs to be improved.
+It may be a bug fix, enhancement or improving documentation.
+People quickly become blind to things they watch from too close.
+Sometimes simple questions from novices can lead to significant improvements in the project.
+There are no wrong questions, but there are sometimes questions that may irritate the persons who have the best answers.
+Here are 5 tips to get your answer faster:
 
-debug:
--agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+* Use the right forum
+* Google before asking
+* Use a clear and precise issue description
+* Provide a reduced test case
+* Explain the context
 
-java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005   -jar target/portfolio-analyzer-0.1.13.jar portfolio    -i "'docs/transactions_2022-09-25.md'"    -e    -a    -l "'docs/market-data-providers.properties'"    -t "2018-12-23 23:59:59"    -B EUR    -P "'docs/price-history.md'"    -L EN    -M APPEND    -U ONE_HOUR
+If you would like to improve the `Remal Portfolio Analyzer` then please
+* Opening an issue
+* Send a pull request on Git
 
-
+Coding rules and conventions
+* Feel free to write awesome code.
+* Do not hesitate to open an issue or a pull request just because you fear making a mistake.
 
 ## Appendix 1) Supported transaction types
 * `BUY`: Buy trade
