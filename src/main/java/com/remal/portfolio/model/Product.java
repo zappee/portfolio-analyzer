@@ -49,7 +49,7 @@ public class Product {
     /**
      *  The average price is calculated by dividing your cost (execution
      *  price + commission) by the quantity of your position. This value is
-     *  then used to determine your P&L.
+     *  used to determine your P&L.
      */
     private BigDecimal averagePrice;
 

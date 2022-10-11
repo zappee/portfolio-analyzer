@@ -71,7 +71,7 @@ public class PortfolioReport {
     private final Map<String, BigDecimal> withdrawals = new LinkedHashMap<>();
 
     /**
-     * The total amount of withdrawals.
+     * The amount of profit and loss on the asset.
      */
     private final Map<String, BigDecimal> profitLoss = new LinkedHashMap<>();
 

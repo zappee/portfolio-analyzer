@@ -23,7 +23,8 @@
 * [8) Troubleshooting](#8-troubleshooting)
 * [9) How to Contribute](#9-how-to-contribute)
 * [Appendix 1) Supported transaction types](#appendix-1-supported-transaction-types)
-* [Appendix 2) Fields in the portfolio summary report](#appendix-2-fields-in-the-portfolio-summary-report)
+* [Appendix 2) Fields in the transaction file](#appendix-2-fields-in-the-transaction-file)
+* [Appendix 3) Fields in the portfolio summary report](#appendix-3-fields-in-the-portfolio-summary-report)
 
 ---
 
@@ -743,9 +744,37 @@ __Coding rules and conventions__
 * `FEE`: Fees, like monthly account fee, money holding fee, etc.
 * `DIVIDEND`: Distribution of corporate profits to eligible shareholders
 
-## Appendix 2) Fields in the portfolio summary report
+## Appendix 2) Fields in the transaction file
+| field               | description                                                                                                                                                                                                                            |
+|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| portfolio           | Portfolio name or the name of the Brokerage company.                                                                                                                                                                                   |
+| symbol              | A stock symbol is a unique series of letters assigned to a security for trading purposes. Stocks listed on the New York Stock Exchange (NYSE) can have four or fewer letters. Nasdaq-listed securities can have up to five characters. |
+| type                | Transaction type.                                                                                                                                                                                                                      |
+| inventory valuation | Only used when the `type` is `SELL`. Valid values: FIFO, LIFO, <empty>                                                                                                                                                                 |
+| trade date          | The date when the trade was executed.                                                                                                                                                                                                  |
+| quantity            | The number of the shares that you owns.                                                                                                                                                                                                |
+| price               | Market price represents the market valuation per share of a company.                                                                                                                                                                   |
+| fee                 | Sum of the costs, i.e. trading fee, tax                                                                                                                                                                                                |
+| currency            | The currency of the unit price.                                                                                                                                                                                                        |
+| order id            | Unique identifier of the transaction.                                                                                                                                                                                                  |
+| trade id            | Unique identifier of the transaction.                                                                                                                                                                                                  |
+| transfer id         | Unique identifier of the transaction.                                                                                                                                                                                                  |
 
+## Appendix 3) Fields in the portfolio summary report
 
+| field               | description                                                                                                                                                                                                                            |
+|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| portfolio           | Portfolio name or the name of the Brokerage company.                                                                                                                                                                                   |
+| symbol              | A stock symbol is a unique series of letters assigned to a security for trading purposes. Stocks listed on the New York Stock Exchange (NYSE) can have four or fewer letters. Nasdaq-listed securities can have up to five characters. |
+| quantity            | The number of the shares that you owns.                                                                                                                                                                                                |
+| average price       | The average price is calculated by dividing your cost (execution price + commission) by the quantity of your position. This value is used to determine your P&L.                                                                       |
+| market price        | Market price represents the market valuation per share of a company.                                                                                                                                                                   |
+| market value        | The total market value of the asset.                                                                                                                                                                                                   |
+| investment          | The total invested amounts when you have bought the asset.                                                                                                                                                                             |
+| P/L                 | The amount of profit and loss on the asset.                                                                                                                                                                                            |
+| costs               | Sum of the costs, i.e. trading fee, tax                                                                                                                                                                                                |
+| deposit total       | The sum of the deposits. It has meaning in case of currencies.                                                                                                                                                                         |
+| withdrawal total    | The sum of the withdrawals. It has meaning in case of currencies.                                                                                                                                                                      |
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
