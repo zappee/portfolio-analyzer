@@ -4,6 +4,29 @@
 
 > keywords: java, portfolio, stock market, gdax, interactive broker, etoro, prise, report, currency, exchange rate
 
+## Table of contents
+* [1) Overview]()
+* [2) How the tool works]()
+* [3) How to execute the tool]()
+  * [3.1) Downloading the trading-history data from a brokerage company]()
+  * [3.2) Trading history file transformation]()
+  * [3.3) Combine multiple trading-history files into one]()
+  * [3.4) Showing the trading history file]()
+  * [3.5) Downloading the real time market price of a company]()
+  * [3.6) Generating the portfolio summary report]()
+    * [3.6.1) Portfolio summary]()
+    * [3.6.2) Portfolio report]()
+* [4) Generating your daily portfolio summary after the market closed]()
+* [5) Generating historical portfolio summaries]()
+* [6) Generating a portfolio summary diagram]()
+* [7) Installation and system requirements]()
+* [8) Troubleshooting]()
+* [9) How to Contribute]()
+* [Appendix 1) Supported transaction types]()
+* [Appendix 2) Fields in the portfolio summary report]()
+
+---
+
 ## 1) Overview
 Investors diversificate investments and build portfolio while investing money on stock market.
 Diversification is the practice of spreading your investments around so that your exposure to any one type of asset is limited.
@@ -663,10 +686,20 @@ For example if you decided that you will use this nice tool from now, but you wo
 That script will generate historical data that you can use to generate your portfolio performance charts.
 
 ## 6) Generating a portfolio summary diagram
+In this project I use [gnuplot][gnuplot] to draw charts, but you can use any other tool like the embedded chart of [Libre Office Calc][libreoffice] or Excel.
+Gnuplot is a great tool, it is a swiss knife. The benefits of using this tool are
+* Portable command-line driven graphing utility for Linux, OS/2, MS Windows, OSX, VMS, and many other platforms
+* Powerful and excellent graphic tool
+* The source code is copyrighted but freely distributed (i.e., you don't have to pay for it)
+* Simple to use
+
+A 
 
 ## 7) Installation and system requirements
 
 ## 8) Troubleshooting
+
+## 9) How to Contribute
 
 debug:
 -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
@@ -691,5 +724,7 @@ java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005   -jar t
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
 [dillinger]: https://dillinger.io
 [bux]: https://www.bse.hu
+[gnuplot]: http://www.gnuplot.info
+[libreoffice]: https://www.libreoffice.org
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
