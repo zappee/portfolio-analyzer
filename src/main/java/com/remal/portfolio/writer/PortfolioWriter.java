@@ -215,7 +215,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             var profitAndLossPercent = product.getProfitAndLossPercent();
 
                             if (BigDecimals.isNotZero(product.getQuantity())) {
-                                var price = product.getMarketPrice().getUnitPrice();
+                                var marketPrice = product.getMarketPrice();
+                                var price = Objects.isNull(marketPrice) ? null : marketPrice.getUnitPrice();
                                 report
                                     .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), widths))
                                     .append(getCell(Label.HEADER_SYMBOL, product.getSymbol(), widths))
@@ -709,10 +710,14 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
             portfolio.getProducts().forEach((symbol, product) -> {
                 if (BigDecimals.isNotZero(product.getQuantity())) {
+                    var marketPrice = Objects.isNull(product.getMarketPrice())
+                            ? null
+                            : product.getMarketPrice().getUnitPrice();
+
                     updateWidth(widths, Label.HEADER_SYMBOL, product.getSymbol());
                     updateWidth(widths, Label.HEADER_QUANTITY, product.getQuantity());
                     updateWidth(widths, Label.HEADER_AVG_PRICE, product.getAveragePrice());
-                    updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, product.getMarketPrice().getUnitPrice());
+                    updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, marketPrice);
                     updateWidth(widths, Label.HEADER_MARKET_VALUE, product.getMarketValue());
                     updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
                     updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());

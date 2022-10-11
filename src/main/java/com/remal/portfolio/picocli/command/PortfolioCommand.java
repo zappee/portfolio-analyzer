@@ -17,8 +17,11 @@ import com.remal.portfolio.writer.PortfolioWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 
 /**
@@ -110,7 +113,11 @@ public class PortfolioCommand implements Callable<Integer> {
                 ZoneId.of(inputArgGroup.getZone()),
                 inputArgGroup.getDateTimePattern(),
                 inputArgGroup.getTo());
-        marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
+
+        var dataProviderFile = inputArgGroup.getDataProviderFile();
+        if (Objects.nonNull(dataProviderFile) && Files.exists(Path.of(dataProviderFile))) {
+            marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
+        }
 
         // writer
         var zone = ZoneId.of(outputArgGroup.getZone());

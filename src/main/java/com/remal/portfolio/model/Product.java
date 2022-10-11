@@ -127,9 +127,13 @@ public class Product {
      * @return market value of the product
      */
     public BigDecimal getMarketValue() {
-        return quantity
-                .multiply(marketPrice.getUnitPrice())
-                .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+        if (Objects.isNull(marketPrice)) {
+            return null;
+        } else {
+            return quantity
+                    .multiply(marketPrice.getUnitPrice())
+                    .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
+        }
     }
 
     /**
@@ -164,8 +168,9 @@ public class Product {
      */
     public BigDecimal getProfitAndLoss() {
         var investedAmount = getInvestedAmount();
-        return Objects.nonNull(investedAmount)
-                ? getMarketValue().subtract(investedAmount)
+        var marketValue = getMarketValue();
+        return Objects.nonNull(investedAmount) && Objects.nonNull(marketValue)
+                ? marketValue.subtract(investedAmount)
                 : null;
     }
 
@@ -177,10 +182,11 @@ public class Product {
     public BigDecimal getProfitAndLossPercent() {
         var hundred = BigDecimal.valueOf(100);
         var investedAmount = getInvestedAmount();
-        if (Objects.isNull(investedAmount)) {
+        var marketValue = getMarketValue();
+        if (Objects.isNull(investedAmount) || Objects.isNull(marketValue)) {
             return null;
         } else {
-            return getMarketValue()
+            return marketValue
                     .divide(investedAmount, MathContext.DECIMAL64)
                     .multiply(hundred)
                     .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
