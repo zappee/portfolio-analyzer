@@ -700,9 +700,9 @@ This is the generated chart:
 
 ## 7) Installation and system requirements
 The `Remal Portfolio Analyzer` is a portable command-line Java application that you can run on all known platform, i.e. every Linux/Unix, every macOS and Mac OS X, Microsoft Windows, etc.
-Before the execution you must install `Oracle Java SE 17` or `OpenJDK 17`.
+But before the execution you must install `Oracle Java SE 17` or `OpenJDK 17` if it is not installed yet.
 
-Installation documentation:
+Installation documents:
 * Oracle Java SE 17: [link](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 * OpenJDK 17: [link](https://openjdk.org/projects/jdk/17) 
 
