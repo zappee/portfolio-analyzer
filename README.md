@@ -715,22 +715,23 @@ Asking for help is one of the easiest and most efficient ways to contribute to O
 With the right questions, on good forums, you often help other users as well.
 Also, you might toward attention to something that needs to be improved.
 It may be a bug fix, enhancement or improving documentation.
+
 People quickly become blind to things they watch from too close.
 Sometimes simple questions from novices can lead to significant improvements in the project.
 There are no wrong questions, but there are sometimes questions that may irritate the persons who have the best answers.
-Here are 5 tips to get your answer faster:
 
+__Here are 5 tips to get your answer faster:__
 * Use the right forum
 * Google before asking
 * Use a clear and precise issue description
 * Provide a reduced test case
 * Explain the context
 
-If you would like to improve the `Remal Portfolio Analyzer` then please
+__If you would like to improve the `Remal Portfolio Analyzer` then please__
 * Opening an issue
 * Send a pull request on Git
 
-Coding rules and conventions
+__Coding rules and conventions__
 * Feel free to write awesome code.
 * Do not hesitate to open an issue or a pull request just because you fear making a mistake.
 
