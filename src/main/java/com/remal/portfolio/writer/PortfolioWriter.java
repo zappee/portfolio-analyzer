@@ -142,8 +142,6 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         // table header
         if (!hideHeader) {
             LabelCollection.PORTFOLIO_TABLE_HEADERS
-                    .stream()
-                    .filter(x -> columnsToHide.contains(x.name()))
                     .forEach(labelKey -> report
                             .append(labelKey.getLabel(language))
                             .append(csvSeparator));
