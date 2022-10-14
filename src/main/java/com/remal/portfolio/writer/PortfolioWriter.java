@@ -106,7 +106,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param filename the report file name
      * @param portfolioReport the report
      */
-    public void writePortfolioReport(FileWriter.WriteMode writeMode, String filename, final PortfolioReport portfolioReport) {
+    public void writePortfolioReport(FileWriter.WriteMode writeMode,
+                                     String filename,
+                                     final PortfolioReport portfolioReport) {
         if (Objects.nonNull(filename) && Files.getFileType(filename) == FileType.CSV) {
             log.debug("> writing the portfolio report to \"{}\", write-mode: {}...", filename, writeMode);
             generatePortfolioCsvReport(writeMode, filename, portfolioReport);
@@ -371,7 +373,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             // cash
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_CASH_PER_CURRENCY), reportEntry.getCashInPortfolio());
             reportEntry.getCashInPortfolio().forEach(consumer);
-            var sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
+            var sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // exchange rates
@@ -381,31 +383,31 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             // deposits
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY), reportEntry.getDeposits());
             reportEntry.getDeposits().forEach(consumer);
-            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getDeposits());
+            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getDeposits());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // withdrawals
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY), reportEntry.getWithdrawals());
             reportEntry.getWithdrawals().forEach(consumer);
-            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
+            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // investments
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY), reportEntry.getInvestments());
             reportEntry.getInvestments().forEach(consumer);
-            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getInvestments());
+            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getInvestments());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // market values
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY), reportEntry.getMarketValues());
             reportEntry.getMarketValues().forEach(consumer);
-            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
+            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // profits / losses
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY), reportEntry.getProfitLoss());
             reportEntry.getProfitLoss().forEach(consumer);
-            sum = sumAndExchange(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
+            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
             sb.setLength(sb.length() - csvSeparator.length());
             sb.append(NEW_LINE);
@@ -425,6 +427,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     /**
      * Generates the report summary.
      *
+     * @param portfolioReport the report
      * @return the report summary
      */
     private StringBuilder generatePortfolioSummaryMarkdownReport(PortfolioReport portfolioReport) {
@@ -577,6 +580,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      *
      * @param rates exchange rates
      * @param valuesToSum values to sum
+     * @param labelForCurrency currency label
+     * @param labelForTotal total label
      * @param labelWidth label will align left on this
      * @return the footer content
      */
@@ -585,19 +590,23 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                                                          Label labelForCurrency,
                                                          Label labelForTotal,
                                                          int labelWidth) {
-        if (valuesToSum.isEmpty()) {
-            return new StringBuilder();
-        } else {
+        var sb = new StringBuilder();
+        if (!valuesToSum.isEmpty()) {
             var labelAsString = labelForTotal.getLabel(language).replace("{0}", baseCurrency.name());
-            return new StringBuilder()
+            sb
                     .append(MARKDOWN_HR)
-                    .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT))
-                    .append(MARKDOWN_LIST).append(labelAsString)
-                    .append(": ")
-                    .append(Strings.space(labelWidth - labelAsString.length()))
-                    .append(decimalFormatter.format(sumAndExchange(rates, valuesToSum), BigDecimals.SCALE_DEFAULT))
-                    .append(NEW_LINE);
+                    .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT));
+
+            if (!rates.isEmpty()) {
+                sb
+                        .append(MARKDOWN_LIST).append(labelAsString)
+                        .append(": ")
+                        .append(Strings.space(labelWidth - labelAsString.length()))
+                        .append(decimalFormatter.format(exchangeAndSun(rates, valuesToSum), BigDecimals.SCALE_DEFAULT))
+                        .append(NEW_LINE);
+            }
         }
+        return sb;
     }
 
     /**
@@ -607,8 +616,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param valuesToSum values to sum
      * @return summed value in base currency
      */
-    private BigDecimal sumAndExchange(Map<String, BigDecimal> rates,
-                                  Map<String, BigDecimal> valuesToSum) {
+    private BigDecimal exchangeAndSun(Map<String, BigDecimal> rates,
+                                      Map<String, BigDecimal> valuesToSum) {
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
         valuesToSum.forEach((symbol, quantity) -> {
             var exchangeRateSymbol = symbol + "-" + baseCurrency;

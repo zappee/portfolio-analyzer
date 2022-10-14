@@ -122,7 +122,9 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
                                         .put(cellConfig[1], getBigDecimal(index, cells, Label.HEADER_EMPTY));
                                 case LABEL_TOTAL_EXCHANGE_RATE -> portfolioReport
                                         .getExchangeRates()
-                                        .put(cellConfig[1] + "-" + baseCurrency, getBigDecimal(index, cells, Label.HEADER_EMPTY));
+                                        .put(
+                                                cellConfig[1] + "-" + baseCurrency,
+                                                getBigDecimal(index, cells, Label.HEADER_EMPTY));
                                 case LABEL_TOTAL_DEPOSIT_PER_CURRENCY -> portfolioReport
                                         .getDeposits()
                                         .put(cellConfig[1], getBigDecimal(index, cells, Label.HEADER_EMPTY));

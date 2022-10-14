@@ -140,6 +140,7 @@ public abstract class Writer<T> {
      * Get the history data from file.
      *
      * @param filename data file name
+     * @return data from the history file
      */
     protected abstract List<T> getHistoryFromFile(String filename);
 

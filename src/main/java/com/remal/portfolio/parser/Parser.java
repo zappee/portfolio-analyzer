@@ -131,6 +131,7 @@ public abstract class Parser<T> {
     /**
      * Builds a parser instance.
      *
+     * @param <T> the type of the parser
      * @param parserType parser type
      * @param arguments parameters from the command line interface
      * @param language report language
