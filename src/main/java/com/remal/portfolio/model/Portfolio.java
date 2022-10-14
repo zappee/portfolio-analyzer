@@ -76,7 +76,9 @@ public class Portfolio {
 
         } else if (transaction.getType() == TransactionType.SELL || transaction.getType() == TransactionType.DIVIDEND) {
             var clonedTransaction = transaction.toBuilder().type(TransactionType.CREDIT).build();
-            products.get(currency).addTransaction(clonedTransaction);
+            var product = products.computeIfAbsent(currency, c ->
+                    new Product(clonedTransaction.getPortfolio(), c, CurrencyType.getEnum(currency)));
+            product.addTransaction(clonedTransaction);
         }
 
         if (BigDecimals.isNotNullAndNotZero(transaction.getFee())) {
