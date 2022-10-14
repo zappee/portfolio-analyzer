@@ -218,10 +218,11 @@ public class Product {
     private void updateSupply() {
         supply.clear();
 
-        transactions.forEach(transaction -> {
+        for (Transaction transaction : transactions) {
             switch (transaction.getType()) {
-                case BUY, DEPOSIT -> {
-                    var price = transaction.getPrice();
+                case BUY, DEPOSIT, CREDIT -> {
+                    var c = transaction.getCurrency().name();
+                    var price = CurrencyType.isValid(c) ? BigDecimal.ONE : transaction.getPrice();
                     var volume = supply.getOrDefault(price, BigDecimal.ZERO);
                     supply.put(price, volume.add(transaction.getQuantity()));
                 }
@@ -236,7 +237,7 @@ public class Product {
                     // do nothing here
                 }
             }
-        });
+        }
     }
 
     /**
