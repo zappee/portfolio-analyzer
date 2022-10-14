@@ -95,7 +95,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         writer.setLanguage(outputArgGroup.getLanguage());
         writer.setDateTimePattern(outputArgGroup.getDateTimePattern());
         writer.setZone(ZoneId.of(outputArgGroup.getZone()));
-        writer.setColumnsToHide(outputArgGroup.getColumnsToHide());
+        writer.setColumnsToHide(outputArgGroup.getColumnsToHide().stream().map(String::toUpperCase).toList());
         return writer;
     }
 
@@ -142,6 +142,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         // table header
         if (!hideHeader) {
             LabelCollection.PORTFOLIO_TABLE_HEADERS
+                    .stream()
+                    .filter(x -> columnsToHide.contains(x.name()))
                     .forEach(labelKey -> report
                             .append(labelKey.getLabel(language))
                             .append(csvSeparator));
