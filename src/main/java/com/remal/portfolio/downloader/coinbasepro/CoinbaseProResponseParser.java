@@ -109,8 +109,7 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
      * @return list of transactions
      */
     public List<Transaction> parse() {
-        List<Transaction> transactions = new ArrayList<>();
-        downloadTransfers(transactions);
+        var transactions = downloadTransfers();
         productIds
                 .stream()
                 .filter(product -> Filter.baseCurrencyFilter(baseCurrency, product))
@@ -128,9 +127,10 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
      * Downloads your transfers (deposits and withdrawals) from Coinbase
      * and add them to the transaction list.
      *
-     * @param transactions list of transactions
+     * @return list of transactions
      */
-    private void downloadTransfers(List<Transaction> transactions) {
+    private List<Transaction> downloadTransfers() {
+        List<Transaction> transactions = new ArrayList<>();
         try {
             var endpoint = "/transfers";
             var jsonArray = getJsonArrayResponse(endpoint);
@@ -149,8 +149,9 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                                 .tradeDate(LocalDateTimes.toLocalDateTime(pattern, (String) fillJson.get("created_at")))
                                 .quantity(new BigDecimal(fillJson.get("amount").toString()))
                                 .price(isCurrency ? BigDecimal.ONE : BigDecimal.TEN)
+                                .priceCurrency(isCurrency ? CurrencyType.getEnum(symbol) : CurrencyType.UNKNOWN)
                                 .fee(isCurrency ? BigDecimal.ZERO : BigDecimal.TEN)
-                                .currency(isCurrency ? CurrencyType.getEnum(symbol) : CurrencyType.UNKNOWN)
+                                .feeCurrency(isCurrency ? CurrencyType.getEnum(symbol) : CurrencyType.UNKNOWN)
                                 .symbol(symbol)
                                 .transferId(fillJson.get("id").toString())
                                 .build();
@@ -161,6 +162,8 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
             log.error("An unexpected error has occurred while downloading transfers from Coinbase Pro. {}.",
                     e.toString());
         }
+
+        return transactions;
     }
 
     /**
@@ -191,8 +194,9 @@ public class CoinbaseProResponseParser extends CoinbaseProRequestBuilder {
                                 .tradeDate(LocalDateTimes.toLocalDateTime(fillJson.get("created_at").toString()))
                                 .quantity(new BigDecimal(fillJson.get("size").toString()))
                                 .price(new BigDecimal(fillJson.get("price").toString()))
+                                .priceCurrency(CurrencyType.getEnum(productId.split("-")[1]))
                                 .fee(new BigDecimal(fillJson.get("fee").toString()))
-                                .currency(CurrencyType.getEnum(productId.split("-")[1]))
+                                .feeCurrency(CurrencyType.getEnum(productId.split("-")[1]))
                                 .symbol(productId)
                                 .tradeId(fillJson.get("trade_id").toString())
                                 .orderId(fillJson.get("order_id").toString())

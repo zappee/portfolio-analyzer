@@ -49,6 +49,11 @@ public class Transaction {
     private BigDecimal price;
 
     /**
+     * The unit of the price
+     */
+    private CurrencyType priceCurrency;
+
+    /**
      * Trade commission, also called a stock trading fee. This is a brokerage
      * fee that is charged when you buy or sell stocks. You may also pay
      * commissions or fees for buying and selling other investments, such as
@@ -57,9 +62,9 @@ public class Transaction {
     private BigDecimal fee;
 
     /**
-     * The unit of the price and fee.
+     * The unit of the fee.
      */
-    private CurrencyType currency;
+    private CurrencyType feeCurrency;
 
     /**
      * A symbol is an abbreviation used to uniquely identify publicly

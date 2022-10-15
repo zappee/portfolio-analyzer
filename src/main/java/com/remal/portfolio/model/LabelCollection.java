@@ -23,8 +23,9 @@ public class LabelCollection {
             Label.HEADER_TRADE_DATE,
             Label.HEADER_QUANTITY,
             Label.HEADER_PRICE,
+            Label.HEADER_PRICE_CURRENCY,
             Label.HEADER_FEE,
-            Label.HEADER_CURRENCY,
+            Label.HEADER_FEE_CURRENCY,
             Label.HEADER_ORDER_ID,
             Label.HEADER_TRADE_ID,
             Label.HEADER_TRANSFER_ID);

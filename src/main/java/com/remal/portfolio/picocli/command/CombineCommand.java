@@ -119,8 +119,9 @@ public class CombineCommand implements Callable<Integer> {
                 tr.setTradeDate(sourceCurrent.getTradeDate());
                 tr.setQuantity(sourceCurrent.getQuantity());
                 tr.setPrice(sourceCurrent.getPrice());
+                tr.setPriceCurrency(sourceCurrent.getPriceCurrency());
                 tr.setFee(sourceCurrent.getFee());
-                tr.setCurrency(sourceCurrent.getCurrency());
+                tr.setFeeCurrency(sourceCurrent.getFeeCurrency());
                 tr.setSymbol(sourceCurrent.getSymbol());
                 tr.setTransferId(sourceCurrent.getTransferId());
                 tr.setTradeId(sourceCurrent.getTradeId());

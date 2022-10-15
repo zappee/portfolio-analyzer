@@ -25,11 +25,6 @@ public enum Label {
     /**
      * A column header.
      */
-    HEADER_CURRENCY("header.currency"),
-
-    /**
-     * A column header.
-     */
     HEADER_DATA_PROVIDER("header.data-provider"),
 
     /**
@@ -46,6 +41,11 @@ public enum Label {
      * A column header.
      */
     HEADER_FEE("header.fee"),
+
+    /**
+     * A column header.
+     */
+    HEADER_FEE_CURRENCY("header.fee-currency"),
 
     /**
      * A column header.
@@ -76,6 +76,11 @@ public enum Label {
      * A column header.
      */
     HEADER_PRICE("header.price"),
+
+    /**
+     * A column header.
+     */
+    HEADER_PRICE_CURRENCY("header.price-currency"),
 
     /**
      * A column header.

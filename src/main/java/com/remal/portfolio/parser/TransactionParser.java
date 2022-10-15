@@ -133,8 +133,9 @@ public class TransactionParser extends Parser<Transaction> {
                                     .tradeDate(getLocalDateTime(index, fields))
                                     .quantity(getBigDecimal(index, fields, Label.HEADER_QUANTITY))
                                     .price(getBigDecimal(index, fields, Label.HEADER_PRICE))
+                                    .priceCurrency(getCurrencyType(index, fields))
                                     .fee(getBigDecimal(index, fields, Label.HEADER_FEE))
-                                    .currency(getCurrencyType(index, fields))
+                                    .feeCurrency(getCurrencyType(index, fields))
                                     .orderId(getString(index, fields, Label.HEADER_ORDER_ID))
                                     .tradeId(getString(index, fields, Label.HEADER_TRADE_DATE))
                                     .transferId(getString(index, fields, Label.HEADER_TRANSFER_ID))
@@ -184,7 +185,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return next index value
      */
     private CurrencyType getCurrencyType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_CURRENCY.name())) {
+        if (missingColumns.contains(Label.HEADER_PRICE_CURRENCY.name())) {
             return null;
         } else {
             return CurrencyType.getEnum(fields[index.getAndIncrement()].trim());

@@ -221,17 +221,17 @@ public class Product {
         for (Transaction transaction : transactions) {
             switch (transaction.getType()) {
                 case BUY, DEPOSIT, CREDIT -> {
-                    var c = transaction.getCurrency().name();
+                    var c = transaction.getPriceCurrency().name();
                     var price = CurrencyType.isValid(c) ? BigDecimal.ONE : transaction.getPrice();
                     var volume = supply.getOrDefault(price, BigDecimal.ZERO);
                     supply.put(price, volume.add(transaction.getQuantity()));
                 }
                 case SELL, WITHDRAWAL -> {
                     if (InventoryValuationType.FIFO == transaction.getInventoryValuation()) {
-                        updateSupplyBasedOnFifoSell(supply, transaction);
-                    } else {
-                        updateSupplyBasedOnLifoSell(supply, transaction);
-                    }
+                            updateSupplyBasedOnFifoSell(supply, transaction);
+                        } else {
+                            updateSupplyBasedOnLifoSell(supply, transaction);
+                        }
                 }
                 default -> {
                     // do nothing here

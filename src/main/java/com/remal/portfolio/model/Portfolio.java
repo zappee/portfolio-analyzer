@@ -47,7 +47,7 @@ public class Portfolio {
     public void addTransaction(Transaction transaction) {
         var portfolio = transaction.getPortfolio();
         var symbol = transaction.getSymbol();
-        var currency = transaction.getCurrency();
+        var currency = transaction.getPriceCurrency();
         var product = products.computeIfAbsent(symbol, v -> new Product(portfolio, symbol, currency));
 
         product.addTransaction(transaction);
@@ -61,7 +61,7 @@ public class Portfolio {
      * @param transaction transaction
      */
     private void tradePostProcessing(Transaction transaction) {
-        var currency = transaction.getCurrency().name();
+        var currency = transaction.getPriceCurrency().name();
 
         if (transaction.getType() == TransactionType.BUY) {
             var cloned = transaction
@@ -103,7 +103,7 @@ public class Portfolio {
     private void addTransactionToProduct(String currency, Transaction transaction) {
         var product = products.computeIfAbsent(
                 currency,
-                p -> new Product(transaction.getPortfolio(), currency, transaction.getCurrency()));
+                p -> new Product(transaction.getPortfolio(), currency, transaction.getPriceCurrency()));
         product.addTransaction(transaction);
     }
 }

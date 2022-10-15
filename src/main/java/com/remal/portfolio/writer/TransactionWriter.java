@@ -103,8 +103,9 @@ public class TransactionWriter extends Writer<Transaction> {
                         .append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), csvSeparator))
                         .append(getCell(Label.HEADER_QUANTITY, transaction.getQuantity(), csvSeparator))
                         .append(getCell(Label.HEADER_PRICE, transaction.getPrice(), csvSeparator))
+                        .append(getCell(Label.HEADER_PRICE_CURRENCY, transaction.getPriceCurrency(), csvSeparator))
                         .append(getCell(Label.HEADER_FEE, transaction.getFee(), csvSeparator))
-                        .append(getCell(Label.HEADER_CURRENCY, transaction.getCurrency(), csvSeparator))
+                        .append(getCell(Label.HEADER_FEE_CURRENCY, transaction.getFeeCurrency(), csvSeparator))
                         .append(getCell(Label.HEADER_ORDER_ID, transaction.getOrderId(), csvSeparator))
                         .append(getCell(Label.HEADER_TRADE_ID, transaction.getTradeId(), csvSeparator))
                         .append(getCell(Label.HEADER_TRANSFER_ID, transaction.getTransferId()))
@@ -172,8 +173,9 @@ public class TransactionWriter extends Writer<Transaction> {
                     report.append(getCell(Label.HEADER_TRADE_DATE, transaction.getTradeDate(), widths));
                     report.append(getCell(Label.HEADER_QUANTITY, transaction.getQuantity(), widths));
                     report.append(getCell(Label.HEADER_PRICE, transaction.getPrice(), widths));
+                    report.append(getCell(Label.HEADER_PRICE_CURRENCY, transaction.getPriceCurrency(), widths));
                     report.append(getCell(Label.HEADER_FEE, transaction.getFee(), widths));
-                    report.append(getCell(Label.HEADER_CURRENCY, transaction.getCurrency(), widths));
+                    report.append(getCell(Label.HEADER_FEE_CURRENCY, transaction.getFeeCurrency(), widths));
                     report.append(getCell(Label.HEADER_ORDER_ID, transaction.getOrderId(), widths));
                     report.append(getCell(Label.HEADER_TRADE_ID, transaction.getTradeId(), widths));
                     report.append(getCell(Label.HEADER_TRANSFER_ID, transaction.getTransferId(), widths));
@@ -210,8 +212,9 @@ public class TransactionWriter extends Writer<Transaction> {
             updateWidth(widths, Label.HEADER_TRADE_DATE, transaction.getTradeDate());
             updateWidth(widths, Label.HEADER_QUANTITY, transaction.getQuantity());
             updateWidth(widths, Label.HEADER_PRICE, transaction.getPrice());
+            updateWidth(widths, Label.HEADER_PRICE_CURRENCY, transaction.getPriceCurrency());
             updateWidth(widths, Label.HEADER_FEE, transaction.getFee());
-            updateWidth(widths, Label.HEADER_CURRENCY, transaction.getCurrency());
+            updateWidth(widths, Label.HEADER_FEE_CURRENCY, transaction.getFeeCurrency());
             updateWidth(widths, Label.HEADER_SYMBOL, transaction.getSymbol());
             updateWidth(widths, Label.HEADER_TRANSFER_ID, transaction.getTransferId());
             updateWidth(widths, Label.HEADER_TRADE_ID, transaction.getTradeId());

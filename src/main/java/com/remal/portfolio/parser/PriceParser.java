@@ -115,7 +115,7 @@ public class PriceParser extends Parser<Price> {
      * @return the next index value
      */
     private DataProviderType getDataProvider(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_CURRENCY.name())) {
+        if (missingColumns.contains(Label.HEADER_PRICE_CURRENCY.name())) {
             return null;
         } else {
             return DataProviderType.getEnum(fields[index.getAndIncrement()].trim());
