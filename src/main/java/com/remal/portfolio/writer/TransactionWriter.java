@@ -70,11 +70,12 @@ public class TransactionWriter extends Writer<Transaction> {
         // report title
         if (!hideTitle) {
             report
-                    .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
+                    .append(Label.TITLE_TRANSACTION_REPORT.getLabel(language))
                     .append(NEW_LINE)
-                    .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
-                    .append(": ")
+                    .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
                     .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
+                    .append(NEW_LINE)
+                    .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
                     .append(NEW_LINE);
         }
 
@@ -127,14 +128,17 @@ public class TransactionWriter extends Writer<Transaction> {
         // report title
         if (!hideTitle) {
             report
-                    .append("# ")
-                    .append(Label.LABEL_TRANSACTION_REPORT.getLabel(language))
-                    .append(NEW_LINE)
-                    .append("_")
-                    .append(Label.TITLE_TRANSACTIONS_REPORT.getLabel(language))
-                    .append(": ")
+                    .append("# ").append(Label.TITLE_TRANSACTION_REPORT.getLabel(language)).append(NEW_LINE)
+
+                    .append(MARKDOWN_ITALIC)
+                    .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
                     .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
-                    .append("_")
+                    .append(MARKDOWN_ITALIC)
+                    .append(NEW_LINE)
+
+                    .append(MARKDOWN_ITALIC)
+                    .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
+                    .append(MARKDOWN_ITALIC)
                     .append(NEW_LINE)
                     .append(NEW_LINE);
         }

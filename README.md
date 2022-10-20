@@ -2,7 +2,7 @@
 
 # Remal Portfolio Analyzer
 
-> keywords: java, portfolio, stock market, gdax, interactive broker, etoro, prise, report, currency, exchange rate
+> keywords: java, portfolio, stock market, gdax, interactive brokers, etoro, prise, report, currency, exchange rate
 
 ## Table of contents
 * [1) Overview](#1-overview)
@@ -211,7 +211,7 @@ The following commands download and save your transaction history to a Markdown 
 The `*.csv` file can be opened as an Excel file.
 While opening the file use comma (`,`) for the CSV separator character.
 
-For the best user experience, open the `*.md` file with a Markdown editor like [dillinger][dillinger]. The resul you get is a wel formatted report:
+For the best user experience, open the `*.md` file with a Markdown editor like [dillinger][dillinger]. The result you get is a wel formatted report:
 
 |portfolio|symbol |type   |inventory valuation|trade date         |quantity          |price    |fee           |currency|order id     |trade id|transfer id  |
 |---------|-------|-------|-------------------|-------------------|------------------|---------|--------------|--------|-------------|--------|-------------|
@@ -469,7 +469,7 @@ EUR-HUF=YAHOO;EURHUF=X
 HUF-EUR=YAHOO;HUFEUR=X
 USD-EUR=YAHOO;USDEUR=X
 ```
-You can download a ready for use dictionary file here: [docs/market-data-providers.properties](docs/market-data-providers.properties)
+You can download a ready for use dictionary file here: [docs/portfolio/market-data-providers.properties](docs/portfolio/market-data-providers.properties)
 
 The following example shows you how to define the path to a dictionary file:
 ```
@@ -481,7 +481,7 @@ java \
  ```
 
 If you wish to save the price that the tool downloaded to a `price-history` file, then you can control the number of prices within a period with the `multiplicity` parameter.
-That way you can keep your price-history fila as small as possible.
+That way you can keep your price-history file as small as possible.
 Otherwise, the history file can be huge quickly, especially if you call this command from a loop.
 
 Another cool feature of the `price` command is that if you use a price-history file and the requested price exists in the history, then the tool will not connect to the internet to download the price.
@@ -689,7 +689,7 @@ That script will generate historical data that you can use to generate your port
 ## 6) Generating a portfolio summary diagram
 In this project I use [gnuplot][gnuplot] to draw charts, but you can use any other tool like the embedded chart of [Libre Office Calc][libreoffice] or Excel.
 Gnuplot is a great tool, it is a swiss knife. The benefits of using this tool are
-* Portable command-line driven graphing utility for Linux, OS/2, MS Windows, OSX, VMS, and many other platforms
+* Portable command-line driven graphing utility for Linux, OS/2, MS Windows, OSX, VMS, and other platforms
 * Powerful and excellent graphic tool
 * The source code is copyrighted but freely distributed (i.e., you don't have to pay for it)
 * Simple to use

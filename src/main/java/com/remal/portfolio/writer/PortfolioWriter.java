@@ -134,11 +134,14 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         // report title
         if (!hideTitle) {
             report
-                    .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
+                    .append(Label.TITLE_PORTFOLIO_SUMMARY.getLabel(language))
                     .append(NEW_LINE)
-                    .append(Label.TITLE_SUMMARY_REPORT.getLabel(language)).append(": ")
+                    .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
                     .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, portfolioReport.getGenerated()))
+                    .append(NEW_LINE)
+                    .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
                     .append(NEW_LINE);
+
         }
 
         // table header
@@ -158,6 +161,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     var profitAndLossPercent = product.getProfitAndLossPercent();
                     if (BigDecimals.isNotZero(product.getQuantity())) {
                         var price = product.getMarketPrice().getUnitPrice();
+                        var cost = exchangeAndSum(portfolioReport.getExchangeRates(), product.getFees());
                         report
                             .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), csvSeparator))
                             .append(getCell(Label.HEADER_SYMBOL, product.getSymbol(), csvSeparator))
@@ -168,7 +172,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             .append(getCell(Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount(), csvSeparator))
                             .append(getCell(Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss(), csvSeparator))
                             .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, profitAndLossPercent, csvSeparator))
-                            .append(getCell(Label.HEADER_COSTS, product.getCosts(), csvSeparator))
+                            .append(getCell(Label.HEADER_COSTS, cost, csvSeparator))
                             .append(getCell(Label.HEADER_DEPOSITS, product.getDeposits(), csvSeparator))
                             .append(getCell(Label.HEADER_WITHDRAWALS, product.getWithdrawals(), csvSeparator))
                             .append(NEW_LINE);
@@ -198,7 +202,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         // report title
         if (!hideTitle) {
-            report.append(generateTitle(portfolioReport.getGenerated()));
+            report.append(generateMarkdownTitle(portfolioReport.getGenerated()));
         }
 
         // table header
@@ -219,6 +223,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                             if (BigDecimals.isNotZero(product.getQuantity())) {
                                 var marketPrice = product.getMarketPrice();
                                 var price = Objects.isNull(marketPrice) ? null : marketPrice.getUnitPrice();
+                                var cost = exchangeAndSum(portfolioReport.getExchangeRates(), product.getFees());
                                 report
                                     .append(getCell(Label.HEADER_PORTFOLIO, portfolio.getName(), widths))
                                     .append(getCell(Label.HEADER_SYMBOL, product.getSymbol(), widths))
@@ -229,7 +234,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                                     .append(getCell(Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount(), widths))
                                     .append(getCell(Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss(), widths))
                                     .append(getCell(Label.HEADER_PROFIT_LOSS_PERCENT, profitAndLossPercent, widths))
-                                    .append(getCell(Label.HEADER_COSTS, product.getCosts(), widths))
+                                    .append(getCell(Label.HEADER_COSTS, cost, widths))
                                     .append(getCell(Label.HEADER_DEPOSITS, product.getDeposits(), widths))
                                     .append(getCell(Label.HEADER_WITHDRAWALS, product.getWithdrawals(), widths))
                                     .append(markdownSeparator)
@@ -373,7 +378,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             // cash
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_CASH_PER_CURRENCY), reportEntry.getCashInPortfolio());
             reportEntry.getCashInPortfolio().forEach(consumer);
-            var sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
+            var sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // exchange rates
@@ -383,31 +388,31 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
             // deposits
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY), reportEntry.getDeposits());
             reportEntry.getDeposits().forEach(consumer);
-            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getDeposits());
+            sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getDeposits());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // withdrawals
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY), reportEntry.getWithdrawals());
             reportEntry.getWithdrawals().forEach(consumer);
-            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
+            sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // investments
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY), reportEntry.getInvestments());
             reportEntry.getInvestments().forEach(consumer);
-            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getInvestments());
+            sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getInvestments());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // market values
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY), reportEntry.getMarketValues());
             reportEntry.getMarketValues().forEach(consumer);
-            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
+            sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // profits / losses
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY), reportEntry.getProfitLoss());
             reportEntry.getProfitLoss().forEach(consumer);
-            sum = exchangeAndSun(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
+            sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
             sb.setLength(sb.length() - csvSeparator.length());
             sb.append(NEW_LINE);
@@ -539,6 +544,25 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         portfolioReport.getMarketValues().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
         portfolioReport.getProfitLoss().forEach(formatter.getBiConsumer(BigDecimals.SCALE_DEFAULT));
 
+        // summaries
+        BigDecimal sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getCashInPortfolio());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
+        sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getDeposits());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
+        sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getWithdrawals());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
+        sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getInvestments());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
+        sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getMarketValues());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
+        sum = exchangeAndSum(portfolioReport.getExchangeRates(), portfolioReport.getProfitLoss());
+        updateFieldMaxLength(sum, formatter, BigDecimal.ONE);
+
         return formatter;
     }
 
@@ -593,17 +617,22 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         var sb = new StringBuilder();
         if (!valuesToSum.isEmpty()) {
             var labelAsString = labelForTotal.getLabel(language).replace("{0}", baseCurrency.name());
-            sb
-                    .append(MARKDOWN_HR)
-                    .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT));
+            var value = mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT);
 
-            if (!rates.isEmpty()) {
+            if (!value.isEmpty()) {
                 sb
-                        .append(MARKDOWN_LIST).append(labelAsString)
-                        .append(": ")
-                        .append(Strings.space(labelWidth - labelAsString.length()))
-                        .append(decimalFormatter.format(exchangeAndSun(rates, valuesToSum), BigDecimals.SCALE_DEFAULT))
-                        .append(NEW_LINE);
+                        .append(MARKDOWN_HR)
+                        .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT));
+
+                if (!rates.isEmpty()) {
+                    var sum = exchangeAndSum(rates, valuesToSum);
+                    sb
+                            .append(MARKDOWN_LIST).append(labelAsString)
+                            .append(": ")
+                            .append(Strings.space(labelWidth - labelAsString.length()))
+                            .append(Objects.isNull(sum) ? "" : decimalFormatter.format(sum, BigDecimals.SCALE_DEFAULT))
+                            .append(NEW_LINE);
+                }
             }
         }
         return sb;
@@ -616,8 +645,13 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param valuesToSum values to sum
      * @return summed value in base currency
      */
-    private BigDecimal exchangeAndSun(Map<String, BigDecimal> rates,
+    private BigDecimal exchangeAndSum(Map<String, BigDecimal> rates,
                                       Map<String, BigDecimal> valuesToSum) {
+
+        if (rates.isEmpty()) {
+            return null;
+        }
+
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
         valuesToSum.forEach((symbol, quantity) -> {
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
@@ -690,18 +724,21 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
      * @param tradeDate the last trade date in the report
      * @return the report title as a string
      */
-    private StringBuilder generateTitle(LocalDateTime tradeDate) {
+    private StringBuilder generateMarkdownTitle(LocalDateTime tradeDate) {
         return new StringBuilder()
-            .append("# ")
-            .append(Label.LABEL_PORTFOLIO_SUMMARY.getLabel(language))
-            .append(NEW_LINE)
-            .append("_")
-            .append(Label.TITLE_SUMMARY_REPORT.getLabel(language))
-            .append(": ")
-            .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, tradeDate))
-            .append("_")
-            .append(NEW_LINE)
-            .append(NEW_LINE);
+                .append("# ").append(Label.TITLE_PORTFOLIO_SUMMARY.getLabel(language)).append(NEW_LINE)
+
+                .append(MARKDOWN_ITALIC)
+                .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
+                .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, tradeDate))
+                .append(MARKDOWN_ITALIC)
+                .append(NEW_LINE)
+
+                .append(MARKDOWN_ITALIC)
+                .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", baseCurrency.name()))
+                .append(MARKDOWN_ITALIC)
+                .append(NEW_LINE)
+                .append(NEW_LINE);
     }
 
     /**
@@ -719,19 +756,19 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
             portfolio.getProducts().forEach((symbol, product) -> {
                 if (BigDecimals.isNotZero(product.getQuantity())) {
-                    var marketPrice = Objects.isNull(product.getMarketPrice())
-                            ? null
-                            : product.getMarketPrice().getUnitPrice();
-
                     updateWidth(widths, Label.HEADER_SYMBOL, product.getSymbol());
                     updateWidth(widths, Label.HEADER_QUANTITY, product.getQuantity());
                     updateWidth(widths, Label.HEADER_AVG_PRICE, product.getAveragePrice());
-                    updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, marketPrice);
+                    updateWidth(widths, Label.HEADER_MARKET_UNIT_PRICE, Objects.isNull(product.getMarketPrice())
+                            ? null
+                            : product.getMarketPrice().getUnitPrice());
                     updateWidth(widths, Label.HEADER_MARKET_VALUE, product.getMarketValue());
                     updateWidth(widths, Label.HEADER_INVESTED_AMOUNT, product.getInvestedAmount());
                     updateWidth(widths, Label.HEADER_PROFIT_LOSS, product.getProfitAndLoss());
                     updateWidth(widths, Label.HEADER_PROFIT_LOSS_PERCENT, product.getProfitAndLossPercent());
-                    updateWidth(widths, Label.HEADER_COSTS, product.getCosts());
+                    updateWidth(widths, Label.HEADER_COSTS, exchangeAndSum(
+                            portfolioReport.getExchangeRates(),
+                            product.getFees()));
                     updateWidth(widths, Label.HEADER_DEPOSITS, product.getDeposits());
                     updateWidth(widths, Label.HEADER_WITHDRAWALS, product.getWithdrawals());
                 }

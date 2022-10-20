@@ -114,14 +114,17 @@ public class PortfolioCommand implements Callable<Integer> {
                 inputArgGroup.getDateTimePattern(),
                 inputArgGroup.getTo());
 
-        var dataProviderFile = inputArgGroup.getDataProviderFile();
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var now = LocalDateTime.now();
+        var dataProviderFile = LocalDateTimes.toString(zone, inputArgGroup.getDataProviderFile(), now);
         if (Objects.nonNull(dataProviderFile) && Files.exists(Path.of(dataProviderFile))) {
             marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
+        } else {
+            log.warn("skipping market data price calculation because the data-provider-file is empty or it does not "
+                    + "exist.");
         }
 
         // writer
-        var zone = ZoneId.of(outputArgGroup.getZone());
-        var now = LocalDateTime.now();
         var portfolioReportFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioReportFile(), now);
         var portfolioSummaryFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioSummaryFile(), now);
 

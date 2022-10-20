@@ -46,6 +46,11 @@ public abstract class Writer<T> {
     protected static final String NEW_LINE = System.lineSeparator();
 
     /**
+     * Italic style for Markdown.
+     */
+    protected static final String MARKDOWN_ITALIC = "_";
+
+    /**
      * Log message at the end of the processing.
      */
     protected static final String ITEMS_HAS_BEEN_PROCESSED = "> {} items have been processed by the writer";

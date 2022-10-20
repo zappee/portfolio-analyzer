@@ -5,6 +5,7 @@ import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Calendars;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sleep;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -12,7 +13,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -140,15 +140,7 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         }
 
         if (marketPrice.isEmpty()) {
-            var minusOne = new BigDecimal(-1);
-            log.info("the price of the '{}' does not exist thus market price has been set to {}", symbol, minusOne);
-            marketPrice = Optional.of(Price
-                    .builder()
-                    .unitPrice(minusOne)
-                    .symbol(symbol)
-                    .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
-                    .dataProvider(DATA_PROVIDER)
-                    .build());
+            Logger.logErrorAndExit("the price of the '{}' does not exist", symbol);
         } else {
             marketPrice.get().setRequestDate(Calendars.toLocalDateTime(requestedTradeDate));
         }

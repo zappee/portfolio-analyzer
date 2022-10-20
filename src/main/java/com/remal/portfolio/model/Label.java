@@ -140,11 +140,6 @@ public enum Label {
     /**
      * A simple text.
      */
-    LABEL_PORTFOLIO_SUMMARY("label.portfolio-summary"),
-
-    /**
-     * A simple text.
-     */
     LABEL_TOTAL_CASH_PER_CURRENCY("label.total.cash-per-currency"),
 
     /**
@@ -209,19 +204,24 @@ public enum Label {
     LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY("label.total.withdrawal-per-currency"),
 
     /**
-     * A simple text.
+     * A report title.
      */
-    LABEL_TRANSACTION_REPORT("label.transaction-report"),
+    TITLE_BASE_CURRENCY("title.base-currency"),
 
     /**
      * A report title.
      */
-    TITLE_SUMMARY_REPORT("title.summary-report"),
+    TITLE_GENERATED("title.generated"),
 
     /**
      * A report title.
      */
-    TITLE_TRANSACTIONS_REPORT("title.transactions-report");
+    TITLE_PORTFOLIO_SUMMARY("title.portfolio-summary"),
+
+    /**
+     * Banner at the top of the report.
+     */
+    TITLE_TRANSACTION_REPORT("title.transaction-report");
 
     /**
      * The key that identifies the translation in the I18N *.properties file.

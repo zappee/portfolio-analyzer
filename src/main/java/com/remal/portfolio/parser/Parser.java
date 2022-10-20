@@ -49,7 +49,7 @@ public abstract class Parser<T> {
      * Log message.
      */
     protected static final String LOG_ERROR_ARRAY_INDEX = "Error while parsing the \"{}\" file. "
-            + "Can be consider to use '--has-title' and '--has-header' options. Error: {}";
+            + "Can be consider to use '--has-report-title' and '--has-table-header' options. Error: {}";
 
     /**
      * Log message.
@@ -224,7 +224,7 @@ public abstract class Parser<T> {
     protected int getFirstDataRow(FileType fileType) {
         var titleRows = switch (fileType) {
             case CSV -> hasTitle ? 1 : 0;
-            case MARKDOWN -> hasTitle ? 3 : 0;
+            case MARKDOWN -> hasTitle ? 4 : 0;
             default -> 0;
         };
 

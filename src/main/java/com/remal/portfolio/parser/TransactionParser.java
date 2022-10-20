@@ -87,8 +87,8 @@ public class TransactionParser extends Parser<Transaction> {
         } catch (ArrayIndexOutOfBoundsException e) {
             Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
         } catch (IllegalArgumentException e) {
-            Logger.logErrorAndExit("An error occurs when trying to parse the {} file. "
-                    + "Consider using the combination of '--has-title' or '--has-header' options. Details: {}",
+            Logger.logErrorAndExit("An error occurs when trying to parse the {} file. Consider "
+                    + "using the combination of '--has-report-title' or '--has-table-header' options. Details: {}",
                     fileName,
                     e.getMessage());
         } catch (Exception e) {

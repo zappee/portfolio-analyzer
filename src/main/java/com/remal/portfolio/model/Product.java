@@ -44,6 +44,7 @@ public class Product {
     /**
      * The number of the shares that she owns.
      */
+    @Setter
     private BigDecimal quantity = BigDecimal.ZERO;
 
     /**
@@ -72,7 +73,7 @@ public class Product {
     /**
      * Trading fee and costs together.
      */
-    private BigDecimal costs;
+    private final Map<String, BigDecimal> fees = new LinkedHashMap<>();
 
     /**
      * The transactions that are relevant.
@@ -114,11 +115,11 @@ public class Product {
         transactions.add(transaction);
 
         updateQuantity(transaction);
-        updateSupply();
+        updateSupply(transaction);
+        updateFees(transaction);
+        updateDeposits(transaction);
+        updateWithdrawals(transaction);
         updateAveragePrice();
-        updateCosts();
-        updateDeposits();
-        updateWithdrawals();
     }
 
     /**
@@ -129,11 +130,10 @@ public class Product {
     public BigDecimal getMarketValue() {
         if (Objects.isNull(marketPrice)) {
             return null;
-        } else {
-            return quantity
-                    .multiply(marketPrice.getUnitPrice())
-                    .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
         }
+
+        var price = marketPrice.getUnitPrice();
+        return quantity.multiply(price).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
     }
 
     /**
@@ -142,23 +142,11 @@ public class Product {
      * @return value of the invested amount
      */
     public BigDecimal getInvestedAmount() {
-        if (isCurrency()) {
-            return null;
-        }
-
+        var isCurrency = CurrencyType.isValid(symbol);
         var avgPrice = getAveragePrice();
-        return Objects.isNull(avgPrice)
+        return (isCurrency || BigDecimals.isNullOrZero(avgPrice))
                 ? null
                 : quantity.multiply(avgPrice).setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
-    }
-
-    /**
-     * Check whether the product is a currency or not.
-     *
-     * @return true if it is a currency product
-     */
-    public boolean isCurrency() {
-        return CurrencyType.isValid(symbol);
     }
 
     /**
@@ -169,6 +157,7 @@ public class Product {
     public BigDecimal getProfitAndLoss() {
         var investedAmount = getInvestedAmount();
         var marketValue = getMarketValue();
+
         return Objects.nonNull(investedAmount) && Objects.nonNull(marketValue)
                 ? marketValue.subtract(investedAmount)
                 : null;
@@ -180,17 +169,16 @@ public class Product {
      * @return value of the profit and loss in percent
      */
     public BigDecimal getProfitAndLossPercent() {
-        var hundred = BigDecimal.valueOf(100);
-        var investedAmount = getInvestedAmount();
-        var marketValue = getMarketValue();
-        if (Objects.isNull(investedAmount) || Objects.isNull(marketValue)) {
-            return null;
-        } else {
-            return marketValue
-                    .divide(investedAmount, MathContext.DECIMAL64)
-                    .multiply(hundred)
-                    .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
-        }
+        var boughtPrice = getAveragePrice();
+        var currentPrice = getMarketPrice().getUnitPrice();
+
+        return BigDecimals.isNotNullAndNotZero(boughtPrice) && BigDecimals.isNotNullAndNotZero(currentPrice)
+                ? currentPrice
+                    .subtract(boughtPrice)
+                    .divide(boughtPrice, MathContext.DECIMAL64)
+                    .multiply(BigDecimal.valueOf(100))
+                    .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE)
+                : null;
     }
 
     /**
@@ -199,11 +187,10 @@ public class Product {
      * @param transaction transaction
      */
     private void updateQuantity(Transaction transaction) {
+        var qty = Objects.isNull(transaction.getQuantity()) ? BigDecimal.ZERO : transaction.getQuantity();
         quantity = switch (transaction.getType()) {
-            case DEPOSIT, BUY -> quantity.add(transaction.getQuantity());
-            case WITHDRAWAL, SELL, FEE -> quantity.subtract(transaction.getQuantity());
-            case DEBIT -> quantity.subtract(transaction.getQuantity().multiply(transaction.getPrice()));
-            case CREDIT -> quantity.add(transaction.getQuantity().multiply(transaction.getPrice()));
+            case DEPOSIT, BUY -> quantity.add(qty);
+            case WITHDRAWAL, SELL, FEE -> quantity.subtract(qty);
             default -> quantity;
         };
 
@@ -214,29 +201,68 @@ public class Product {
 
     /**
      * Updates the supply list.
+     *
+     * @param transaction the transaction to be added
      */
-    private void updateSupply() {
-        supply.clear();
-
-        for (Transaction transaction : transactions) {
-            switch (transaction.getType()) {
-                case BUY, DEPOSIT, CREDIT -> {
-                    var c = transaction.getPriceCurrency().name();
-                    var price = CurrencyType.isValid(c) ? BigDecimal.ONE : transaction.getPrice();
-                    var volume = supply.getOrDefault(price, BigDecimal.ZERO);
-                    supply.put(price, volume.add(transaction.getQuantity()));
-                }
-                case SELL, WITHDRAWAL -> {
-                    if (InventoryValuationType.FIFO == transaction.getInventoryValuation()) {
-                            updateSupplyBasedOnFifoSell(supply, transaction);
-                        } else {
-                            updateSupplyBasedOnLifoSell(supply, transaction);
-                        }
-                }
-                default -> {
-                    // do nothing here
+    private void updateSupply(Transaction transaction) {
+        switch (transaction.getType()) {
+            case BUY, DEPOSIT -> {
+                var price = CurrencyType.isValid(transaction.getSymbol()) ? BigDecimal.ONE : transaction.getPrice();
+                var qty = Objects.isNull(transaction.getQuantity()) ? BigDecimal.ZERO : transaction.getQuantity();
+                var currentVolume = supply.getOrDefault(price, BigDecimal.ZERO);
+                var newVolume = currentVolume.add(qty);
+                supply.put(price, newVolume);
+            }
+            case SELL, WITHDRAWAL -> {
+                var isFifo = InventoryValuationType.FIFO == transaction.getInventoryValuation();
+                if (isFifo) {
+                    updateSupplyBasedOnFifoSell(supply, transaction);
+                } else {
+                    updateSupplyBasedOnLifoSell(supply, transaction);
                 }
             }
+            default -> {
+                // do nothing here
+            }
+        }
+    }
+
+    /**
+     * Calculates the amount of the total fee.
+     *
+     * @param transaction the transaction to be added
+     */
+    private void updateFees(Transaction transaction) {
+        var feeCurrency = transaction.getFeeCurrency().name();
+        var fee = transaction.getFee();
+
+        if (Objects.nonNull(fee)) {
+            var feeTotal = fees.computeIfAbsent(feeCurrency, x -> BigDecimal.ZERO);
+            fees.put(feeCurrency, feeTotal.add(fee));
+        }
+    }
+
+    /**
+     * Calculates the amount of the total deposits.
+     *
+     * @param transaction the transaction to be added
+     */
+    private void updateDeposits(Transaction transaction) {
+        if (transaction.getType() == TransactionType.DEPOSIT) {
+            var qty = transaction.getQuantity();
+            deposits = Objects.isNull(deposits) ? qty : deposits.add(qty);
+        }
+    }
+
+    /**
+     * Calculates the amount of the total withdrawals.
+     *
+     * @param transaction the transaction to be added
+     */
+    private void updateWithdrawals(Transaction transaction) {
+        if (transaction.getType() == TransactionType.WITHDRAWAL) {
+            var qty = transaction.getQuantity();
+            withdrawals = Objects.isNull(withdrawals) ? qty : withdrawals.add(qty);
         }
     }
 
@@ -255,43 +281,10 @@ public class Product {
                 sharesBought.set(sharesBought.get().add(volume));
             });
 
-            if (BigDecimals.isNotNullAndNotZero(amountInvested.get())) {
+            if (BigDecimals.isNotNullAndNotZero(sharesBought.get())) {
                 averagePrice = amountInvested.get().divide(sharesBought.get(), MathContext.DECIMAL64);
             }
         }
-    }
-
-    /**
-     * Calculates the amount of the total fee.
-     */
-    private void updateCosts() {
-        costs = transactions
-                .stream()
-                .map(transaction -> Objects.isNull(transaction.getFee()) ? BigDecimal.ZERO : transaction.getFee())
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(BigDecimals.SCALE_DEFAULT, BigDecimals.ROUNDING_MODE);
-    }
-
-    /**
-     * Calculates the amount of the total deposits.
-     */
-    private void updateDeposits() {
-        deposits = transactions
-                .stream()
-                .filter(transaction -> transaction.getType() == TransactionType.DEPOSIT)
-                .map(Transaction::getQuantity)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    /**
-     * Calculates the amount of the total withdrawals.
-     */
-    private void updateWithdrawals() {
-        withdrawals = transactions
-                .stream()
-                .filter(transaction -> transaction.getType() == TransactionType.WITHDRAWAL)
-                .map(Transaction::getQuantity)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     /**

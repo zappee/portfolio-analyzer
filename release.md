@@ -3,12 +3,20 @@
 
 All notable changes to this project will be documented in this file.
 
-### [0.1.13] - 15 October, 2022
+### [0.1.13] - 15 October 2022
 #### Added
 - Initial version based on the requirements
 
-### [0.2.1] - xx November, 2022
+### [0.2.1] - xx November 2022
 #### Modified
 - Improvement in documentation
+- Improvement the title of the `portfolio` markdown report
+- Remove useless separator from the footer of the `portfolio` markdown report
+- Fix decimal number positioning in the `portfolio` Markdown report
+- Fix average price calculation issue in case of a currency product
+- Improvement in the application log
+- Change the `--has-title` command line parameter to `--has-report-title`
+- Change the `--has-header` command line parameter to `--has-table-header`
+- Application exits if the price for products do not exist while downloading them from a market data provider
 #### Added
 - Support currency for fees
