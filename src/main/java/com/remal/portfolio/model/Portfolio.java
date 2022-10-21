@@ -75,7 +75,8 @@ public class Portfolio {
                     .price(BigDecimal.ONE)
                     .fee(null)
                     .build();
-            var product = products.get(transaction.getPriceCurrency().name());
+            var symbol = transaction.getPriceCurrency();
+            var product = getProduct(symbol.name(), symbol);
             product.addTransaction(clonedTransaction);
         }
     }

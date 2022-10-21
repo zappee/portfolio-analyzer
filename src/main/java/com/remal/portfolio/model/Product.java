@@ -170,10 +170,12 @@ public class Product {
      */
     public BigDecimal getProfitAndLossPercent() {
         var boughtPrice = getAveragePrice();
-        var currentPrice = getMarketPrice().getUnitPrice();
+        var currentPrice = getMarketPrice();
 
-        return BigDecimals.isNotNullAndNotZero(boughtPrice) && BigDecimals.isNotNullAndNotZero(currentPrice)
-                ? currentPrice
+        return BigDecimals.isNotNullAndNotZero(boughtPrice)
+                && Objects.nonNull(currentPrice) && BigDecimals.isNotNullAndNotZero(currentPrice.getUnitPrice())
+
+                ? currentPrice.getUnitPrice()
                     .subtract(boughtPrice)
                     .divide(boughtPrice, MathContext.DECIMAL64)
                     .multiply(BigDecimal.valueOf(100))
