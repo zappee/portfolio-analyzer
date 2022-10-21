@@ -10,13 +10,17 @@ All notable changes to this project will be documented in this file.
 ### [0.2.1] - xx November 2022
 #### Modified
 - Improvement in documentation
-- Improvement the title of the `portfolio` markdown report
+- Improve the title of the `portfolio` markdown report
 - Remove useless separator from the footer of the `portfolio` markdown report
-- Fix decimal number positioning in the `portfolio` Markdown report
+- Fix decimal number positioning problem in the `portfolio` Markdown report
 - Fix average price calculation issue in case of a currency product
 - Improvement in the application log
 - Change the `--has-title` command line parameter to `--has-report-title`
 - Change the `--has-header` command line parameter to `--has-table-header`
 - Application exits if the price for products do not exist while downloading them from a market data provider
+- Fixing a transaction parser issue: fee currency parsing error in case of no fee
+- Fix fee calculation problem
+- Update some command-line help
 #### Added
 - Support currency for fees
+- Transfer assets between brokerage companies

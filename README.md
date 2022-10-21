@@ -737,12 +737,68 @@ __Coding rules and conventions__
 * Do not hesitate to open an issue or a pull request just because you fear making a mistake.
 
 ## Appendix 1) Supported transaction types
-* `BUY`: Buy trade
-* `SELL`: Sell trade
 * `DEPOSIT`: Money deposit
 * `WITHDRAWAL`: Money withdrawal
-* `FEE`: Fees, like monthly account fee, money holding fee, etc.
+* `BUY`: Buy trade
+* `SELL`: Sell trade
 * `DIVIDEND`: Distribution of corporate profits to eligible shareholders
+* `FEE`: Fees, like monthly account fee, money holding fee, etc.
+
+Example transactions:
+* Deposit 100 USD to your brokerage account:
+  ```
+  |portfolio|symbol|type   |inventory valuation|trade date         |quantity|price|currency|fee |fee currency|order id|trade id|transfer id|
+  |---------|------|-------|-------------------|-------------------|--------|-----|--------|----|------------|--------|--------|-----------|
+  |IB       |USD   |DEPOSIT|                   |2022-02-11 19:00:00|    100 |  1  |USD     |    |            |        |3bd90d03|           |
+  ```
+
+* 2,000 EUR Cash withdrawal from your brokerage account, the fee is 1 USD:
+  ```
+  |portfolio|symbol|type      |inventory valuation|trade date         |quantity|price|currency|fee|fee currency|order id|trade id|transfer id|
+  |---------|------|----------|-------------------|-------------------|--------|-----|--------|---|------------|--------|--------|-----------|
+  |IB       |EUR   |WITHDRAWAL|                   |2022-09-19 19:00:00| 2 000  |  1  |EUR     |  1|USD         |        |9b1326ad|           |
+  ```
+
+* Buy 250 piece of Microsoft shares at 26.77. The buying fee is 7.95 USD:
+  ```
+  |portfolio|symbol|type|inventory valuation|trade date         |quantity|price|currency|fee |fee currency|order id|trade id|transfer id|
+  |---------|------|----|-------------------|-------------------|--------|-----|--------|----|------------|--------|--------|-----------|
+  |IB       |MSFT  |BUY |                   |2016-05-07 00:00:00|     250|26.77|USD     |7.95|USD         |ca200a35|        |           |
+  ```
+
+* Sell 100 piece of Microsoft share at 125.13. The fee is 2.15 USD:
+  ```
+  |portfolio|symbol|type|inventory valuation|trade date         |quantity|price |currency|fee |fee currency|order id|trade id|transfer id|
+  |---------|------|----|-------------------|-------------------|--------|------|--------|----|------------|--------|--------|-----------|
+  |IB       |MSFT  |SELL|FIFO               |2022-05-07 00:00:00|     100|125.13|USD     |2.15|USD         |abc65g35|        |           |
+  ```
+
+* Receiving 4,950 HUF dividend from [Masterplast][masterplast]:
+  ```
+  |portfolio|symbol     |type    |inventory valuation|trade date         |quantity|price|currency|fee|fee currency|order id|trade id    |transfer id|
+  |---------|-----------|--------|-------------------|-------------------|--------|-----|--------|---|------------|--------|------------|-----------|
+  |erste    |MASTERPLAST|DIVIDEND|                   |2022-10-10 09:00:00|      90|   55|HUF     |  0|HUF         |        |HU0000093943|           |
+  ```
+
+* Paying 3 EUR flat monthly administration fee at the beginning of the month:
+  ```
+  |portfolio|symbol|type|inventory valuation|trade date         |quantity|price|currency|fee|fee currency|order id|trade id|transfer id|
+  |---------|------|----|-------------------|-------------------|--------|-----|--------|---|------------|--------|--------|-----------|
+  |erste    |EUR   |FEE |                   |2022-01-01 09:00:00|        |     |        |  3|EUR         |34456ffg|        |           |
+  ```
+  
+  If you want at add a comment that describes the fee then you can put it at the end of the line:
+  ```
+  |erste |EUR |FEE |   |2022-01-01 09:00:00|   |   |   |  3|EUR |34456ffg|   |   |monthly administration fee
+  ```
+  
+* Exchanging 25 USD to EUR, exchange rate 0.945971 and fe is 0.5 USD:
+  ```
+  |portfolio|symbol|type|inventory valuation|trade date         |quantity|price   |currency|fee|fee currency|order id|trade id|transfer id|
+  |---------|------|----|-------------------|-------------------|--------|--------|--------|---|------------|--------|--------|-----------|
+  |ib       |USD   |SELL|                   |2022-05-31 09:00:00|      25|0.945971|EUR     |0.5|USD         |        |4565ffaf|           |
+  ```
+
 
 ## Appendix 2) Fields in the transaction file
 | field               | description                                                                                                                                                                                                                            |
@@ -782,5 +838,6 @@ __Coding rules and conventions__
 [bux]: https://www.bse.hu
 [gnuplot]: http://www.gnuplot.info
 [libreoffice]: https://www.libreoffice.org
+[masterplast]: https://www.masterplastgroup.com
 
 <a href="https://trackgit.com"><img src="https://us-central1-trackgit-analytics.cloudfunctions.net/token/ping/kzedlbkk4k0r4vk2iack" alt="trackgit-views" /></a>
