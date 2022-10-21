@@ -188,7 +188,8 @@ public class TransactionParser extends Parser<Transaction> {
         if (missingColumns.contains(Label.HEADER_PRICE_CURRENCY.name())) {
             return null;
         } else {
-            return CurrencyType.getEnum(fields[index.getAndIncrement()].trim());
+            var currencyAsString = fields[index.getAndIncrement()].trim();
+            return currencyAsString.isEmpty() ? null : CurrencyType.getEnum(currencyAsString);
         }
     }
 }

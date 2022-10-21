@@ -73,7 +73,6 @@ public class Portfolio {
                     .type(invertTransactionType(transaction.getType()))
                     .quantity(transaction.getQuantity().multiply(transaction.getPrice()))
                     .price(BigDecimal.ONE)
-                    .fee(null)
                     .build();
             var symbol = transaction.getPriceCurrency();
             var product = getProduct(symbol.name(), symbol);

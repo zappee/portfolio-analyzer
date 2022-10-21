@@ -235,12 +235,11 @@ public class Product {
      * @param transaction the transaction to be added
      */
     private void updateFees(Transaction transaction) {
-        var feeCurrency = transaction.getFeeCurrency().name();
+        var feeCurrency = transaction.getFeeCurrency();
         var fee = transaction.getFee();
-
-        if (Objects.nonNull(fee)) {
-            var feeTotal = fees.computeIfAbsent(feeCurrency, x -> BigDecimal.ZERO);
-            fees.put(feeCurrency, feeTotal.add(fee));
+        if (Objects.nonNull(fee) && Objects.nonNull(feeCurrency)) {
+            var feeTotal = fees.computeIfAbsent(feeCurrency.name(), x -> BigDecimal.ZERO);
+            fees.put(feeCurrency.name(), feeTotal.add(fee));
         }
     }
 
@@ -323,7 +322,8 @@ public class Product {
     private void updateSupplyBasedOnLifoSell(Map<BigDecimal, BigDecimal> supply, Transaction transaction) {
         var iterator = new ArrayList<>(supply.entrySet()).listIterator();
         var endOfLoop = false;
-        var quantityToSell = transaction.getQuantity();
+        var isQuantitySet = Objects.nonNull(transaction.getQuantity());
+        var quantityToSell = isQuantitySet ? transaction.getQuantity() : BigDecimal.ZERO;
 
         while (iterator.hasNext() && ! endOfLoop) {
             var entry = iterator.next();
