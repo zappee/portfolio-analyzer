@@ -103,8 +103,8 @@ public class PortfolioCommand implements Callable<Integer> {
         // generate the report
         var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());
         var generated = Objects.isNull(inputArgGroup.getTo())
-                ? LocalDateTime.now()
-                : LocalDateTimes.toLocalDateTime(inputArgGroup.getDateTimePattern(), inputArgGroup.getTo());
+                ? LocalDateTimes.getNow(ZoneId.of(outputArgGroup.getZone()))
+                : LocalDateTimes.toLocalDateTime(inputZone, inputArgGroup.getDateTimePattern(), inputArgGroup.getTo());
         var portfolioReport = new PortfolioReport(currency, generated);
         portfolioReport.addTransactions(transactions);
 

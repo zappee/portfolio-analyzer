@@ -27,6 +27,73 @@ import java.util.Objects;
 @Slf4j
 public class LocalDateTimes {
 
+
+    /**
+     * The "to" date-time must be adjusted a little, otherwise
+     * filter will hide wrong records.
+     * <p>
+     * Example:
+     *    to = 2022-04-11 21:11:19 --> 2022-04-11 21:11:19.000
+     *    transaction.getTradeDate() = 2022-04-11 21:11:19.345
+     * </p>
+     * <p>
+     * Then transaction.getTradeDate().isBefore(to) will hide the
+     * transaction above so the last record wil not appear in the
+     * report:
+     * |portfolio|symbol |type   |trade date          |quantity|price|fee  |currency|
+     * |default  |EUR    |DEPOSIT|2022-03-29 22:33:08|15       |   1 |0    |EUR     |
+     * |default  |ETH-EUR|BUY    |2022-04-11 21:11:19| 0.35    |2740 |3.836|EUR     |
+     * </p>
+     * <p>
+     * To avoid this situation the value of the "to" must be
+     * increased with 999 millisecond this way:
+     *    2022-04-11 21:11:19 --> 2022-04-11 21:11:19.999
+     * </p>
+     * @param dateTimePattern the pattern used to parse the timestamp
+     * @param dateTimeAsString the timestamp as a string coming from the command line interface
+     * @return the LocalDateTime filter that can be used in the lambda filter as a "to"
+     */
+    public static LocalDateTime getFilterTo(String dateTimePattern, String dateTimeAsString) {
+        var timestamp = toLocalDateTime(dateTimePattern, dateTimeAsString);
+        if (Objects.nonNull(timestamp)) {
+            var millisecondPart = timestamp.getLong(ChronoField.MILLI_OF_SECOND);
+            if (millisecondPart == 0) {
+                var millisecond = 999;
+                timestamp = timestamp.plus(millisecond, ChronoField.MILLI_OF_SECOND.getBaseUnit());
+            }
+        }
+        return timestamp;
+    }
+
+
+    /**
+     * Gets the current date-time in the given time zone.
+     *
+     * @param zoneId the timezone that is used to convert then now to
+     * @return the date-time in the given timezone
+     */
+    public static LocalDateTime getNow(ZoneId zoneId) {
+        return LocalDateTime.now(zoneId);
+    }
+
+    /**
+     * LocalDateTime to Calendar converter.
+     *
+     * @param datetimeToConvert date-time object to convert
+     * @return the converted object
+     */
+    public static Calendar toCalendar(LocalDateTime datetimeToConvert) {
+        if (Objects.isNull(datetimeToConvert)) {
+            return null;
+        } else {
+            Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();
+            Date date = Date.from(instant);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            return calendar;
+        }
+    }
+
     /**
      * Convert ISO formatted timestamp string to a LocalDateTime.
      * ISO pattern: 2022-12-31T22.00.00.000[00]
@@ -140,61 +207,6 @@ public class LocalDateTimes {
             }
         } catch (ParseException e) {
             Logger.logErrorAndExit("Invalid date-time string.");
-        }
-    }
-
-    /**
-     * The "to" date-time must be adjusted a little, otherwise
-     * filter will hide wrong records.
-     * <p>
-     * Example:
-     *    to = 2022-04-11 21:11:19 --> 2022-04-11 21:11:19.000
-     *    transaction.getTradeDate() = 2022-04-11 21:11:19.345
-     * </p>
-     * <p>
-     * Then transaction.getTradeDate().isBefore(to) will hide the
-     * transaction above so the last record wil not appear in the
-     * report:
-     * |portfolio|symbol |type   |trade date          |quantity|price|fee  |currency|
-     * |default  |EUR    |DEPOSIT|2022-03-29 22:33:08|15       |   1 |0    |EUR     |
-     * |default  |ETH-EUR|BUY    |2022-04-11 21:11:19| 0.35    |2740 |3.836|EUR     |
-     * </p>
-     * <p>
-     * To avoid this situation the value of the "to" must be
-     * increased with 999 millisecond this way:
-     *    2022-04-11 21:11:19 --> 2022-04-11 21:11:19.999
-     * </p>
-     * @param dateTimePattern the pattern used to parse the timestamp
-     * @param dateTimeAsString the timestamp as a string coming from the command line interface
-     * @return the LocalDateTime filter that can be used in the lambda filter as a "to"
-     */
-    public static LocalDateTime getFilterTo(String dateTimePattern, String dateTimeAsString) {
-        var timestamp = toLocalDateTime(dateTimePattern, dateTimeAsString);
-        if (Objects.nonNull(timestamp)) {
-            var millisecondPart = timestamp.getLong(ChronoField.MILLI_OF_SECOND);
-            if (millisecondPart == 0) {
-                var millisecond = 999;
-                timestamp = timestamp.plus(millisecond, ChronoField.MILLI_OF_SECOND.getBaseUnit());
-            }
-        }
-        return timestamp;
-    }
-
-    /**
-     * LocalDateTime to Calendar converter.
-     *
-     * @param datetimeToConvert date-time object to convert
-     * @return the converted object
-     */
-    public static Calendar toCalendar(LocalDateTime datetimeToConvert) {
-        if (Objects.isNull(datetimeToConvert)) {
-            return null;
-        } else {
-            Instant instant = datetimeToConvert.atZone(ZoneId.systemDefault()).toInstant();
-            Date date = Date.from(instant);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            return calendar;
         }
     }
 
