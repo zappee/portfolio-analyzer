@@ -47,7 +47,7 @@ public class PortfolioArgGroup {
                 names = {"-O", "--portfolio-summary"},
                 description = "Write the portfolio summary to a file "
                         + "(i.e. \"'tmp/'yyyy-MM-dd'_portfolio-summary.md'\"). Accepted extensions: .txt, .md and .csv")
-        private String portfolioReportFile;
+        private String portfolioSummaryFile;
 
         /**
          * Set the output file name.
@@ -57,7 +57,7 @@ public class PortfolioArgGroup {
                 description = "Write the portfolio report to a CSV file "
                         + ", i.e. \"'tmp/'yyyy-MM-dd'_portfolio-report.csv'\". "
                         + "Accepted extensions: .csv")
-        private String portfolioSummaryFile;
+        private String portfolioReportFile;
 
         /**
          * Set the file open mode.
@@ -102,7 +102,7 @@ public class PortfolioArgGroup {
          * Use it if you want to hide the report title.
          */
         @CommandLine.Option(
-                names = {"-E", "--hide-title"},
+                names = {"-E", "--hide-report-title"},
                 description = "Hide the report title.")
         private boolean hideTitle;
 
@@ -110,7 +110,7 @@ public class PortfolioArgGroup {
          * Use it if you want to hide the header of the table.
          */
         @CommandLine.Option(
-                names = {"-A", "--hide-header"},
+                names = {"-A", "--hide-table-header"},
                 description = "Hide the table header in the report.")
         private boolean hideHeader;
 

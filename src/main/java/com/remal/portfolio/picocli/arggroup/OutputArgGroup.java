@@ -55,7 +55,7 @@ public class OutputArgGroup {
      * Use it if you want to hide the report title.
      */
     @CommandLine.Option(
-            names = {"-E", "--hide-title"},
+            names = {"-E", "--hide-report-title"},
             description = "Hide the report title.")
     private boolean hideTitle;
 
@@ -63,7 +63,7 @@ public class OutputArgGroup {
      * Use it if you want to hide the header of the table.
      */
     @CommandLine.Option(
-            names = {"-A", "--hide-header"},
+            names = {"-A", "--hide-table-header"},
             description = "Hide the table header in the report.")
     private boolean hideHeader;
 

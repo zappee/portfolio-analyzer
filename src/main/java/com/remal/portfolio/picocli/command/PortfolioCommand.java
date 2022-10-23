@@ -102,9 +102,10 @@ public class PortfolioCommand implements Callable<Integer> {
 
         // generate the report
         var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());
-        var portfolioReport = new PortfolioReport(
-                currency,
-                LocalDateTimes.toLocalDateTime(inputArgGroup.getDateTimePattern(), inputArgGroup.getTo()));
+        var generated = Objects.isNull(inputArgGroup.getTo())
+                ? LocalDateTime.now()
+                : LocalDateTimes.toLocalDateTime(inputArgGroup.getDateTimePattern(), inputArgGroup.getTo());
+        var portfolioReport = new PortfolioReport(currency, generated);
         portfolioReport.addTransactions(transactions);
 
         // set market prices
@@ -127,10 +128,9 @@ public class PortfolioCommand implements Callable<Integer> {
         // writer
         var portfolioReportFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioReportFile(), now);
         var portfolioSummaryFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioSummaryFile(), now);
-
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
-        writer.writePortfolioReport(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
+        writer.write(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
+        writer.writePortfolioReport(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
         return CommandLine.ExitCode.OK;
     }
 }
