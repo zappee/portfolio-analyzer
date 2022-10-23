@@ -74,7 +74,7 @@ public class PortfolioArgGroup {
          */
         @CommandLine.Option(
                 names = {"-U", "--multiplicity"},
-                description = "Controls the price export to file. Candidates: ${COMPLETION-CANDIDATES}. "
+                description = "Controls the number of records in the output file. Candidates: ${COMPLETION-CANDIDATES}. "
                         + "Default: ONE_HOUR.",
                 defaultValue = "ONE_HOUR",
                 required = true)
