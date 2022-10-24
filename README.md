@@ -744,7 +744,7 @@ __Coding rules and conventions__
 * `DIVIDEND`: Distribution of corporate profits to eligible shareholders
 * `FEE`: Fees, like monthly account fee, money holding fee, etc.
 
-Example transactions:
+__Example transactions:__
 * Deposit 100 USD to your brokerage account:
   ```
   |portfolio|symbol|type   |inventory valuation|trade date         |quantity|price|currency|fee |fee currency|order id|trade id|transfer id|

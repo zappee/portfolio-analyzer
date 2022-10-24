@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
 - Fixing a transaction parser issue: fee currency parsing error in case of no fee
 - Fix fee calculation problem
 - Update some command-line help
+- Fix an issue related to te Yahoo API
+- Fix timezone related issue
 #### Added
 - Support currency for fees
 - Transfer assets between brokerage companies
