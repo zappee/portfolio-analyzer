@@ -14,7 +14,7 @@
 #  BSD (2-clause) licensed
 #
 #  author: arnold.somogyi@gmail.comm
-#  since 2021 Jun
+#  since 2022 November
 # ##############################################################################
 
 set -u
@@ -23,12 +23,12 @@ set -e
 start="2016-01-01"
 end="2018-12-31"
 
-daily_transaction_summary="'90-transactions-summaries/transactions-report_2022-10-08.md'"
-portfolio_report="'92-portfolio-report/portfolio-report.csv'"
-daily_price_history="'93-price-histories/price-history_'yyyy-MM-dd'.md'"
+daily_transaction_summary="'transactions/transactions_2022-10-08.md'"
+portfolio_report="'reports/portfolio-report/portfolio-report.csv'"
+daily_price_history="'price-histories/price-history_'yyyy-MM-dd'.md'"
 data_providers="'market-data-providers.properties'"
 
-jar="../../bin/portfolio-analyzer-0.1.13.jar"
+jar="../../bin/portfolio-analyzer-0.2.1.jar"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     day=$(date --date $start  +%A)
@@ -44,7 +44,7 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         -P "$daily_price_history" \
         -M APPEND \
         -U ONE_DAY \
-        -O "'91-portfolio-summaries/portfolio-summary_$start.md'" \
+        -O "'reports/portfolio-summaries/portfolio-summary_$start.md'" \
         -S "$portfolio_report"
     start=$(date -I -d "$start + 7 day")
     #read -r -p "Press enter to continue"
