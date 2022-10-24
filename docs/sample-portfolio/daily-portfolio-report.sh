@@ -14,7 +14,7 @@ function delete_old_files {
     directory=$1
     mask=$2
     days=$3
-	  quiet_mode="${4:-false}"
+    quiet_mode="${4:-false}"
     file_list=$(find "$directory" -maxdepth 1 -type f -name "$mask" -mtime +"$days")
 
     printf "\nDeleting the %s files from %s that older then %s days...\n" "$mask" "$directory" "$days"
@@ -155,7 +155,6 @@ set -u
 set -e
 
 base_currency="EUR"
-file_mask="*.md"
 file_max_age=5
 jarfile="bin/portfolio-analyzer-0.2.1.jar"
 quiet_mode=true
@@ -178,7 +177,7 @@ fi
 if [[ "$tasks_to_execute" == *b* ]]; then
     delete_old_files \
         "$workspace/transactions/coinbase" \
-        "$file_mask" \
+        "coinbase-transactions_????-??-??.md" \
         "$file_max_age" \
         $quiet_mode
 fi
@@ -187,7 +186,7 @@ fi
 if [[ "$tasks_to_execute" == *c* ]]; then
     files_to_combine=(
         "'$workspace/transactions/coinbase/coinbase-transactions_'yyyy-MM-dd'.md'"
-        "'$workspace/transactions/coinbase-correction/coinbase-correction-shib.md'"
+        "'$workspace/transactions/coinbase/coinbase-correction-shib.md'"
         "'$workspace/transactions/interactive-brokers/interactive-brokers-transactions.md'"
     )
 
@@ -203,7 +202,7 @@ fi
 if [[ "$tasks_to_execute" == *d* ]]; then
     delete_old_files \
         "$workspace/transactions" \
-        "$file_mask" \
+        "transactions_????-??-??.md" \
         "$file_max_age" \
         $quiet_mode
 fi
@@ -234,5 +233,4 @@ if [[ "$tasks_to_execute" == *e* ]]; then
         "'$workspace/reports/portfolio-report/portfolio-report-$portfolio.csv'" \
         "$base_currency" \
         "$time_zone"
-
 fi
