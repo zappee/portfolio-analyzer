@@ -114,7 +114,7 @@ public class PriceWriter extends Writer<Price> {
     @Override
     protected List<Price> getHistoryFromFile(String filename) {
         var outputArgGroup = new PriceArgGroup.OutputArgGroup();
-        outputArgGroup.setZone(zone.getId());
+        outputArgGroup.setZone(inputZone.getId());
         outputArgGroup.setDateTimePattern(dateTimePattern);
 
         Parser<Price> parser = Parser.build(outputArgGroup);

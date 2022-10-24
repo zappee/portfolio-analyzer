@@ -56,9 +56,14 @@ public class MarketPriceDownloader {
     private final String priceHistoryFile;
 
     /**
-     * Time zone info.
+     * Time zone info use to parse the historical data.
      */
-    private final ZoneId zone;
+    protected ZoneId inputZone;
+
+    /**
+     * Time zone info used when writing out the report.
+     */
+    protected ZoneId outputZone;
 
     /**
      * The report language.
@@ -99,10 +104,11 @@ public class MarketPriceDownloader {
         var now = LocalDateTime.now();
         var dataProviderArgGroup = inputArgGroup.getDataProviderArgGroup();
 
-        this.zone = ZoneId.of(outputArgGroup.getZone());
+        this.inputZone = ZoneId.of(inputArgGroup.getZone());
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
         this.dataProviderFromCli = dataProviderArgGroup.getDataProvider();
-        this.dataProviderFile = LocalDateTimes.toString(zone, dataProviderArgGroup.getDataProviderFile(), now);
-        this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
+        this.dataProviderFile = LocalDateTimes.toString(inputZone, dataProviderArgGroup.getDataProviderFile(), now);
+        this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();
@@ -123,10 +129,11 @@ public class MarketPriceDownloader {
 
         var now = LocalDateTime.now();
 
-        this.zone = ZoneId.of(outputArgGroup.getZone());
+        this.inputZone = ZoneId.of(inputArgGroup.getZone());
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
         this.dataProviderFromCli = null;
-        this.dataProviderFile = LocalDateTimes.toString(zone, inputArgGroup.getDataProviderFile(), now);
-        this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
+        this.dataProviderFile = LocalDateTimes.toString(inputZone, inputArgGroup.getDataProviderFile(), now);
+        this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();
@@ -247,7 +254,8 @@ public class MarketPriceDownloader {
         writer.setLanguage(language);
         writer.setDecimalFormat(decimalFormat);
         writer.setDateTimePattern(dateTimePattern);
-        writer.setZone(zone);
+        writer.setInputZone(inputZone);
+        writer.setOutputZone(outputZone);
         writer.setMultiplicity(multiplicity);
         writer.write(writeMode, priceHistoryFile, price);
     }
@@ -261,7 +269,7 @@ public class MarketPriceDownloader {
      */
     private Optional<Price> getPriceFromHistory(final String symbol, final Calendar requestedTradeDate) {
         var parser = new PriceParser();
-        parser.setZone(zone);
+        parser.setZone(inputZone);
 
         if (Objects.nonNull(priceHistoryFile)) {
             var prices = parser.parse(priceHistoryFile);

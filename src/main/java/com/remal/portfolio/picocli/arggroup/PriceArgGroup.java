@@ -58,6 +58,15 @@ public class PriceArgGroup {
                 description = "Pattern for parsing the provided date. Default: \"${DEFAULT-VALUE}\".",
                 defaultValue = "yyyy-MM-dd HH:mm:ss")
         private String dateTimePattern;
+
+        /**
+         * Set the timezone.
+         */
+        @CommandLine.Option(
+                names = {"-z", "--in-timezone"},
+                description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
+                        + "Default: the system default time-zone")
+        private String zone = ZoneId.systemDefault().getId();
     }
 
     /**
@@ -144,7 +153,7 @@ public class PriceArgGroup {
          * Set the timezone.
          */
         @CommandLine.Option(
-                names = {"-Z", "--timezone"},
+                names = {"-Z", "--out-timezone"},
                 description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
                         + "Default: the system default time-zone")
         private String zone = ZoneId.systemDefault().getId();

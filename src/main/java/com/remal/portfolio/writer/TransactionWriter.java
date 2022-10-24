@@ -51,7 +51,7 @@ public class TransactionWriter extends Writer<Transaction> {
         writer.setColumnsToHide(arguments.getColumnsToHide());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDateTimePattern(arguments.getDateTimePattern());
-        writer.setZone(ZoneId.of(arguments.getZone()));
+        writer.setOutputZone(ZoneId.of(arguments.getZone()));
         writer.setFrom(LocalDateTimes.toLocalDateTime(arguments.getDateTimePattern(), arguments.getFrom()));
         writer.setTo(LocalDateTimes.getFilterTo(arguments.getDateTimePattern(), arguments.getTo()));
         return writer;
@@ -73,7 +73,7 @@ public class TransactionWriter extends Writer<Transaction> {
                     .append(Label.TITLE_TRANSACTION_REPORT.getLabel(language))
                     .append(NEW_LINE)
                     .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
-                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
+                    .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, LocalDateTime.now()))
                     .append(NEW_LINE)
                     .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
                     .append(NEW_LINE);
@@ -132,7 +132,7 @@ public class TransactionWriter extends Writer<Transaction> {
 
                     .append(MARKDOWN_ITALIC)
                     .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
-                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, LocalDateTime.now()))
+                    .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, LocalDateTime.now()))
                     .append(MARKDOWN_ITALIC)
                     .append(NEW_LINE)
 

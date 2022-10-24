@@ -27,6 +27,17 @@ import java.util.Objects;
 @Slf4j
 public class LocalDateTimes {
 
+    /**
+     * Converts date-time between timezones.
+     *
+     * @param timestamp the timestamp to convert
+     * @param sourceZone source time zone
+     * @param targetZone target time zone
+     * @return the timestamp after the zone conversation
+     */
+    public static LocalDateTime convertBetweenTimezones(LocalDateTime timestamp, ZoneId sourceZone, ZoneId targetZone) {
+        return timestamp.atZone(sourceZone).withZoneSameInstant(targetZone).toLocalDateTime();
+    }
 
     /**
      * The "to" date-time must be adjusted a little, otherwise
