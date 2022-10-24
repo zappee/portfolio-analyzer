@@ -51,6 +51,7 @@ public class TransactionWriter extends Writer<Transaction> {
         writer.setColumnsToHide(arguments.getColumnsToHide());
         writer.setDecimalFormat(arguments.getDecimalFormat());
         writer.setDateTimePattern(arguments.getDateTimePattern());
+        writer.setInputZone(ZoneId.of(arguments.getZone()));
         writer.setOutputZone(ZoneId.of(arguments.getZone()));
         writer.setFrom(LocalDateTimes.toLocalDateTime(arguments.getDateTimePattern(), arguments.getFrom()));
         writer.setTo(LocalDateTimes.getFilterTo(arguments.getDateTimePattern(), arguments.getTo()));
