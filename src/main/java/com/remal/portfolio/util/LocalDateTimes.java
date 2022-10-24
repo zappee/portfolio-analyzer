@@ -111,7 +111,7 @@ public class LocalDateTimes {
      * Convert string to a LocalDateTime.
      *
      * @param dateTimeAsString timestamp as a string
-     * @param dateTimePattern the date/time pattern used for parsing the string
+     * @param dateTimePattern the date/time pattern used for parsing the string, e.g. "yyyy-MM-dd HH:mm:ss"
      * @return LocalDateTime the LocalDateTime object
      */
     public static LocalDateTime toLocalDateTime(String dateTimePattern, String dateTimeAsString) {
