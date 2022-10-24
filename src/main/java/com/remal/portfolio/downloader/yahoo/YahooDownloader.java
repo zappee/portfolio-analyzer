@@ -134,7 +134,10 @@ public class YahooDownloader implements Downloader {
             if (Objects.isNull(stock)) {
                 log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
-                var priceHistory = stock.getHistory(requestedTradeDate, Interval.DAILY);
+                // clone is needed because the stupid "stock.getHistory" method call changes
+                // the value of the date variable
+                var priceHistory = stock.getHistory((Calendar) requestedTradeDate.clone(), Interval.DAILY);
+
                 var historicalQuote = priceHistory.stream().findFirst();
                 if (historicalQuote.isPresent()) {
                     marketPrice = Optional.of(Price
