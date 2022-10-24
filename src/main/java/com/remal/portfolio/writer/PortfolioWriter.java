@@ -4,6 +4,7 @@ import com.remal.portfolio.model.CurrencyType;
 import com.remal.portfolio.model.FileType;
 import com.remal.portfolio.model.Label;
 import com.remal.portfolio.model.LabelCollection;
+import com.remal.portfolio.model.MultiplicityType;
 import com.remal.portfolio.model.PortfolioReport;
 import com.remal.portfolio.parser.PortfolioSummaryParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
@@ -27,6 +28,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,6 +80,12 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
     private List<String> symbolsToShow = new ArrayList<>();
 
     /**
+     * Controls the price export to file.
+     */
+    @Setter
+    private MultiplicityType multiplicity;
+
+    /**
      * Builder that initializes a new writer instance.
      *
      * @param inputArgGroup the input CLI group
@@ -94,8 +102,10 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         writer.setHideHeader(outputArgGroup.isHideHeader());
         writer.setLanguage(outputArgGroup.getLanguage());
         writer.setDateTimePattern(outputArgGroup.getDateTimePattern());
-        writer.setZone(ZoneId.of(outputArgGroup.getZone()));
+        writer.setInputZone(ZoneId.of(inputArgGroup.getZone()));
+        writer.setOutputZone(ZoneId.of(outputArgGroup.getZone()));
         writer.setColumnsToHide(outputArgGroup.getColumnsToHide().stream().map(String::toUpperCase).toList());
+        writer.setMultiplicity(outputArgGroup.getMultiplicity());
         return writer;
     }
 
@@ -137,7 +147,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
                     .append(Label.TITLE_PORTFOLIO_SUMMARY.getLabel(language))
                     .append(NEW_LINE)
                     .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
-                    .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, portfolioReport.getGenerated()))
+                    .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, portfolioReport.getGenerated()))
                     .append(NEW_LINE)
                     .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
                     .append(NEW_LINE);
@@ -273,15 +283,15 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
         var inputArgGroup = buildTransactionParserInputArgGroup(filename);
         var parser = PortfolioSummaryParser.build(baseCurrency, language, inputArgGroup);
-        var reportHistory = new ArrayList<>(parser.parse(filename));
+        var portfolioReports = new ArrayList<>(parser.parse(filename));
 
-        if (!reportHistory.contains(portfolioReport)) {
-            reportHistory.add(portfolioReport);
+        if (!portfolioReports.contains(portfolioReport)) {
+            portfolioReports.add(portfolioReport);
         }
-        reportHistory.sort(Sorter.portfolioReportComparator());
+        reduceBasedOnMultiplicity(portfolioReports);
 
         LinkedHashMap<Label, Set<String>> columnInfo = new LinkedHashMap<>();
-        reportHistory.forEach(report -> {
+        portfolioReports.forEach(report -> {
             // cash
             var placeholderValues = columnInfo.computeIfAbsent(
                     Label.LABEL_TOTAL_CASH_PER_CURRENCY,
@@ -332,9 +342,49 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         });
 
         var report = generatePortfolioCsvReportHeader(columnInfo);
-        report += generatePortfolioCsvReportData(columnInfo, reportHistory);
+        report += generatePortfolioCsvReportData(columnInfo, portfolioReports);
 
         FileWriter.write(writeMode, filename, report.getBytes());
+    }
+
+    /**
+     * Remove items from the list based on the value of the multiplicity.
+     *
+     * @param portfolioReports the list to deduce
+     */
+    private void reduceBasedOnMultiplicity(ArrayList<PortfolioReport> portfolioReports) {
+        log.debug("> multiplicity: {}", multiplicity.name());
+        log.debug("> number of items before the reduce: {}", portfolioReports.size());
+
+        portfolioReports.sort(Sorter.portfolioReportComparator());
+
+        List<PortfolioReport> reducedPortfolioReports = new LinkedList<>();
+        portfolioReports.forEach(portfolioReport -> {
+            var generated = portfolioReport.getGenerated();
+            var withoutRange = withoutRange(reducedPortfolioReports, generated);
+            if (withoutRange) {
+                reducedPortfolioReports.add(portfolioReport);
+            }
+        });
+
+        portfolioReports.clear();
+        portfolioReports.addAll(reducedPortfolioReports);
+        log.debug("> number of items after the reduce: {}", portfolioReports.size());
+    }
+
+    /**
+     * Checks whether the given date has been added to the list or not.
+     *
+     * @param portfolioReports the list with the records
+     * @param dateToCheck the date to check
+     * @return true if the date is not in the list
+     */
+    private boolean withoutRange(List<PortfolioReport> portfolioReports, LocalDateTime dateToCheck) {
+        var withinRange = portfolioReports
+                .stream()
+                .filter(x -> x.getGenerated().plusSeconds(multiplicity.getRangeLengthInSec()).isAfter(dateToCheck))
+                .count();
+        return withinRange == 0;
     }
 
     /**
@@ -730,7 +780,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
                 .append(MARKDOWN_ITALIC)
                 .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
-                .append(LocalDateTimes.toNullSafeString(zone, dateTimePattern, tradeDate))
+                .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, tradeDate))
                 .append(MARKDOWN_ITALIC)
                 .append(NEW_LINE)
 
