@@ -543,13 +543,11 @@ Command that activates the `portfolio` report generator: `java -jar bin/portfoli
 
 Result:
 ```
-Usage: java -jar portfolio-analyzer.jar portfolio [-q] [-P=<priceHistoryFile>] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]...
-                                                  [-d=<dateTimePattern>] [-z=<zone>] [-f=<from>] [-t=<to>]
-                                                  [-m=<missingColumns>]... -i=<file> [-l=<dataProviderFile>])
-                                                  [[-B=<baseCurrency>] [-O=<portfolioSummaryFile>] [-S=<portfolioReportFile>]
-                                                  [-M=<writeMode>] [-U=<multiplicity>] [-J] [-R=<replaces>[,<replaces>...]]...
-                                                  [-E] [-A] [-L=<language>] [-I=<decimalFormat>] [-D=<dateTimePattern>]
-                                                  [-Z=<zone>] [-C=<columnsToHide>]...]
+Usage: java -jar portfolio-analyzer.jar portfolio [-q] [-P=<priceHistoryFile>] ([-e] [-a] [-p=<portfolio>] [-c=<symbols>]... [-d=<dateTimePattern>]
+                                                  [-z=<zone>] [-f=<from>] [-t=<to>] [-m=<missingColumns>]... -i=<file> [-l=<dataProviderFile>])
+                                                  [[-B=<baseCurrency>] [-O=<portfolioSummaryFile>] [-S=<portfolioReportFile>] [-M=<writeMode>]
+                                                  [-U=<multiplicity>] [-J] [-R=<replaces>[,<replaces>...]]... [-E] [-A] [-L=<language>] [-I=<decimalFormat>]
+                                                  [-D=<dateTimePattern>] [-Z=<zone>] [-C=<columnsToHide>]...]
 
 Generates portfolio summary report.
 
@@ -561,25 +559,21 @@ Input:
   -l, --data-provider-file   Path to the data provider dictionary *.properties file that is used to downloadthe market prices.
   -e, --has-report-title     The report file contains title.
   -a, --has-table-header     The table has a header in the report.
-  -p, --portfolio            Portfolio name filter.
+  -p, --portfolio            Portfolio name filter. The "*" symbol can be use to select the all portfolios.
   -c, --symbol               Product filter, that is a comma separated list with symbols, e.g. "BTC-EUR, AMZN".
   -d, --in-date-pattern      Pattern for parsing date and time. Default: "yyyy-MM-dd HH:mm:ss"
   -z, --in-timezone          The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
   -f, --in-from              Filter on trade date, after a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
   -t, --in-to                Filter on trade date, before a specified date. Pattern: "yyyy-MM-dd HH:mm:ss"
-  -m, --missing-columns      Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide'
-                               option.
+  -m, --missing-columns      Comma separated list to set the missing columns in the report. Use with the '-columns-to-hide' option.
 
 Output:
   -B, --base-currency        The currency of the portfolio report, e.g. "EUR", etc. Default: "EUR"
-  -O, --portfolio-summary    Write the portfolio summary to a file (i.e. "'tmp/'yyyy-MM-dd'_portfolio-summary.md'"). Accepted
-                               extensions: .txt, .md and .csv
-  -S, --portfolio-report     Write the portfolio report to a CSV file , i.e. "'tmp/'yyyy-MM-dd'_portfolio-report.csv'". Accepted
-                               extensions: .csv
-  -M, --file-mode            How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND,
-                               STOP_IF_EXIST
-  -U, --multiplicity         Controls the number of records in the output file. Candidates: ONE_MINUTE, FIVE_MINUTES,
-                               FIFTEEN_MINUTES, THIRTY_MINUTES, ONE_HOUR, FOUR_HOURS, ONE_DAY, MANY. Default: ONE_HOUR.
+  -O, --portfolio-summary    Write the portfolio summary to a file (i.e. "'tmp/'yyyy-MM-dd'_portfolio-summary.md'"). Accepted extensions: .txt, .md and .csv
+  -S, --portfolio-report     Write the portfolio report to a CSV file , i.e. "'tmp/'yyyy-MM-dd'_portfolio-report.csv'". Accepted extensions: .csv
+  -M, --file-mode            How to write the report to the file. Default: STOP_IF_EXIST Candidates: OVERWRITE, APPEND, STOP_IF_EXIST
+  -U, --multiplicity         Controls the number of records in the output file. Candidates: ONE_MINUTE, FIVE_MINUTES, FIFTEEN_MINUTES, THIRTY_MINUTES,
+                               ONE_HOUR, FOUR_HOURS, ONE_DAY, MANY. Default: ONE_HOUR.
   -J, --show-transactions    Show the relevant transactions.
   -R, --replace              Replace the portfolio name. Format: "from:to, from:to", e.g. "default:coinbase".
   -E, --hide-report-title    Hide the report title.
@@ -588,10 +582,9 @@ Output:
   -I, --decimal-format       Format numbers and decimals in the report. Default: "###,###,###,###,###,###.########"
   -D, --out-date-pattern     Pattern for formatting date and time in the report. Default: "yyyy-MM-dd HH:mm:ss"
   -Z, --out-timezone         The timezone of the dates, e.g. "GMT+2", "Europe/Budapest" Default: the system default time-zone
-  -C, --columns-to-hide      Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO,
-                               SYMBOL, QUANTITY, AVG_PRICE, INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, PROFIT_LOSS,
-                               PROFIT_LOSS_PERCENT, COSTS, DEPOSITS, WITHDRAWALS, TOTAL_CASH, TOTAL_EXCHANGE_RATE,
-                               TOTAL_DEPOSIT, TOTAL_WITHDRAWAL, TOTAL_INVESTMENT, TOTAL_MARKET_VALUE, TOTAL_PROFIT_LOSS
+  -C, --columns-to-hide      Comma separated list of column names that won't be displayed in the report. Candidates: PORTFOLIO, SYMBOL, QUANTITY, AVG_PRICE,
+                               INVESTED_AMOUNT, MARKET_UNIT_PRICE, MARKET_VALUE, PROFIT_LOSS, PROFIT_LOSS_PERCENT, COSTS, DEPOSITS, WITHDRAWALS, TOTAL_CASH,
+                               TOTAL_EXCHANGE_RATE, TOTAL_DEPOSIT, TOTAL_WITHDRAWAL, TOTAL_INVESTMENT, TOTAL_MARKET_VALUE, TOTAL_PROFIT_LOSS
 ```
 
 #### 3.6.1) Portfolio summary

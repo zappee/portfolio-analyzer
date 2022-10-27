@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
 - Update some command-line help
 - Fix an issue related to te Yahoo API
 - Fix timezone related issue
+- Fix portfolio name and symbol filter problems in the `combine` command
 #### Added
 - Support currency for fees
 - Transfer assets between brokerage companies
+- The `*` symbol can be used to select the all portfolio in the `portfolio` command. The `--portfolio "*"` option has the same result as the parameter is not used. 
