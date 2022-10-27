@@ -83,7 +83,14 @@ public class CombineCommand implements Callable<Integer> {
         var parser = TransactionParser.build(inputArgGroup);
         inputArgGroup.getFiles().forEach(filenameTemplate -> {
             var filename = LocalDateTimes.toString(zone, filenameTemplate, LocalDateTime.now());
-            combine(parser.parse(filename), transactions, overwrite);
+            var parsedTransactions = parser.parse(filename);
+            var filteredTransactions = parsedTransactions
+                    .stream()
+                    .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
+                    .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
+                    .toList();
+
+            combine(filteredTransactions, transactions, overwrite);
         });
 
         // writer
