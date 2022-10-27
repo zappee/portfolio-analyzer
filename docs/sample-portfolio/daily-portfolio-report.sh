@@ -210,27 +210,19 @@ fi
 
 # ---- task e: generate the daily portfolio summary reports -----
 if [[ "$tasks_to_execute" == *e* ]]; then
-    portfolio="coinbase"
-    generate_portfolio_summary \
-        "$jarfile" \
-        "'$workspace/transactions/transactions_'yyyy-MM-dd'.md'" \
-        "'$workspace/market-data-providers.properties'" \
-        "$portfolio" \
-        "'$workspace/price-histories/price-history_'yyyy-MM-dd'.md'" \
-        "'$workspace/reports/portfolio-summary/portfolio-summary-${portfolio}_'yyyy-MM-dd'.md'" \
-        "'$workspace/reports/portfolio-report/portfolio-report-$portfolio.csv'" \
-        "$base_currency" \
-        "$time_zone"
-
-    portfolio="ib"
-    generate_portfolio_summary \
-        "$jarfile" \
-        "'$workspace/transactions/transactions_'yyyy-MM-dd'.md'" \
-        "'$workspace/market-data-providers.properties'" \
-        "$portfolio" \
-        "'$workspace/price-histories/price-history_'yyyy-MM-dd'.md'" \
-        "'$workspace/reports/portfolio-summary/portfolio-summary-${portfolio}_'yyyy-MM-dd'.md'" \
-        "'$workspace/reports/portfolio-report/portfolio-report-$portfolio.csv'" \
-        "$base_currency" \
-        "$time_zone"
+    portfolios=("coinbase" "ib" "*")
+    for portfolio in "${portfolios[@]}"
+    do
+        suffix=$([ "$portfolio" == "*" ] && echo "" || echo "-$portfolio")
+        generate_portfolio_summary \
+            "$jarfile" \
+            "'$workspace/transactions/transactions_'yyyy-MM-dd'.md'" \
+            "'$workspace/market-data-providers.properties'" \
+            "$portfolio" \
+            "'$workspace/price-histories/price-history_'yyyy-MM-dd'.md'" \
+            "'$workspace/reports/portfolio-summary/portfolio-summary${suffix}_'yyyy-MM-dd'.md'" \
+            "'$workspace/reports/portfolio-report/portfolio-report$suffix.csv'" \
+            "$base_currency" \
+            "$time_zone"
+    done
 fi
