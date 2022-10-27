@@ -671,7 +671,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
             if (!value.isEmpty()) {
                 sb
-                        .append(MARKDOWN_HR)
+                        .append(sb.isEmpty() ? "" :MARKDOWN_HR)
                         .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT));
 
                 if (!rates.isEmpty()) {
