@@ -48,7 +48,7 @@ public class InputArgGroup {
     @CommandLine.Option(
             order = 100,
             names = {"-p", "--portfolio"},
-            description = "Portfolio name filter.")
+            description = "Portfolio name filter. The \"*\" symbol can be use to select the all portfolios.")
     private String portfolio;
 
     /**
