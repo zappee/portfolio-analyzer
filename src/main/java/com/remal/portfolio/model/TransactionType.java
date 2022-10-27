@@ -41,6 +41,16 @@ public enum TransactionType {
     DIVIDEND,
 
     /**
+     * Transferring assets between brokerage companies.
+     */
+    TRANSFER_IN,
+
+    /**
+     * Transferring assets between brokerage companies.
+     */
+    TRANSFER_OUT,
+
+    /**
      * Used when the type is undefined or unknown.
      */
     UNKNOWN;

@@ -774,6 +774,8 @@ __Coding rules and conventions__
 * `SELL`: Sell trade
 * `DIVIDEND`: Distribution of corporate profits to eligible shareholders
 * `FEE`: Fees, like monthly account fee, money holding fee, etc.
+* `TRANSFER_IN`: Transfer assets between brokerage companies.
+* `TRANSFER_OUT`: Transfer assets between brokerage companies.
 
 __Example transactions:__
 * Deposit 100 USD to your brokerage account:
@@ -830,6 +832,23 @@ __Example transactions:__
   |ib       |USD   |SELL|                   |2022-05-31 09:00:00|      25|0.945971|EUR     |0.5|USD         |        |4565ffaf|           |
   ```
 
+* Transfer assets between brokerage companies:
+
+  On the source portfolio side
+  ```
+  |portfolio|symbol|type        |inventory valuation|trade date         |quantity|price   |currency|fee|fee currency|order id|trade id|transfer id|
+  |---------|------|------------|-------------------|-------------------|--------|--------|--------|---|------------|--------|--------|-----------|
+  |etoro    |EUR   |TRANSFER_OUT|                   |2022-11-01 08:30:00|  313   |  1     |EUR     |   |            |        |        |d60wfebaau1|
+  |etoro    |MSFT  |TRANSFER_OUT|                   |2022-11-01 08:30:00|  189.36|189.36  |USD     |   |            |        |        |d60ewebaau2|
+  ```
+
+  On the target portfolio side
+  ```
+  |portfolio|symbol|type       |inventory valuation|trade date         |quantity|price   |currency|fee|fee currency|order id|trade id|transfer id|
+  |---------|------|-----------|-------------------|-------------------|--------|--------|--------|---|------------|--------|--------|-----------|
+  |ib       |EUR   |TRANSFER_IN|                   |2022-11-01 08:30:01|  313   |  1     |EUR     |   |            |        |        |d60wfebaau3|
+  |ib       |MSFT  |TRANSFER_IN|                   |2022-11-01 08:30:01|  189.36|189.36  |USD     |   |            |        |        |d60ewebaau4|
+  ```
 
 ## Appendix 2) Fields in the transaction file
 | field               | description                                                                                                                                                                                                                            |

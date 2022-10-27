@@ -191,8 +191,8 @@ public class Product {
     private void updateQuantity(Transaction transaction) {
         var qty = Objects.isNull(transaction.getQuantity()) ? BigDecimal.ZERO : transaction.getQuantity();
         quantity = switch (transaction.getType()) {
-            case DEPOSIT, BUY -> quantity.add(qty);
-            case WITHDRAWAL, SELL, FEE -> quantity.subtract(qty);
+            case DEPOSIT, BUY, TRANSFER_IN -> quantity.add(qty);
+            case WITHDRAWAL, SELL, FEE, TRANSFER_OUT -> quantity.subtract(qty);
             default -> quantity;
         };
 
@@ -208,14 +208,14 @@ public class Product {
      */
     private void updateSupply(Transaction transaction) {
         switch (transaction.getType()) {
-            case BUY, DEPOSIT -> {
+            case BUY, DEPOSIT, TRANSFER_IN -> {
                 var price = CurrencyType.isValid(transaction.getSymbol()) ? BigDecimal.ONE : transaction.getPrice();
                 var qty = Objects.isNull(transaction.getQuantity()) ? BigDecimal.ZERO : transaction.getQuantity();
                 var currentVolume = supply.getOrDefault(price, BigDecimal.ZERO);
                 var newVolume = currentVolume.add(qty);
                 supply.put(price, newVolume);
             }
-            case SELL, WITHDRAWAL -> {
+            case SELL, WITHDRAWAL, TRANSFER_OUT -> {
                 var isFifo = InventoryValuationType.FIFO == transaction.getInventoryValuation();
                 if (isFifo) {
                     updateSupplyBasedOnFifoSell(supply, transaction);
