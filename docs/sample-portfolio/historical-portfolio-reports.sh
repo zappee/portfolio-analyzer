@@ -22,30 +22,33 @@ set -e
 
 start="2016-01-01"
 end="2018-12-31"
-
-daily_transaction_summary="'transactions/transactions_2022-10-08.md'"
-portfolio_report="'reports/portfolio-report/portfolio-report.csv'"
-daily_price_history="'price-histories/price-history_'yyyy-MM-dd'.md'"
-data_providers="'market-data-providers.properties'"
-
-jar="../../bin/portfolio-analyzer-0.2.1.jar"
+step="7 day"
+jarfile="/home/$USER/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
+workspace="/home/$USER/workspace/sample-portfolio"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     day=$(date --date $start  +%A)
     printf "\nTrade date: %s (%s)\n" "$start" "$day"
-    java \
-        -jar "$jar" portfolio \
-        -i "$daily_transaction_summary" \
-        -e \
-        -a \
-        -l "$data_providers" \
-        -t "$start 23:59:59" \
-        -L EN \
-        -P "$daily_price_history" \
-        -M APPEND \
-        -U ONE_DAY \
-        -O "'reports/portfolio-summaries/portfolio-summary_$start.md'" \
-        -S "$portfolio_report"
-    start=$(date -I -d "$start + 7 day")
-    #read -r -p "Press enter to continue"
+
+    portfolios=("coinbase" "interactive-brokers" "*")
+    for pf in "${portfolios[@]}"
+    do
+        suffix=$([ "$pf" == "*" ] && echo "" || echo "-$pf")
+        pf=$([ "$pf" == "*" ] && echo "" || echo "$pf")
+        java \
+           -jar "$jarfile" portfolio \
+           --input-file "'$workspace/transactions/transactions_2022-10-28.md'" \
+           --has-report-title \
+           --has-table-header \
+           --data-provider-file "'$workspace/market-data-providers.properties'" \
+           --in-to "$start 21:00:00" \
+           --language EN \
+           --price-history "'$workspace/price-histories/price-history_$start.md'" \
+           --file-mode APPEND \
+           --multiplicity ONE_DAY \
+           --portfolio-summary "'$workspace/reports/portfolio-summary/$pf/portfolio-summary${suffix}_$start.md'" \
+           --portfolio-report "'$workspace/reports/portfolio-report/portfolio-report${suffix}.csv'"
+    done
+    start=$(date -I -d "$start + $step")
+    read -r -p "Press enter to continue"
 done

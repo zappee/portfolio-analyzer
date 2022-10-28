@@ -10,11 +10,11 @@
 #   4: quiet mode (true/false)
 # ---------------------------------------------------------------
 function delete_old_files {
-    local directory mask days quiet_mode file_list
+    local directory mask days quiet_file_delete_mode file_list
     directory=$1
     mask=$2
     days=$3
-    quiet_mode="${4:-false}"
+    quiet_file_delete_mode="${4:-false}"
     file_list=$(find "$directory" -maxdepth 1 -type f -name "$mask" -mtime +"$days")
 
     printf "\nDeleting the %s files from %s that older then %s days...\n" "$mask" "$directory" "$days"
@@ -22,7 +22,7 @@ function delete_old_files {
         printf "    no files to delete\n"
     else
         printf "    - %s\n" ${file_list[@]}
-        if ! $quiet_mode ; then read -r -p "Press enter to continue"; fi
+        if ! $quiet_file_delete_mode ; then read -r -p "Press enter to continue"; fi
         echo "$file_list" | xargs rm
     fi
 }
@@ -126,8 +126,8 @@ function generate_portfolio_summary {
        --input-file "$transaction_file" \
        --in-timezone "$time_zone" \
        --data-provider-file "$data_provider_file" \
-       --has-table-header \
        --has-report-title \
+       --has-table-header \
        --portfolio "$portfolio" \
        --price-history "$price_history_file" \
        --base-currency "$base_currency" \
@@ -155,12 +155,12 @@ set -u
 set -e
 
 base_currency="EUR"
-file_max_age=5
-jarfile="bin/portfolio-analyzer-0.2.1.jar"
-quiet_mode=true
-tasks_to_execute="${1:-abcde}"
 time_zone="GMT"
-workspace="transactions"
+file_max_age=5
+quiet_file_delete_mode=true
+jarfile="/home/$USER/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
+workspace="/home/$USER/workspace/sample-portfolio"
+tasks_to_execute="${1:-abcde}"
 
 # ---- task a: coinbase downloader ------------------------------
 if [[ "$tasks_to_execute" == *a* ]]; then
@@ -179,7 +179,7 @@ if [[ "$tasks_to_execute" == *b* ]]; then
         "$workspace/transactions/coinbase" \
         "coinbase-transactions_????-??-??.md" \
         "$file_max_age" \
-        $quiet_mode
+        $quiet_file_delete_mode
 fi
 
 # ---- task c: combine transaction files ------------------------
@@ -204,7 +204,7 @@ if [[ "$tasks_to_execute" == *d* ]]; then
         "$workspace/transactions" \
         "transactions_????-??-??.md" \
         "$file_max_age" \
-        $quiet_mode
+        $quiet_file_delete_mode
 fi
 
 
