@@ -356,8 +356,8 @@ public abstract class Writer<T> {
             stringValue = Optional.of(x.name());
 
         } else if (value instanceof LocalDateTime x) {
-            var xInTargetTimezone = LocalDateTimes.convertBetweenTimezones(x, inputZone, outputZone);
-            stringValue = Optional.of(LocalDateTimes.toNullSafeString(null, dateTimePattern, xInTargetTimezone));
+            var valueInOutTimezone = LocalDateTimes.convertBetweenTimezones(x, inputZone, outputZone);
+            stringValue = Optional.of(LocalDateTimes.toNullSafeString(null, dateTimePattern, valueInOutTimezone));
 
         } else if (value instanceof BigDecimal x) {
             stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());

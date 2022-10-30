@@ -149,6 +149,6 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
      */
     @Override
     protected List<PortfolioReport> parseMarkdownFile(String fileName) {
-        throw new UnsupportedOperationException("Markdown portfolio sumary report is not supported.");
+        throw new UnsupportedOperationException("Markdown portfolio summary report is not supported.");
     }
 }

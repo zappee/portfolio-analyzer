@@ -58,12 +58,12 @@ public class MarketPriceDownloader {
     /**
      * Time zone info use to parse the historical data.
      */
-    protected ZoneId inputZone;
+    protected final ZoneId inputZone;
 
     /**
      * Time zone info used when writing out the report.
      */
-    protected ZoneId outputZone;
+    protected final ZoneId outputZone;
 
     /**
      * The report language.
@@ -101,14 +101,14 @@ public class MarketPriceDownloader {
     public MarketPriceDownloader(String priceHistoryFile,
                                  PriceArgGroup.InputArgGroup inputArgGroup,
                                  PriceArgGroup.OutputArgGroup outputArgGroup) {
-        var now = LocalDateTime.now();
         var dataProviderArgGroup = inputArgGroup.getDataProviderArgGroup();
+        var now = LocalDateTime.now();
 
         this.inputZone = ZoneId.of(inputArgGroup.getZone());
-        this.outputZone = ZoneId.of(outputArgGroup.getZone());
-        this.dataProviderFromCli = dataProviderArgGroup.getDataProvider();
         this.dataProviderFile = LocalDateTimes.toString(inputZone, dataProviderArgGroup.getDataProviderFile(), now);
         this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
+        this.dataProviderFromCli = dataProviderArgGroup.getDataProvider();
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();
@@ -130,10 +130,10 @@ public class MarketPriceDownloader {
         var now = LocalDateTime.now();
 
         this.inputZone = ZoneId.of(inputArgGroup.getZone());
-        this.outputZone = ZoneId.of(outputArgGroup.getZone());
-        this.dataProviderFromCli = null;
         this.dataProviderFile = LocalDateTimes.toString(inputZone, inputArgGroup.getDataProviderFile(), now);
         this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
+        this.dataProviderFromCli = null;
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();

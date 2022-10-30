@@ -21,7 +21,7 @@ function delete_old_files {
     if [[ -z "$file_list" ]]; then
         printf "    no files to delete\n"
     else
-        printf "    - %s\n" ${file_list[@]}
+        printf "    - %s\n" "${file_list[@]}"
         if ! $quiet_file_delete_mode ; then read -r -p "Press enter to continue"; fi
         echo "$file_list" | xargs rm
     fi

@@ -144,13 +144,13 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         // report title
         if (!hideTitle) {
             report
-                    .append(Label.TITLE_PORTFOLIO_SUMMARY.getLabel(language))
-                    .append(NEW_LINE)
-                    .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
-                    .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, portfolioReport.getGenerated()))
-                    .append(NEW_LINE)
-                    .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
-                    .append(NEW_LINE);
+                .append(Label.TITLE_PORTFOLIO_SUMMARY.getLabel(language))
+                .append(NEW_LINE)
+                .append(Label.TITLE_GENERATED.getLabel(language)).append(": ")
+                .append(LocalDateTimes.toNullSafeString(outputZone, dateTimePattern, portfolioReport.getGenerated()))
+                .append(NEW_LINE)
+                .append(Label.TITLE_BASE_CURRENCY.getLabel(language).replace("{0}", language))
+                .append(NEW_LINE);
 
         }
 
@@ -671,7 +671,7 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
             if (!value.isEmpty()) {
                 sb
-                        .append(sb.isEmpty() ? "" :MARKDOWN_HR)
+                        .append(sb.isEmpty() ? "" : MARKDOWN_HR)
                         .append(mapToString(labelForCurrency, labelWidth, valuesToSum, BigDecimals.SCALE_DEFAULT));
 
                 if (!rates.isEmpty()) {
