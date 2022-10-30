@@ -35,6 +35,12 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     do
         suffix=$([ "$pf" == "*" ] && echo "" || echo "-$pf")
         dir=$([ "$pf" == "*" ] && echo "" || echo "$pf")
+
+        # create the report directories
+        mkdir -p "$workspace/reports/portfolio-summary/$dir"
+        mkdir -p "$workspace/reports/portfolio-report"
+
+        # run the portfolio-analyzer tool
         java \
            -jar "$jarfile" portfolio \
            --input-file "'$workspace/transactions/transactions_2022-10-28.md'" \
