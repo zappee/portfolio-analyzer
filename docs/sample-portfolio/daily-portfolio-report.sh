@@ -17,7 +17,7 @@ function delete_old_files {
     quiet_file_delete_mode="${4:-false}"
     file_list=$(find "$directory" -maxdepth 1 -type f -name "$mask" -mtime +"$days")
 
-    printf "\nDeleting the %s files from %s that older then %s days...\n" "$mask" "$directory" "$days"
+    printf "\n--> deleting the %s files from %s that older then %s days...\n" "$mask" "$directory" "$days"
     if [[ -z "$file_list" ]]; then
         printf "    no files to delete\n"
     else
@@ -47,7 +47,7 @@ function download_coinbase_transactions {
     api_secret=$5
     time_zone=$6
 
-    printf "\ndownloading the transaction history from Coinbase...\n"
+    printf "\n--> downloading the transaction history from Coinbase...\n"
     java -jar "$jarfile" coinbase \
        --api-access-key "$api_access_key" \
        --api-passphrase "$api_passphrase" \
@@ -82,7 +82,7 @@ function combine_transactions {
     files=("${!files}")
     files=$(IFS=,;printf  "%s" "${files[*]}")
 
-    printf "\ncombining the transaction files into one...\n"
+    printf "\n--> combining the transaction files into one...\n"
     java -jar "$jarfile" combine \
        --input-files "$files" \
        --has-table-header \
@@ -121,7 +121,7 @@ function generate_portfolio_summary {
     base_currency=$8
     time_zone=$9
 
-    printf "\ngenerating the daily '%s' portfolio summary markdown report...\n" "$portfolio"
+    printf "\n--> generating the daily '%s' portfolio summary markdown report...\n" "$portfolio"
     java -jar "$jarfile" portfolio \
        --input-file "$transaction_file" \
        --in-timezone "$time_zone" \

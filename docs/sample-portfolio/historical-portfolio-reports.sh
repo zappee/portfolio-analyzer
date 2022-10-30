@@ -28,7 +28,7 @@ workspace="/home/$USER/workspace/sample-portfolio"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     day=$(date --date $start  +%A)
-    printf "\nTrade date: %s (%s)\n" "$start" "$day"
+    printf "\n--> trade date: %s (%s)\n" "$start" "$day"
 
     portfolios=("coinbase" "interactive-brokers" "*")
     for pf in "${portfolios[@]}"
