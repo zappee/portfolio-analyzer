@@ -9,7 +9,6 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
-import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
@@ -95,10 +94,6 @@ public class PortfolioCommand implements Callable<Integer> {
         var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
-        transactions = transactions
-                .stream()
-                .filter(x -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), x))
-                .toList();
 
         // generate the report
         var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());

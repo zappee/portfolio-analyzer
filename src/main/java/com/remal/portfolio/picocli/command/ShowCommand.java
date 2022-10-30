@@ -4,7 +4,6 @@ import com.remal.portfolio.Main;
 import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
-import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
@@ -76,11 +75,6 @@ public class ShowCommand implements Callable<Integer> {
         var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
-        transactions = transactions
-                .stream()
-                .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
-                .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
-                .toList();
 
         // writer
         var zone = ZoneId.of(outputArgGroup.getZone());

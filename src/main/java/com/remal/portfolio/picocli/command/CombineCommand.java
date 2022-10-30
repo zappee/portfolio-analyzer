@@ -84,13 +84,7 @@ public class CombineCommand implements Callable<Integer> {
         inputArgGroup.getFiles().forEach(filenameTemplate -> {
             var filename = LocalDateTimes.toString(zone, filenameTemplate, LocalDateTime.now());
             var parsedTransactions = parser.parse(filename);
-            var filteredTransactions = parsedTransactions
-                    .stream()
-                    .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
-                    .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
-                    .toList();
-
-            combine(filteredTransactions, transactions, overwrite);
+            combine(parsedTransactions, transactions, overwrite);
         });
 
         // writer
@@ -115,7 +109,6 @@ public class CombineCommand implements Callable<Integer> {
             Optional<Transaction> found = target
                     .stream()
                     .filter(targetCurrent -> Filter.transactionIdFilter(sourceCurrent, targetCurrent))
-                    .filter(actual -> Filter.symbolFilter(inputArgGroup.getSymbols(), actual))
                     .findAny();
 
             if (found.isPresent() && overwrite) {
