@@ -34,10 +34,11 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     for pf in "${portfolios[@]}"
     do
         suffix=$([ "$pf" == "*" ] && echo "" || echo "-$pf")
-        pf=$([ "$pf" == "*" ] && echo "" || echo "$pf")
+        dir=$([ "$pf" == "*" ] && echo "" || echo "$pf")
         java \
            -jar "$jarfile" portfolio \
            --input-file "'$workspace/transactions/transactions_2022-10-28.md'" \
+           --portfolio="$pf" \
            --has-report-title \
            --has-table-header \
            --data-provider-file "'$workspace/market-data-providers.properties'" \
@@ -46,7 +47,7 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
            --price-history "'$workspace/price-histories/price-history_$start.md'" \
            --file-mode APPEND \
            --multiplicity ONE_DAY \
-           --portfolio-summary "'$workspace/reports/portfolio-summary/$pf/portfolio-summary${suffix}_$start.md'" \
+           --portfolio-summary "'$workspace/reports/portfolio-summary/$dir/portfolio-summary${suffix}_$start.md'" \
            --portfolio-report "'$workspace/reports/portfolio-report/portfolio-report${suffix}.csv'"
     done
     start=$(date -I -d "$start + $step")
