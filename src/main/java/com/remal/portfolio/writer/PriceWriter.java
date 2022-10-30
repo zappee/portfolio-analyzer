@@ -44,6 +44,7 @@ public class PriceWriter extends Writer<Price> {
     @Override
     protected String buildCsvReport(List<Price> prices) {
         reduceBasedOnMultiplicity(prices, multiplicity);
+        prices.sort(Comparator.comparing(Price::getSymbol).thenComparing(Price::getTradeDate));
 
         // table header
         var report = new StringBuilder();
@@ -74,6 +75,7 @@ public class PriceWriter extends Writer<Price> {
     @Override
     protected String buildMarkdownReport(List<Price> prices) {
         reduceBasedOnMultiplicity(prices, multiplicity);
+        prices.sort(Comparator.comparing(Price::getSymbol).thenComparing(Price::getTradeDate));
         var widths = calculateColumnWidth(prices);
 
         // table header
