@@ -3,7 +3,7 @@
 #
 # Usage: gnuplot -e "input_csv_file='data.csv'" \
 #                -e "output_png_file='report.png'" \
-#                -e "range_in_day=365" \
+#                -e "range_in_days=365" \
 #                -e "resolution_x=2880" \
 #                -e "resolution_y=1200" \
 #                 summary-chart.plot
@@ -28,7 +28,7 @@
 # -----------------------------------------------------------------------------
 #input_csv_file = "portfolio-report/portfolio-report.csv"
 #output_png_file = "portfolio-performance.png"
-#range_in_day = 0
+#range_in_days = 0
 #resolution_x = 2880
 #resolution_y = 1200
 
@@ -86,9 +86,9 @@ if (exists("resolution_x") && exists("resolution_y")) {
 # -----------------------------------------------------------------------------
 # plot historical data
 # -----------------------------------------------------------------------------
-if (exists("range_in_day")) {
+if (exists("range_in_days")) {
     now = time(0)
-    set xrange [now - (range_in_day * 24 * 60 * 60):now]
+    set xrange [now - (range_in_days * 24 * 60 * 60):now]
 }
 
 # -----------------------------------------------------------------------------
