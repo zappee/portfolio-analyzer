@@ -23,8 +23,8 @@ set -e
 start="2016-01-01"
 end="2018-12-31"
 step="7 day"
-jarfile="/home/$USER/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
-workspace="/home/$USER/workspace/sample-portfolio"
+jarfile="$HOME/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
+workspace="$HOME/workspace/sample-portfolio"
 
 while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     day=$(date --date $start  +%A)
@@ -44,7 +44,7 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         # run the portfolio-analyzer tool
         java \
            -jar "$jarfile" portfolio \
-           --input-file "'$workspace/transactions/transactions_2022-10-28.md'" \
+           --input-file "'$workspace/transactions/transactions_2022-10-31.md'" \
            --portfolio="$pf" \
            --has-report-title \
            --has-table-header \
@@ -58,5 +58,5 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
            --portfolio-report "'$workspace/reports/portfolio-report/portfolio-report${suffix}.csv'"
     done
     start=$(date -I -d "$start + $step")
-    read -r -p "Press enter to continue"
+    # read -r -p "Press enter to continue"
 done

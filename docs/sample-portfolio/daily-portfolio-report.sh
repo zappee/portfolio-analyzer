@@ -179,7 +179,7 @@ function generate_chart {
     printf "\n--> generating the PNG chart, output: %s...\n" "$output_png_file"
 
     # create the report directories
-    mkdir -p "$workspace/chart"
+    mkdir -p "$workspace/charts"
 
     gnuplot \
         -e "input_csv_file=$input_csv_file" \
@@ -297,13 +297,13 @@ if [[ "$tasks_to_execute" == *f* ]]; then
         col_total_deposit="${col_total_deposits[$index]}"
         col_total_withdrawal="${col_total_withdrawals[$index]}"
         col_total_market_value="${col_total_market_values[$index]}"
-
-        echo "$portfolio:$col_total_deposit:$col_total_withdrawal:$col_total_market_value"
         suffix=$([ "$portfolio" == "*" ] && echo "" || echo "-$portfolio")
+        title=$([ "$portfolio" == "*" ] && echo "all" || echo "$portfolio")
+
         generate_chart \
             "'$workspace/reports/portfolio-report/portfolio-report${suffix}.csv'" \
             "'$workspace/charts/portfolio-report${suffix}.png'" \
-            "'${portfolio^^}'" \
+            "'${title^^}'" \
             "$diagram_interval" \
             "$diagram_resolution_x" \
             "$diagram_resolution_y" \
