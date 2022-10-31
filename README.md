@@ -725,10 +725,10 @@ Gnuplot is a great tool, it is a swiss knife. The benefits of using this tool ar
 * The source code is copyrighted but freely distributed (i.e., you don't have to pay for it)
 * Simple to use
 
-The sample `gnuplot` file that generates a portfolio performance report based on the sample [portfolio report CSV file](docs/sample-portfolio/reports/portfolio-report/portfolio-report.csv) is available here: [portfolio-performance.plot](docs/sample-portfolio/portfolio-performance.plot) 
+The sample `gnuplot` file that generates a portfolio performance report based on the sample [portfolio report CSV file](docs/sample-portfolio/reports/portfolio-report/portfolio-report.csv) is available here: [summary-chart.plot](docs/sample-portfolio/summary-chart.plot) 
 This is the generated chart:
 
-<p align="center"><img src="docs/portfolio/portfolio-performance.png" alt="portfolio performance" /></p>
+<p align="center"><img src="docs/portfolio/summary-chart.png" alt="portfolio performance" /></p>
 
 ## 7) Installation and system requirements
 The `Remal Portfolio Analyzer` is a portable command-line Java application that you can run on all known platform, i.e. every Linux/Unix, every macOS and Mac OS X, Microsoft Windows, etc.
