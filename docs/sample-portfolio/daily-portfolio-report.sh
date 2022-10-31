@@ -103,29 +103,30 @@ function combine_transactions {
 #   3: market data provider dictionary file
 #   4: the name of the portfolio
 #   5: price history file
-#   6: directory for the portfolio summaries
-#   7: directory for the portfolio reports
+#   6: the portfolio summary file
+#   7: the portfolio report file
 #   8: base currency
 #   9: time zone
 # ---------------------------------------------------------------
 function generate_portfolio_summary {
     local jarfile transaction_file data_provider_file portfolio price_history_file
-    local portfolio_summary_dir portfolio_report_dir base_currency time_zone
+    local portfolio_summary_file portfolio_report_file base_currency time_zone
     jarfile=$1
     transaction_file=$2
     data_provider_file=$3
     portfolio=$4
     price_history_file=$5
-    portfolio_summary_dir=$6
-    portfolio_report_dir=$7
+    portfolio_summary_file=$6
+    portfolio_report_file=$7
     base_currency=$8
     time_zone=$9
 
     printf "\n--> generating the daily '%s' portfolio summary markdown report...\n" "$portfolio"
 
     # create the report directories
-    mkdir -p "$portfolio_summary_dir"
-    mkdir -p "$portfolio_report_dir"
+    mkdir -p "$(dirname "$portfolio_summary_file")"
+    mkdir -p "$(dirname "$portfolio_report_file")"
+    mkdir -p "$(dirname "$price_history_file")"
 
     # run the portfolio-analyzer tool
     java -jar "$jarfile" portfolio \
@@ -135,14 +136,62 @@ function generate_portfolio_summary {
        --has-report-title \
        --has-table-header \
        --portfolio "$portfolio" \
-       --price-history "$price_history_file" \
+       --price-history "'$price_history_file'" \
        --base-currency "$base_currency" \
        --file-mode APPEND \
        --multiplicity ONE_DAY \
        --language EN \
        --out-timezone "$time_zone" \
-       --portfolio-summary "$portfolio_summary_dir" \
-       --portfolio-report "$portfolio_report_dir"
+       --portfolio-summary "'$portfolio_summary_file'" \
+       --portfolio-report "'$portfolio_report_file'"
+}
+
+
+# ---------------------------------------------------------------
+# generating the daily portfolio summary markdown report
+#
+# arguments:
+#   1: the data CSV file that contains the portfolio reports
+#   2: path to the output PNG image
+#   3: diagram title
+#   4: plot historical data
+#   5: PNG image x resolution
+#   6: PNG image y resolution
+#   7: column number of the 'Total deposits' in the CSV file
+#   8: column number of the 'Total withdrawals' in the CSV file
+#   9: column number of the 'Total market value' in the CSV file
+# ---------------------------------------------------------------
+function generate_chart {
+    local input_csv_file output_png_file title
+    local data_range_in_days png_x_resolution png_y_resolution
+    local col_total_deposits col_total_withdrawals col_total_market_value
+    input_csv_file=$1
+    output_png_file=$2
+    title=$3
+    data_range_in_days=$4
+    png_x_resolution=$5
+    png_y_resolution=$6
+    col_total_deposits=$7
+    col_total_withdrawals=$8
+    col_total_market_value=$9
+
+
+    printf "\n--> generating the PNG chart, output: %s...\n" "$output_png_file"
+
+    # create the report directories
+    mkdir -p "$workspace/chart"
+
+    gnuplot \
+        -e "input_csv_file=$input_csv_file" \
+        -e "output_png_file=$output_png_file" \
+        -e "diagram_title=$title" \
+        -e "diagram_range_in_day=$data_range_in_days" \
+        -e "diagram_resolution_x=$png_x_resolution" \
+        -e "diagram_resolution_y=$png_y_resolution" \
+        -e "col_total_deposits=$col_total_deposits" \
+        -e "col_total_withdrawals=$col_total_withdrawals" \
+        -e "col_total_market_value=$col_total_market_value" \
+        $workspace/charts/summary-chart.plot
 }
 
 
@@ -156,6 +205,7 @@ function generate_portfolio_summary {
 #       c: combine transaction files into one
 #       d: delete the old transaction files
 #       e: generate the portfolio summary markdown reports
+#       f: generate the charts
 # ---------------------------------------------------------------
 set -u
 set -e
@@ -164,9 +214,14 @@ base_currency="EUR"
 time_zone="GMT"
 file_max_age=5
 quiet_file_delete_mode=true
-jarfile="/home/$USER/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
-workspace="/home/$USER/workspace/sample-portfolio"
-tasks_to_execute="${1:-abcde}"
+jarfile="$HOME/workspace/sample-portfolio/bin/portfolio-analyzer-0.2.1.jar"
+workspace="$HOME/workspace/sample-portfolio"
+
+diagram_interval=730
+diagram_resolution_x=1440
+diagram_resolution_y=900
+
+tasks_to_execute="${1:-abcdef}"
 
 # ---- task a: coinbase downloader ------------------------------
 if [[ "$tasks_to_execute" == *a* ]]; then
@@ -195,13 +250,11 @@ if [[ "$tasks_to_execute" == *c* ]]; then
         "'$workspace/transactions/coinbase/coinbase-correction-shib.md'"
         "'$workspace/transactions/interactive-brokers/interactive-brokers-transactions.md'"
     )
-
     combine_transactions \
         "$jarfile" \
         "$time_zone" \
         "$workspace/transactions" \
         files_to_combine
-
 fi
 
 # ---- task d: delete old transaction files ---------------------
@@ -212,7 +265,6 @@ if [[ "$tasks_to_execute" == *d* ]]; then
         "$file_max_age" \
         $quiet_file_delete_mode
 fi
-
 
 # ---- task e: generate the daily portfolio summary reports -----
 if [[ "$tasks_to_execute" == *e* ]]; then
@@ -225,10 +277,38 @@ if [[ "$tasks_to_execute" == *e* ]]; then
             "'$workspace/transactions/transactions_'yyyy-MM-dd'.md'" \
             "'$workspace/market-data-providers.properties'" \
             "$portfolio" \
-            "'$workspace/price-histories/price-history_'yyyy-MM-dd'.md'" \
-            "'$workspace/reports/portfolio-summary/portfolio-summary${suffix}_'yyyy-MM-dd'.md'" \
-            "'$workspace/reports/portfolio-report/portfolio-report$suffix.csv'" \
+            "$workspace/price-histories/price-history_'yyyy-MM-dd'.md" \
+            "$workspace/reports/portfolio-summary/portfolio-summary${suffix}_'yyyy-MM-dd'.md" \
+            "$workspace/reports/portfolio-report/portfolio-report$suffix.csv" \
             "$base_currency" \
             "$time_zone"
+    done
+fi
+
+# ---- task f: generate the charts ------------------------------
+if [[ "$tasks_to_execute" == *f* ]]; then
+    portfolios=("coinbase" "ib" "*")
+    col_total_deposits=(6 6 12)
+    col_total_withdrawals=(8 8 16)
+    col_total_market_values=(12 12 23)
+
+    for index in "${!portfolios[@]}"; do
+        portfolio="${portfolios[$index]}"
+        col_total_deposit="${col_total_deposits[$index]}"
+        col_total_withdrawal="${col_total_withdrawals[$index]}"
+        col_total_market_value="${col_total_market_values[$index]}"
+
+        echo "$portfolio:$col_total_deposit:$col_total_withdrawal:$col_total_market_value"
+        suffix=$([ "$portfolio" == "*" ] && echo "" || echo "-$portfolio")
+        generate_chart \
+            "'$workspace/reports/portfolio-report/portfolio-report${suffix}.csv'" \
+            "'$workspace/charts/portfolio-report${suffix}.png'" \
+            "'${portfolio^^}'" \
+            "$diagram_interval" \
+            "$diagram_resolution_x" \
+            "$diagram_resolution_y" \
+            "$col_total_deposit" \
+            "$col_total_withdrawal" \
+            "$col_total_market_value"
     done
 fi
