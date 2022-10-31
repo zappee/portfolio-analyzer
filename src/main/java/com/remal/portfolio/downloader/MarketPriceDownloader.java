@@ -161,6 +161,20 @@ public class MarketPriceDownloader {
      */
     private void updateExchangeRates(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
         var baseCurrency = portfolioReport.getCurrency().name();
+
+        // add a 1.00 as the exchange rate
+        // when base currency and cash currency are equal
+        portfolioReport.getCashInPortfolio()
+                .entrySet()
+                .stream()
+                .filter(cashInPortfolioEntry -> cashInPortfolioEntry.getKey().equals(baseCurrency))
+                .forEach(cashInPortfolioEntry -> {
+                    var exchangeRateSymbol = cashInPortfolioEntry.getKey() + "-" + baseCurrency;
+                    var exchangeRate = BigDecimal.ONE;
+                    portfolioReport.getExchangeRates().put(exchangeRateSymbol, exchangeRate);
+                });
+
+        // exchange rates between another currencies
         portfolioReport.getCashInPortfolio()
                 .entrySet()
                 .stream()
