@@ -187,7 +187,6 @@ public abstract class Parser<T> {
         List<T> items;
         var fileType = Files.getFileType(filename);
 
-        showConfiguration();
         switch (fileType) {
             case CSV -> {
                 log.debug(LOG_BEFORE_EXECUTION, filename, "CSV");
@@ -325,13 +324,18 @@ public abstract class Parser<T> {
 
     /**
      * Show the parser configuration.
+     *
+     * @param parserClassSimpleName the current parser's simple name
      */
-    private void showConfiguration() {
-        log.debug("< portfolio name filter: '{}'", portfolio);
-        log.debug("< symbol filter: '{}'", symbols);
+    protected void showConfiguration(String parserClassSimpleName) {
+        log.debug("< parser name: '{}'", parserClassSimpleName);
+        if (!parserClassSimpleName.equals(PriceParser.class.getSimpleName())) {
+            log.debug("< portfolio name filter: '{}'", portfolio);
+            log.debug("< symbol filter: '{}'", symbols);
+        }
         log.debug("< time zone: '{}'", Objects.isNull(zone) ? "<not defined>" : zone.getId());
-        log.debug(hasTitle ? "< printing the report with title" : "< printing the report without title");
-        log.debug(hasHeader ? "< printing table header" : "< skipping to print the table header");
+        log.debug(hasTitle ? "< parsing the file with title" : "< parsing the file without title");
+        log.debug(hasHeader ? "< parsing the file with table header" : "< parsing the file without table header");
         if (!symbols.isEmpty()) {
             log.debug("< showing only the following symbols: {}", symbols);
         }

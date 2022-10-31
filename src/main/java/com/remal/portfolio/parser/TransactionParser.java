@@ -99,7 +99,7 @@ public class TransactionParser extends Parser<Transaction> {
      * @return the list of the transactions
      */
     private List<Transaction> parseTextFile(int skipRows, int startColumn, String fileName, String separator) {
-
+        showConfiguration(this.getClass().getSimpleName());
         List<Transaction> transactions = new ArrayList<>();
         AtomicReference<String> currentLine = new AtomicReference<>();
         try (Stream<String> stream = Files.lines(Path.of(fileName))) {

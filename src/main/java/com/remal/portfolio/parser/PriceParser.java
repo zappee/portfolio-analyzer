@@ -76,6 +76,7 @@ public class PriceParser extends Parser<Price> {
      * @return the list of the transactions
      */
     private List<Price> parseTextFile(String file, String separator) {
+        showConfiguration(this.getClass().getSimpleName());
         List<Price> prices = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Path.of(file))) {
             var skipRows = getFirstDataRow(com.remal.portfolio.util.Files.getFileType(file));

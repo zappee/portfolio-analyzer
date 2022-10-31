@@ -64,6 +64,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
      */
     @Override
     protected List<PortfolioReport> parseCsvFile(String fileName) {
+        showConfiguration(this.getClass().getSimpleName());
         List<PortfolioReport> portfolioReports = new ArrayList<>();
 
         // validation
