@@ -24,6 +24,7 @@ All notable changes to this project will be documented in this file.
 - Fix an issue related to te Yahoo API
 - Fix timezone related issue
 - Fix `portfolio` and `symbol` filter problems
+- Fix an exchange rate issue when base currency and cash currency are equal
 #### Added
 - Support currency for fees
 - Transfer assets between brokerage companies, new transaction types: `TRANSFER_IN` and `TRANSFER_OUT`
