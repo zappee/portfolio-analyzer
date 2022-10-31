@@ -110,18 +110,24 @@ function combine_transactions {
 # ---------------------------------------------------------------
 function generate_portfolio_summary {
     local jarfile transaction_file data_provider_file portfolio price_history_file
-    local portfolio_summary portfolio_report base_currency time_zone
+    local portfolio_summary_dir portfolio_report_dir base_currency time_zone
     jarfile=$1
     transaction_file=$2
     data_provider_file=$3
     portfolio=$4
     price_history_file=$5
-    portfolio_summary=$6
-    portfolio_report=$7
+    portfolio_summary_dir=$6
+    portfolio_report_dir=$7
     base_currency=$8
     time_zone=$9
 
     printf "\n--> generating the daily '%s' portfolio summary markdown report...\n" "$portfolio"
+
+    # create the report directories
+    mkdir -p "$portfolio_summary_dir"
+    mkdir -p "$portfolio_report_dir"
+
+    # run the portfolio-analyzer tool
     java -jar "$jarfile" portfolio \
        --input-file "$transaction_file" \
        --in-timezone "$time_zone" \
@@ -135,8 +141,8 @@ function generate_portfolio_summary {
        --multiplicity ONE_DAY \
        --language EN \
        --out-timezone "$time_zone" \
-       --portfolio-summary "$portfolio_summary" \
-       --portfolio-report "$portfolio_report"
+       --portfolio-summary "$portfolio_summary_dir" \
+       --portfolio-report "$portfolio_report_dir"
 }
 
 
