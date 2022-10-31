@@ -185,7 +185,7 @@ function generate_chart {
         -e "input_csv_file=$input_csv_file" \
         -e "output_png_file=$output_png_file" \
         -e "diagram_title=$title" \
-        -e "diagram_range_in_day=$data_range_in_days" \
+        -e "diagram_range_in_days=$data_range_in_days" \
         -e "diagram_resolution_x=$png_x_resolution" \
         -e "diagram_resolution_y=$png_y_resolution" \
         -e "col_total_deposits=$col_total_deposits" \
