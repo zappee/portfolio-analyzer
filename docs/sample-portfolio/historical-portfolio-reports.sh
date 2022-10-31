@@ -37,6 +37,7 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
         dir=$([ "$pf" == "*" ] && echo "" || echo "$pf")
 
         # create the report directories
+        mkdir -p "$workspace/price-histories"
         mkdir -p "$workspace/reports/portfolio-summary/$dir"
         mkdir -p "$workspace/reports/portfolio-report"
 
