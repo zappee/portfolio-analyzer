@@ -33,7 +33,7 @@ public interface Downloader {
     /**
      * The number of repetitions in price downloader in case of error.
      */
-    int MAX_REPETITIONS = 20;
+    int MAX_REPETITIONS = 30;
 
     /**
      * The time multiplier that determines the next trade date that is used when trying
