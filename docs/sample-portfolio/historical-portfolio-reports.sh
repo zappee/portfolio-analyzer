@@ -33,6 +33,7 @@ while [ "$(date -d $start +%s)" -le "$(date -d $end +%s)" ]; do
     portfolios=("coinbase" "interactive-brokers" "*")
     for pf in "${portfolios[@]}"
     do
+        printf "\nportfolio: $pf, trade date: %s (%s)\n" "$start" "$day"
         suffix=$([ "$pf" == "*" ] && echo "" || echo "-$pf")
         dir=$([ "$pf" == "*" ] && echo "" || echo "$pf")
 
