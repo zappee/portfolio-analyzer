@@ -330,8 +330,8 @@ public abstract class Parser<T> {
     protected void showConfiguration(String parserClassSimpleName) {
         log.debug("< parser name: '{}'", parserClassSimpleName);
         if (!parserClassSimpleName.equals(PriceParser.class.getSimpleName())) {
-            log.debug("< portfolio name filter: '{}'", portfolio);
-            log.debug("< symbol filter: '{}'", symbols);
+            log.debug("< portfolio name filter: {}", Objects.isNull(portfolio) ? "<NULL>" : "\"" + portfolio + "\"");
+            log.debug("< symbol filter: \"{}\"", symbols);
         }
         log.debug("< time zone: '{}'", Objects.isNull(zone) ? "<not defined>" : zone.getId());
         log.debug(hasTitle ? "< parsing the file with title" : "< parsing the file without title");
