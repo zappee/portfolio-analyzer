@@ -26,6 +26,7 @@ All notable changes to this project will be documented in this file.
 - Fix `portfolio` and `symbol` filter problems
 - Fix an exchange rate issue when base currency and cash currency are equal
 - Improve `gnuplot` diagram generator
+- Fix a column positioning error that appeared while writing currency rates to the `portfolio-report` *.CSV file
 #### Added
 - Support currency for fees
 - Transfer assets between brokerage companies, new transaction types: `TRANSFER_IN` and `TRANSFER_OUT`

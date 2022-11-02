@@ -433,7 +433,10 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
 
             // exchange rates
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_EXCHANGE_RATE), reportEntry.getExchangeRates());
-            reportEntry.getExchangeRates().forEach(consumer);
+            columnInfo.get(Label.LABEL_TOTAL_EXCHANGE_RATE).forEach(symbol -> {
+                var exchangeRate = reportEntry.getExchangeRates().get(symbol);
+                sb.append(getStringValue(exchangeRate).map(x -> x + csvSeparator).orElse(csvSeparator));
+            });
 
             // deposits
             enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY), reportEntry.getDeposits());
@@ -471,10 +474,16 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         return sb.toString();
     }
 
+    /**
+     * Copy items from a Set to a Map.
+     *
+     * @param source the source items
+     * @param target the target items
+     */
     private void enrichMapValue(Set<String> source, Map<String, BigDecimal> target) {
         source.forEach(value -> {
             if (!target.containsKey(value)) {
-                target.put(value, BigDecimal.ZERO);
+                target.put(value, null);
             }
         });
     }
@@ -703,7 +712,9 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         }
 
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
-        valuesToSum.forEach((symbol, quantity) -> {
+        valuesToSum.entrySet().forEach(entry -> {
+            var symbol = entry.getKey();
+            var quantity = BigDecimals.isNullOrZero(entry.getValue()) ? BigDecimal.ZERO : entry.getValue();
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
             var exchangeRate = rates.get(exchangeRateSymbol);
             if (Objects.isNull(exchangeRate)) {
