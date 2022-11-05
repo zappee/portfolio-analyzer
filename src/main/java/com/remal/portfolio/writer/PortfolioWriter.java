@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
 /**
  * Portfolio summary writer.
@@ -419,52 +418,53 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         decimalFormat = BigDecimals.UNFORMATTED;
         var sb = new StringBuilder();
 
-        BiConsumer<String, BigDecimal> consumer = (key, value) ->
-                sb.append(getStringValue(value).map(x -> x + csvSeparator).orElse(csvSeparator));
-
         portfolioReports.forEach(reportEntry -> {
             sb.append(getStringValue(reportEntry.getGenerated()).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // cash
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_CASH_PER_CURRENCY), reportEntry.getCashInPortfolio());
-            reportEntry.getCashInPortfolio().forEach(consumer);
+            var label = Label.LABEL_TOTAL_CASH_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getCashInPortfolio());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getCashInPortfolio().get(symbol)));
             var sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getCashInPortfolio());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // exchange rates
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_EXCHANGE_RATE), reportEntry.getExchangeRates());
-            columnInfo.get(Label.LABEL_TOTAL_EXCHANGE_RATE).forEach(symbol -> {
-                var exchangeRate = reportEntry.getExchangeRates().get(symbol);
-                sb.append(getStringValue(exchangeRate).map(x -> x + csvSeparator).orElse(csvSeparator));
-            });
+            label = Label.LABEL_TOTAL_EXCHANGE_RATE;
+            enrichMapValue(columnInfo.get(label), reportEntry.getExchangeRates());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getExchangeRates().get(symbol)));
 
             // deposits
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY), reportEntry.getDeposits());
-            reportEntry.getDeposits().forEach(consumer);
+            label = Label.LABEL_TOTAL_DEPOSIT_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getDeposits());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getDeposits().get(symbol)));
             sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getDeposits());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // withdrawals
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY), reportEntry.getWithdrawals());
-            reportEntry.getWithdrawals().forEach(consumer);
+            label = Label.LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getWithdrawals());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getWithdrawals().get(symbol)));
             sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getWithdrawals());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // investments
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY), reportEntry.getInvestments());
-            reportEntry.getInvestments().forEach(consumer);
+            label = Label.LABEL_TOTAL_INVESTMENT_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getInvestments());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getInvestments().get(symbol)));
             sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getInvestments());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
             // market values
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY), reportEntry.getMarketValues());
-            reportEntry.getMarketValues().forEach(consumer);
+            label = Label.LABEL_TOTAL_MARKET_VALUE_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getMarketValues());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getMarketValues().get(symbol)));
             sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getMarketValues());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
 
-            // profits / losses
-            enrichMapValue(columnInfo.get(Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY), reportEntry.getProfitLoss());
-            reportEntry.getProfitLoss().forEach(consumer);
+            // profits/losses
+            label = Label.LABEL_TOTAL_PROFIT_LOSS_PER_CURRENCY;
+            enrichMapValue(columnInfo.get(label), reportEntry.getProfitLoss());
+            columnInfo.get(label).forEach(symbol -> showBigDecimal(sb, reportEntry.getProfitLoss().get(symbol)));
             sum = exchangeAndSum(reportEntry.getExchangeRates(), reportEntry.getProfitLoss());
             sb.append(getStringValue(sum).map(x -> x + csvSeparator).orElse(csvSeparator));
             sb.setLength(sb.length() - csvSeparator.length());
@@ -472,6 +472,16 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         });
 
         return sb.toString();
+    }
+
+    /**
+     * Adds the decimal value to the CSV report.
+     *
+     * @param sb the CSV report
+     * @param value value to add
+     */
+    private void showBigDecimal(StringBuilder sb, BigDecimal value) {
+        sb.append(getStringValue(value).map(x -> x + csvSeparator).orElse(csvSeparator));
     }
 
     /**
@@ -712,9 +722,8 @@ public class PortfolioWriter extends Writer<PortfolioReport> {
         }
 
         AtomicReference<BigDecimal> total = new AtomicReference<>(BigDecimal.ZERO);
-        valuesToSum.entrySet().forEach(entry -> {
-            var symbol = entry.getKey();
-            var quantity = BigDecimals.isNullOrZero(entry.getValue()) ? BigDecimal.ZERO : entry.getValue();
+        valuesToSum.forEach((symbol, value) -> {
+            var quantity = BigDecimals.isNullOrZero(value) ? BigDecimal.ZERO : value;
             var exchangeRateSymbol = symbol + "-" + baseCurrency;
             var exchangeRate = rates.get(exchangeRateSymbol);
             if (Objects.isNull(exchangeRate)) {
