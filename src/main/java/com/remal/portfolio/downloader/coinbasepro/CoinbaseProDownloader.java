@@ -178,18 +178,19 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         var httpClient = HttpClient.newBuilder().build();
         Optional<Price> price = Optional.empty();
 
+        HttpResponse<String> response;
         try {
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var json = response.body();
+            log.debug("HTTP response: {}, \"{}\"", response.statusCode(), json);
             if (Objects.isNull(json)) {
                 log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else if (json.equals("[]")) {
                 var message = "< the price of the \"{}\" on {} does not exist";
                 log.warn(message, symbol, Calendars.toUtcString(requestedTradeDate));
+            } else if (json.toLowerCase().contains("notfound")) {
+                log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
-                if (json.toLowerCase().contains("notfound")) {
-                    log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
-                }
                 var bucket = json.replace("[", "");
                 bucket = bucket.replace("]", "");
 
@@ -211,6 +212,10 @@ public class CoinbaseProDownloader extends CoinbaseProRequestBuilder implements 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             log.warn(DOWNLOAD_ERROR, symbol, DATA_PROVIDER, e.toString());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            var message = "An unexpected error has appeared while downloading thr price. "
+                    + "Provider: {}, Symbol: {}, Error: {}";
+            Logger.logErrorAndExit(message, DATA_PROVIDER, symbol, e.toString());
         }
 
         return price;
