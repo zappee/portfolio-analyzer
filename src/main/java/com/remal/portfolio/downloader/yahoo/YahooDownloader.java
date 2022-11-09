@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Product price downloader implementation for Yahoo Finance data providerType.
@@ -85,17 +86,18 @@ public class YahooDownloader implements Downloader {
      */
     @Override
     public Optional<Price> getPrice(String symbol, Calendar requestedTradeDate) {
+        var retry = new AtomicInteger();
         var repetitions = 0;
         var delay = 1.0;
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
-        Optional<Price> marketPrice = download(symbol, actualTradeDate);
+        Optional<Price> marketPrice = download(symbol, actualTradeDate, retry);
 
         // reset the second and try it again
         if (marketPrice.isEmpty()) {
             actualTradeDate.set(Calendar.SECOND, 0);
             actualTradeDate.set(Calendar.MILLISECOND, 0);
             Sleep.sleep(SLEEP_IN_MILLISECOND);
-            marketPrice = download(symbol, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate, retry);
         }
 
         // trying to move back in time a little for the first available price
@@ -104,7 +106,7 @@ public class YahooDownloader implements Downloader {
             var amount = (int)(delay * -1);
             actualTradeDate.add(Calendar.MINUTE, amount);
             Sleep.sleep(SLEEP_IN_MILLISECOND);
-            marketPrice = download(symbol, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate, retry);
             repetitions++;
         }
 
@@ -122,11 +124,16 @@ public class YahooDownloader implements Downloader {
      *
      * @param symbol             product name
      * @param requestedTradeDate trade date in the past
+     * @param retry the number of the retrying, only used for logging
      * @return the product's market price
      */
-    private Optional<Price> download(final String symbol, final Calendar requestedTradeDate) {
-        log.debug("< getting the price of \"{}\" at {}, provider: \"{}\"...", symbol,
-                Calendars.toString(requestedTradeDate), DATA_PROVIDER);
+    private Optional<Price> download(final String symbol, final Calendar requestedTradeDate, AtomicInteger retry) {
+        log.debug(
+                "< {}getting the price of \"{}\" at {}, provider: \"{}\"...",
+                retry.incrementAndGet() > 1 ? "(" + retry +") " : "",
+                symbol,
+                Calendars.toString(requestedTradeDate),
+                DATA_PROVIDER);
 
         Optional<Price> marketPrice = Optional.empty();
         try {
