@@ -176,11 +176,9 @@ public class LocalDateTimes {
                         : timestampAtLocalZone.withZoneSameInstant(zone).format(formatter);
 
             } catch (IllegalArgumentException e) {
-                Logger.logErrorAndExit(
-                        "An error has occurred while parsing a string with date/time symbols. Wrap \"{}\" with"
-                        + " single quotas may help. {}",
-                        dateTimePattern,
-                        e.getMessage());
+                log.error("An error has occurred while parsing a string with date/time patterns.");
+                log.error(e.getMessage());
+                Logger.logErrorAndExit("Wrap the filename with single quotas may help.");
             }
         }
         return "";
