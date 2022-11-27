@@ -71,6 +71,7 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(this.silentMode);
+        log.info("executing the 'coinbase' command...");
 
         // validating the inputs
         CurrencyType.abortIfInvalid(inputArgGroup.getBaseCurrency());

@@ -68,6 +68,7 @@ public class ShowCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(silentMode);
+        log.info("executing the 'show' command...");
 
         // parser
         var parser = TransactionParser.build(inputArgGroup);

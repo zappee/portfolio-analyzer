@@ -73,6 +73,7 @@ public class CombineCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        log.info("executing the 'combine' command...");
 
         var overwrite = inputArgGroup.isOverwrite();
         log.debug("< overwrite mode: {}", overwrite ? "overwrite" : "skip if exist");

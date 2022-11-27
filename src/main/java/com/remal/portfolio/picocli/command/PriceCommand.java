@@ -72,6 +72,7 @@ public class PriceCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        log.info("executing the 'price' command...");
         ZoneIds.validate(outputArgGroup.getZone());
 
         var priceDownloader = new MarketPriceDownloader(priceHistoryFile, inputArgGroup, outputArgGroup);

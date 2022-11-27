@@ -84,6 +84,7 @@ public class PortfolioCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        log.info("executing the 'portfolio' command...");
 
         // validating the inputs
         CurrencyType.abortIfInvalid(outputArgGroup.getBaseCurrency());
