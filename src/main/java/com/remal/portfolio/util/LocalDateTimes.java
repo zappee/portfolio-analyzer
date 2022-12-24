@@ -174,11 +174,10 @@ public class LocalDateTimes {
                 return Objects.isNull(zone)
                         ? timestampAtLocalZone.format(formatter)
                         : timestampAtLocalZone.withZoneSameInstant(zone).format(formatter);
-
             } catch (IllegalArgumentException e) {
                 log.error("An error has occurred while parsing a string with date/time patterns.");
                 log.error(e.getMessage());
-                Logger.logErrorAndExit("Wrap the filename with single quotas may help.");
+                Logger.logErrorAndExit("Wrap the filename with single quotas may help: \"'{}'\"", dateTimePattern);
             }
         }
         return "";
