@@ -1,5 +1,7 @@
 package com.remal.portfolio.model;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * Type of transaction.
  * <p>
@@ -8,6 +10,7 @@ package com.remal.portfolio.model;
  * </p>
  * @author arnold.somogyi@gmail.comm
  */
+@Slf4j
 public enum TransactionType {
 
     /**
@@ -71,6 +74,9 @@ public enum TransactionType {
             return TransactionType.valueOf(correctedValue.toUpperCase());
         } catch (NullPointerException e) {
             return TransactionType.UNKNOWN;
+        } catch (IllegalArgumentException e) {
+            log.error("Unknown transaction-type: \"{}\"", value);
+            throw e;
         }
     }
 }
