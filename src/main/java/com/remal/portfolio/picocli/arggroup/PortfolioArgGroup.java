@@ -27,6 +27,7 @@ public class PortfolioArgGroup {
      * Output configuration.
      */
     @Getter
+    @Setter
     public static class OutputArgGroup {
 
         /**

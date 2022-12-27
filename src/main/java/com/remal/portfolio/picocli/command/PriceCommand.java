@@ -73,6 +73,10 @@ public class PriceCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(quietMode);
         log.info("executing the 'price' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
         Logger.logQuietMode(log, quietMode);
         Logger.logPriceHistoryFile(log, priceHistoryFile);
         Logger.logInput(log, inputArgGroup);

@@ -24,6 +24,7 @@ public class PriceArgGroup {
      * Input configuration.
      */
     @Getter
+    @Setter
     public static class InputArgGroup {
 
         /**

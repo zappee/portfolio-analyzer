@@ -12,6 +12,7 @@ import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.PortfolioWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -85,6 +86,10 @@ public class PortfolioCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(quietMode);
         log.info("executing the 'portfolio' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
         Logger.logQuietMode(log, quietMode);
         Logger.logPriceHistoryFile(log, priceHistoryFile);
         Logger.logInput(log, inputArgGroup);

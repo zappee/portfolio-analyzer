@@ -8,6 +8,7 @@ import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.TransactionWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
@@ -74,6 +75,10 @@ public class CombineCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(quietMode);
         log.info("executing the 'combine' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
         Logger.logQuietMode(log, quietMode);
         Logger.logInput(log, inputArgGroup);
         Logger.logOutput(log, outputArgGroup);

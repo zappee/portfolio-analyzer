@@ -7,6 +7,7 @@ import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -69,6 +70,10 @@ public class ShowCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(silentMode);
         log.info("executing the 'show' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
         Logger.logInput(log, inputArgGroup);
         Logger.logOutput(log, outputArgGroup);
 

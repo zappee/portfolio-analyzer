@@ -8,6 +8,7 @@ import com.remal.portfolio.picocli.arggroup.CoinbaseProArgGroup;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.TransactionWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,9 @@ public class CoinbaseDownloaderCommand implements Callable<Integer> {
     public Integer call() {
         Logger.setSilentMode(this.silentMode);
         log.info("executing the 'coinbase' command...");
+
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
         Logger.logInput(log, inputArgGroup);
         Logger.logOutput(log, outputArgGroup);
 
