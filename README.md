@@ -25,7 +25,7 @@
 * [Appendix 1) Supported transaction types](#appendix-1-supported-transaction-types)
 * [Appendix 2) Fields in the transaction file](#appendix-2-fields-in-the-transaction-file)
 * [Appendix 3) Fields in the portfolio summary report](#appendix-3-fields-in-the-portfolio-summary-report)
-
+* [Appendix 4) Use in practice](#appendix-4-use-in-practice)
 ---
 
 ## 1) Overview
@@ -726,9 +726,11 @@ Gnuplot is a great tool, it is a swiss knife. The benefits of using this tool ar
 * Simple to use
 
 The sample `gnuplot` file that generates a portfolio performance report based on the sample [portfolio report CSV file](docs/sample-portfolio/reports/portfolio-report/portfolio-report.csv) is available here: [summary-chart.plot](docs/sample-portfolio/summary-chart.plot) 
-This is the generated chart:
+This is an example, how a generated chart can look like:
 
-<p align="center"><img src="docs/sample-portfolio/summary-chart.png" alt="portfolio performance" /></p>
+<p align="center"><img src="docs/demo-portfolio/charts/performance-comparison-5-years.png" alt="portfolio performance-comparison" /></p>
+
+For more chats please 
 
 ## 7) Installation and system requirements
 The `Remal Portfolio Analyzer` is a portable command-line Java application that you can run on all known platform, i.e. every Linux/Unix, every macOS and Mac OS X, Microsoft Windows, etc.
@@ -881,6 +883,61 @@ __Example transactions:__
 | costs               | Sum of the costs, i.e. trading fee, tax                                                                                                                                                                                                |
 | deposit total       | The sum of the deposits. It has meaning in case of currencies.                                                                                                                                                                         |
 | withdrawal total    | The sum of the withdrawals. It has meaning in case of currencies.                                                                                                                                                                      |
+
+## Appendix 4) Use in practice
+This is a step-by-step guide that shows you how to use this tool in practice.
+
+The [docs/demo-portfolio/pa.sh](docs/demo-portfolio/ps.sh) bash script automates the commands that you need to execute in order to have an up-to-date portfolio-report.
+
+* step 1) Create your transaction Markdown files. Example files are available under the [docs/demo-portfolio/transactions](docs/demo-portfolio/transactions) directory.
+
+
+* step 2) Combine your transaction files into one.
+  ```
+  $ export PORTFOLIO_HOME=$HOME/Java/portfolio-analyzer/docs/demo-portfolio
+  $ cd $PORTFOLIO_HOME
+  $ ./pa.sh b
+  ```
+
+* step 3) Generate the `portfolio-report` CSV files and the `portfolio-summary` Markdown files using the master `transactions.md` file.
+
+  You can generate CSV and MD files per portfolios using the `sss` option.
+
+  ```
+  $ java -jar $PORTFOLIO_HOME/bin/portfolio-analyzer-0.2.1.jar portfolio \
+    --input-file "'$PORTFOLIO_HOME/transactions/transactions_2022-12-26.md'" \
+    --in-timezone GMT \
+    --data-provider-file "'$PORTFOLIO_HOME/market-data-providers.properties'" \
+    --in-to "2016-01-01 21:00:00" \
+    --has-report-title \
+    --has-table-header \
+    --price-history "'$PORTFOLIO_HOME/price-histories/price-history_2016-01-01.md'" \
+    --base-currency EUR \
+    --file-mode APPEND \
+    --multiplicity ONE_DAY \
+    --language EN \
+    --out-timezone GMT \
+    --portfolio coinbase \
+    --portfolio-summary "'$PORTFOLIO_HOME/reports/portfolio-summary/coinbase/portfolio-summary-coinbase_2016-01-01.md'" \
+    --portfolio-report "'$PORTFOLIO_HOME/reports/portfolio-report/portfolio-report-coinbase.csv'"
+  ```
+
+* step 4) Generate the historical reports from `2016-01-01` till `2022-08-31`.
+  ```
+  $ ./pa.sh i
+  $ -/pa.sh d
+  ```
+
+* step 5) Generate the charts.
+  ```
+  $ ./pa.sh ef
+  ```
+
+* step 6) Analyze the charts.
+
+  Open the [docs/demo-portfolio/index.html](docs/demo-portfolio/index.html) file with your favourite web browser.
+
+To keep up-to date the charts, you only need to execute the `./pa.sh ef` command every day, or once per a week.
 
 [markdown]: https://www.markdownguide.org/basic-syntax "Markdown"
 [coinbase-api-key]: https://help.coinbase.com/en/exchange/managing-my-account/how-to-create-an-api-key
