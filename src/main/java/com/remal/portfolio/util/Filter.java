@@ -26,7 +26,7 @@ public class Filter {
      * @return true if the transaction meets with the conditions
      */
     public static boolean portfolioNameFilter(String portfolio, Transaction transaction) {
-        return Objects.isNull(portfolio) || transaction.getPortfolio().equals(portfolio);
+        return Objects.isNull(portfolio) || portfolio.equals("*") || transaction.getPortfolio().equals(portfolio);
     }
 
     /**

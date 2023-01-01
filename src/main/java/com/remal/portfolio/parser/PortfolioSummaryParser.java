@@ -8,10 +8,7 @@ import com.remal.portfolio.picocli.arggroup.InputArgGroup;
 import com.remal.portfolio.util.Logger;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -67,6 +64,7 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
      */
     @Override
     protected List<PortfolioReport> parseCsvFile(String fileName) {
+        showConfiguration(this.getClass().getSimpleName());
         List<PortfolioReport> portfolioReports = new ArrayList<>();
 
         // validation
@@ -76,17 +74,10 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
         }
 
         // read and process the header
-        String firstLine = "";
-        try (FileReader fileReader = new FileReader(fileName)) {
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            firstLine = bufferedReader.readLine();
-        } catch (IOException e) {
-            Logger.logErrorAndExit("Error while reading the \"{}\" file: {}", e);
-        }
-
         LinkedList<String> map = new LinkedList<>();
         map.add(Label.HEADER_REQUEST_DATE.name());
 
+        String firstLine = com.remal.portfolio.util.Files.getFirstLine(file);
         var labels = firstLine.split(Pattern.quote(csvSeparator));
         Arrays.stream(labels).forEach(label ->
                 LabelCollection.PRODUCT_SUMMARY_FOOTER.forEach(labelFromCollection ->
@@ -159,6 +150,6 @@ public class PortfolioSummaryParser extends Parser<PortfolioReport> {
      */
     @Override
     protected List<PortfolioReport> parseMarkdownFile(String fileName) {
-        return new ArrayList<>();
+        throw new UnsupportedOperationException("Markdown portfolio summary report is not supported.");
     }
 }

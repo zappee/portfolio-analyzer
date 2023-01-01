@@ -27,7 +27,7 @@ public class InputArgGroup {
      */
     @CommandLine.Option(
             order = 100,
-            names = {"-e", "--has-title"},
+            names = {"-e", "--has-report-title"},
             description = "The report file contains title.")
     @Accessors(fluent = true)
     private boolean hasTitle;
@@ -37,7 +37,7 @@ public class InputArgGroup {
      */
     @CommandLine.Option(
             order = 100,
-            names = {"-a", "--has-header"},
+            names = {"-a", "--has-table-header"},
             description = "The table has a header in the report.")
     @Accessors(fluent = true)
     private boolean hasHeader;
@@ -48,7 +48,7 @@ public class InputArgGroup {
     @CommandLine.Option(
             order = 100,
             names = {"-p", "--portfolio"},
-            description = "Portfolio name filter.")
+            description = "Portfolio name filter. The \"*\" symbol can be use to select the all portfolios.")
     private String portfolio;
 
     /**

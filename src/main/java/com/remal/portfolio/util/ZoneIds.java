@@ -35,6 +35,19 @@ public class ZoneIds {
     }
 
     /**
+     * Returns with the default system zone-if if the provided one is null or
+     * empty (empty string or string with only whitespaces).
+     *
+     * @param zoneId the zone-id to check
+     * @return returns with thr system default zone if the provided is empty
+     */
+    public static String getDefaultIfEmpty(String zoneId) {
+        return Objects.isNull(zoneId) || zoneId.isBlank()
+                ? ZoneId.systemDefault().getId()
+                : zoneId;
+    }
+
+    /**
      * Utility classes should not have public constructors.
      *
      * @throws java.lang.UnsupportedOperationException if this method is called

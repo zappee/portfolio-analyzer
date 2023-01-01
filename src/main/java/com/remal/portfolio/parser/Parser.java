@@ -9,6 +9,7 @@ import com.remal.portfolio.picocli.arggroup.InputArgGroup;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
 import com.remal.portfolio.util.BigDecimals;
 import com.remal.portfolio.util.Files;
+import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.ZoneIds;
@@ -49,7 +50,7 @@ public abstract class Parser<T> {
      * Log message.
      */
     protected static final String LOG_ERROR_ARRAY_INDEX = "Error while parsing the \"{}\" file. "
-            + "Can be consider to use '--has-title' and '--has-header' options. Error: {}";
+            + "Can be consider to use '--has-report-title' and '--has-table-header' options. Error: {}";
 
     /**
      * Log message.
@@ -87,6 +88,12 @@ public abstract class Parser<T> {
      * Transaction date filter.
      */
     protected LocalDateTime to;
+
+    /**
+     * Portfolio name filter.
+     */
+    @Setter
+    protected String portfolio;
 
     /**
      * Product name filter.
@@ -133,20 +140,20 @@ public abstract class Parser<T> {
      *
      * @param <T> the type of the parser
      * @param parserType parser type
-     * @param arguments parameters from the command line interface
+     * @param inputArgs parameters from the command line interface
      * @param language report language
      * @param baseCurrency base currency used in the report
      * @return the parser instance
      */
     @SuppressWarnings("unchecked")
     protected static <T> Parser<T> build(Class<T> parserType,
-                                         InputArgGroup arguments,
+                                         InputArgGroup inputArgs,
                                          String language,
                                          CurrencyType baseCurrency) {
 
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getFrom());
-        LocalDateTimes.validate(arguments.getDateTimePattern(), arguments.getTo());
-        ZoneIds.validate(arguments.getZone());
+        LocalDateTimes.validate(inputArgs.getDateTimePattern(), inputArgs.getFrom());
+        LocalDateTimes.validate(inputArgs.getDateTimePattern(), inputArgs.getTo());
+        ZoneIds.validate(inputArgs.getZone());
 
         Parser<T> parser;
         if (parserType.isAssignableFrom(Transaction.class)) {
@@ -155,16 +162,17 @@ public abstract class Parser<T> {
             parser = (Parser<T>) new PortfolioSummaryParser(baseCurrency);
         }
 
-        var zoneId = ZoneId.of(arguments.getZone());
+        var zoneId = ZoneId.of(inputArgs.getZone());
 
-        parser.hasTitle(arguments.hasTitle());
-        parser.hasHeader(arguments.hasHeader());
-        parser.setDateTimePattern(arguments.getDateTimePattern());
+        parser.hasTitle(inputArgs.hasTitle());
+        parser.hasHeader(inputArgs.hasHeader());
+        parser.setDateTimePattern(inputArgs.getDateTimePattern());
         parser.setZone(zoneId);
-        parser.setFrom(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getFrom()));
-        parser.setTo(LocalDateTimes.toLocalDateTime(zoneId, arguments.getDateTimePattern(), arguments.getTo()));
-        parser.setMissingColumns(arguments.getMissingColumns());
-        parser.setSymbols(arguments.getSymbols());
+        parser.setFrom(LocalDateTimes.toLocalDateTime(zoneId, inputArgs.getDateTimePattern(), inputArgs.getFrom()));
+        parser.setTo(LocalDateTimes.toLocalDateTime(zoneId, inputArgs.getDateTimePattern(), inputArgs.getTo()));
+        parser.setMissingColumns(inputArgs.getMissingColumns());
+        parser.setPortfolio(inputArgs.getPortfolio());
+        parser.setSymbols(inputArgs.getSymbols());
         parser.setLanguage(language);
         return parser;
     }
@@ -179,7 +187,6 @@ public abstract class Parser<T> {
         List<T> items;
         var fileType = Files.getFileType(filename);
 
-        showConfiguration();
         switch (fileType) {
             case CSV -> {
                 log.debug(LOG_BEFORE_EXECUTION, filename, "CSV");
@@ -195,8 +202,34 @@ public abstract class Parser<T> {
             }
         }
 
-        log.info("< {} items have been loaded by the parser", items.size());
-        return items;
+        return filterByPortfolioAndSymbols(items);
+    }
+
+    /**
+     * Apply portfolio name and symbol filters if the list contains Transactions.
+     * <p>
+     * Java uses type erasure, which means at runtime objects are equivalent. The type of the item information is lost
+     * at runtime, and the list only contain Objects. But if the list is not empty, then the item type can be
+     * determined.
+     * </p>
+     *
+     * @param items the list
+     * @return the reduced list
+     */
+    private List<T> filterByPortfolioAndSymbols(List<T> items) {
+        var reducedList = items;
+        log.info("< {} items have been loaded by the parser", reducedList.size());
+
+        var firstItem = items.stream().findFirst();
+        if (firstItem.isPresent() && firstItem.get() instanceof Transaction) {
+            reducedList = items
+                        .stream()
+                        .filter(t -> Filter.portfolioNameFilter(getPortfolio(), (Transaction) t))
+                        .filter(t -> Filter.symbolFilter(getSymbols(), (Transaction) t))
+                        .toList();
+            log.info("< items after filtering by portfolio and symbols: {}", reducedList.size());
+        }
+        return reducedList;
     }
 
     /**
@@ -224,7 +257,7 @@ public abstract class Parser<T> {
     protected int getFirstDataRow(FileType fileType) {
         var titleRows = switch (fileType) {
             case CSV -> hasTitle ? 1 : 0;
-            case MARKDOWN -> hasTitle ? 3 : 0;
+            case MARKDOWN -> hasTitle ? 4 : 0;
             default -> 0;
         };
 
@@ -291,11 +324,18 @@ public abstract class Parser<T> {
 
     /**
      * Show the parser configuration.
+     *
+     * @param parserClassSimpleName the current parser's simple name
      */
-    private void showConfiguration() {
+    protected void showConfiguration(String parserClassSimpleName) {
+        log.debug("< parser name: '{}'", parserClassSimpleName);
+        if (!parserClassSimpleName.equals(PriceParser.class.getSimpleName())) {
+            log.debug("< portfolio name filter: {}", Objects.isNull(portfolio) ? "<NULL>" : "\"" + portfolio + "\"");
+            log.debug("< symbol filter: \"{}\"", symbols);
+        }
         log.debug("< time zone: '{}'", Objects.isNull(zone) ? "<not defined>" : zone.getId());
-        log.debug(hasTitle ? "< printing the report with title" : "< printing the report without title");
-        log.debug(hasHeader ? "< printing table header" : "< skipping to print the table header");
+        log.debug(hasTitle ? "< parsing the file with title" : "< parsing the file without title");
+        log.debug(hasHeader ? "< parsing the file with table header" : "< parsing the file without table header");
         if (!symbols.isEmpty()) {
             log.debug("< showing only the following symbols: {}", symbols);
         }

@@ -9,10 +9,10 @@ import com.remal.portfolio.parser.Parser;
 import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
-import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.PortfolioWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -85,6 +85,15 @@ public class PortfolioCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        log.info("executing the 'portfolio' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
+        Logger.logQuietMode(log, quietMode);
+        Logger.logPriceHistoryFile(log, priceHistoryFile);
+        Logger.logInput(log, inputArgGroup);
+        Logger.logOutput(log, outputArgGroup);
 
         // validating the inputs
         CurrencyType.abortIfInvalid(outputArgGroup.getBaseCurrency());
@@ -95,16 +104,13 @@ public class PortfolioCommand implements Callable<Integer> {
         var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
-        transactions = transactions
-                .stream()
-                .filter(x -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), x))
-                .toList();
 
         // generate the report
         var currency = CurrencyType.getEnum(outputArgGroup.getBaseCurrency());
-        var portfolioReport = new PortfolioReport(
-                currency,
-                LocalDateTimes.toLocalDateTime(inputArgGroup.getDateTimePattern(), inputArgGroup.getTo()));
+        var generated = Objects.isNull(inputArgGroup.getTo())
+                ? LocalDateTimes.getNow(ZoneId.of(outputArgGroup.getZone()))
+                : LocalDateTimes.toLocalDateTime(inputZone, inputArgGroup.getDateTimePattern(), inputArgGroup.getTo());
+        var portfolioReport = new PortfolioReport(currency, generated);
         portfolioReport.addTransactions(transactions);
 
         // set market prices
@@ -114,20 +120,22 @@ public class PortfolioCommand implements Callable<Integer> {
                 inputArgGroup.getDateTimePattern(),
                 inputArgGroup.getTo());
 
-        var dataProviderFile = inputArgGroup.getDataProviderFile();
+        var zone = ZoneId.of(outputArgGroup.getZone());
+        var now = LocalDateTime.now();
+        var dataProviderFile = LocalDateTimes.toString(zone, inputArgGroup.getDataProviderFile(), now);
         if (Objects.nonNull(dataProviderFile) && Files.exists(Path.of(dataProviderFile))) {
             marketPriceDownloader.updateMarketPrices(portfolioReport, marketPriceAt);
+        } else {
+            log.warn("skipping market data price calculation because the data-provider-file is empty or it does not "
+                    + "exist.");
         }
 
         // writer
-        var zone = ZoneId.of(outputArgGroup.getZone());
-        var now = LocalDateTime.now();
         var portfolioReportFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioReportFile(), now);
         var portfolioSummaryFile = LocalDateTimes.toString(zone, outputArgGroup.getPortfolioSummaryFile(), now);
-
         var writer = PortfolioWriter.build(inputArgGroup, outputArgGroup);
-        writer.write(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
-        writer.writePortfolioReport(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
+        writer.write(outputArgGroup.getWriteMode(), portfolioSummaryFile, portfolioReport);
+        writer.writePortfolioReport(outputArgGroup.getWriteMode(), portfolioReportFile, portfolioReport);
         return CommandLine.ExitCode.OK;
     }
 }

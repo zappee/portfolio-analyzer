@@ -32,7 +32,7 @@ public class PortfolioInputArgGroup extends InputArgGroup {
     @CommandLine.Option(
             order = 10,
             names = {"-l", "--data-provider-file"},
-            description = "Path to a *.properties file to get the data provider name "
-                    + "used to retrieve the market price.")
+            description = "Path to the data provider dictionary *.properties file that is used to download"
+                    + "the market prices.")
     private String dataProviderFile;
 }

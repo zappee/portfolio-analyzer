@@ -4,6 +4,7 @@ import com.remal.portfolio.downloader.Downloader;
 import com.remal.portfolio.model.DataProviderType;
 import com.remal.portfolio.model.Price;
 import com.remal.portfolio.util.Calendars;
+import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sleep;
 import lombok.extern.slf4j.Slf4j;
 import yahoofinance.Stock;
@@ -11,7 +12,6 @@ import yahoofinance.YahooFinance;
 import yahoofinance.histquotes.Interval;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.Calendar;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Product price downloader implementation for Yahoo Finance data providerType.
@@ -85,17 +86,18 @@ public class YahooDownloader implements Downloader {
      */
     @Override
     public Optional<Price> getPrice(String symbol, Calendar requestedTradeDate) {
+        var retry = new AtomicInteger();
         var repetitions = 0;
         var delay = 1.0;
         var actualTradeDate = (Calendar) requestedTradeDate.clone();
-        Optional<Price> marketPrice = download(symbol, actualTradeDate);
+        Optional<Price> marketPrice = download(symbol, actualTradeDate, retry);
 
         // reset the second and try it again
         if (marketPrice.isEmpty()) {
             actualTradeDate.set(Calendar.SECOND, 0);
             actualTradeDate.set(Calendar.MILLISECOND, 0);
             Sleep.sleep(SLEEP_IN_MILLISECOND);
-            marketPrice = download(symbol, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate, retry);
         }
 
         // trying to move back in time a little for the first available price
@@ -104,20 +106,12 @@ public class YahooDownloader implements Downloader {
             var amount = (int)(delay * -1);
             actualTradeDate.add(Calendar.MINUTE, amount);
             Sleep.sleep(SLEEP_IN_MILLISECOND);
-            marketPrice = download(symbol, actualTradeDate);
+            marketPrice = download(symbol, actualTradeDate, retry);
             repetitions++;
         }
 
         if (marketPrice.isEmpty()) {
-            var minusOne = new BigDecimal(-1);
-            log.info("the price of the '{}' does not exist thus market price has been set to {}", symbol, minusOne);
-            marketPrice = Optional.of(Price
-                    .builder()
-                    .unitPrice(minusOne)
-                    .symbol(symbol)
-                    .requestDate(Calendars.toLocalDateTime(requestedTradeDate))
-                    .dataProvider(DATA_PROVIDER)
-                    .build());
+            Logger.logErrorAndExit("the price of the '{}' does not exist", symbol);
         } else {
             marketPrice.get().setRequestDate(Calendars.toLocalDateTime(requestedTradeDate));
         }
@@ -130,11 +124,16 @@ public class YahooDownloader implements Downloader {
      *
      * @param symbol             product name
      * @param requestedTradeDate trade date in the past
+     * @param retry the number of the retrying, only used for logging
      * @return the product's market price
      */
-    private Optional<Price> download(final String symbol, final Calendar requestedTradeDate) {
-        log.debug("< getting the price of \"{}\" at {}, provider: \"{}\"...", symbol,
-                Calendars.toString(requestedTradeDate), DATA_PROVIDER);
+    private Optional<Price> download(final String symbol, final Calendar requestedTradeDate, AtomicInteger retry) {
+        log.debug(
+                "< {}getting the price of \"{}\" at {}, provider: \"{}\"...",
+                retry.incrementAndGet() > 1 ? "(" + retry +") " : "",
+                symbol,
+                Calendars.toString(requestedTradeDate),
+                DATA_PROVIDER);
 
         Optional<Price> marketPrice = Optional.empty();
         try {
@@ -142,7 +141,10 @@ public class YahooDownloader implements Downloader {
             if (Objects.isNull(stock)) {
                 log.warn(SYMBOL_NOT_FOUND, symbol, DATA_PROVIDER);
             } else {
-                var priceHistory = stock.getHistory(requestedTradeDate, Interval.DAILY);
+                // clone is needed because the stupid "stock.getHistory" method call changes
+                // the value of the date variable
+                var priceHistory = stock.getHistory((Calendar) requestedTradeDate.clone(), Interval.DAILY);
+
                 var historicalQuote = priceHistory.stream().findFirst();
                 if (historicalQuote.isPresent()) {
                     marketPrice = Optional.of(Price

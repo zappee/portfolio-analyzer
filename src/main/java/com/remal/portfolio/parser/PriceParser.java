@@ -76,6 +76,7 @@ public class PriceParser extends Parser<Price> {
      * @return the list of the transactions
      */
     private List<Price> parseTextFile(String file, String separator) {
+        showConfiguration(this.getClass().getSimpleName());
         List<Price> prices = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Path.of(file))) {
             var skipRows = getFirstDataRow(com.remal.portfolio.util.Files.getFileType(file));
@@ -115,7 +116,7 @@ public class PriceParser extends Parser<Price> {
      * @return the next index value
      */
     private DataProviderType getDataProvider(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_CURRENCY.name())) {
+        if (missingColumns.contains(Label.HEADER_PRICE_CURRENCY.name())) {
             return null;
         } else {
             return DataProviderType.getEnum(fields[index.getAndIncrement()].trim());

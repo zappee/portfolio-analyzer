@@ -55,7 +55,7 @@ public class OutputArgGroup {
      * Use it if you want to hide the report title.
      */
     @CommandLine.Option(
-            names = {"-E", "--hide-title"},
+            names = {"-E", "--hide-report-title"},
             description = "Hide the report title.")
     private boolean hideTitle;
 
@@ -63,7 +63,7 @@ public class OutputArgGroup {
      * Use it if you want to hide the header of the table.
      */
     @CommandLine.Option(
-            names = {"-A", "--hide-header"},
+            names = {"-A", "--hide-table-header"},
             description = "Hide the table header in the report.")
     private boolean hideHeader;
 
@@ -83,8 +83,8 @@ public class OutputArgGroup {
     @CommandLine.Option(
             names = {"-C", "--columns-to-hide"},
             description = "Comma separated list of column names that won't be displayed in the report. "
-                    + "Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE, FEE, "
-                    + "CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
+                    + "Candidates: PORTFOLIO, SYMBOL, TYPE, VALUATION, TRADE_DATE, QUANTITY, PRICE, PRICE_CURRENCY, "
+                    + "FEE, FEE_CURRENCY, ORDER_ID, TRADE_ID, TRANSFER_ID",
             converter = StringToListConverter.class)
     private final List<String> columnsToHide = new ArrayList<>();
 

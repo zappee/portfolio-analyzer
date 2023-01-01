@@ -9,6 +9,7 @@ import com.remal.portfolio.parser.PriceParser;
 import com.remal.portfolio.picocli.arggroup.PortfolioArgGroup;
 import com.remal.portfolio.picocli.arggroup.PortfolioInputArgGroup;
 import com.remal.portfolio.picocli.arggroup.PriceArgGroup;
+import com.remal.portfolio.util.Calendars;
 import com.remal.portfolio.util.FileWriter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
@@ -55,9 +56,14 @@ public class MarketPriceDownloader {
     private final String priceHistoryFile;
 
     /**
-     * Time zone info.
+     * Time zone info use to parse the historical data.
      */
-    private final ZoneId zone;
+    protected final ZoneId inputZone;
+
+    /**
+     * Time zone info used when writing out the report.
+     */
+    protected final ZoneId outputZone;
 
     /**
      * The report language.
@@ -95,13 +101,14 @@ public class MarketPriceDownloader {
     public MarketPriceDownloader(String priceHistoryFile,
                                  PriceArgGroup.InputArgGroup inputArgGroup,
                                  PriceArgGroup.OutputArgGroup outputArgGroup) {
-        var now = LocalDateTime.now();
         var dataProviderArgGroup = inputArgGroup.getDataProviderArgGroup();
+        var now = LocalDateTime.now();
 
-        this.zone = ZoneId.of(outputArgGroup.getZone());
+        this.inputZone = ZoneId.of(inputArgGroup.getZone());
+        this.dataProviderFile = LocalDateTimes.toString(inputZone, dataProviderArgGroup.getDataProviderFile(), now);
+        this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
         this.dataProviderFromCli = dataProviderArgGroup.getDataProvider();
-        this.dataProviderFile = LocalDateTimes.toString(zone, dataProviderArgGroup.getDataProviderFile(), now);
-        this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();
@@ -122,10 +129,11 @@ public class MarketPriceDownloader {
 
         var now = LocalDateTime.now();
 
-        this.zone = ZoneId.of(outputArgGroup.getZone());
+        this.inputZone = ZoneId.of(inputArgGroup.getZone());
+        this.dataProviderFile = LocalDateTimes.toString(inputZone, inputArgGroup.getDataProviderFile(), now);
+        this.priceHistoryFile = LocalDateTimes.toString(inputZone, priceHistoryFile, now);
+        this.outputZone = ZoneId.of(outputArgGroup.getZone());
         this.dataProviderFromCli = null;
-        this.dataProviderFile = LocalDateTimes.toString(zone, inputArgGroup.getDataProviderFile(), now);
-        this.priceHistoryFile = LocalDateTimes.toString(zone, priceHistoryFile, now);
         this.language = outputArgGroup.getLanguage();
         this.decimalFormat = outputArgGroup.getDecimalFormat();
         this.dateTimePattern = outputArgGroup.getDateTimePattern();
@@ -153,6 +161,20 @@ public class MarketPriceDownloader {
      */
     private void updateExchangeRates(PortfolioReport portfolioReport, LocalDateTime marketPriceAt) {
         var baseCurrency = portfolioReport.getCurrency().name();
+
+        // add a 1.00 as the exchange rate
+        // when base currency and cash currency are equal
+        portfolioReport.getCashInPortfolio()
+                .entrySet()
+                .stream()
+                .filter(cashInPortfolioEntry -> cashInPortfolioEntry.getKey().equals(baseCurrency))
+                .forEach(cashInPortfolioEntry -> {
+                    var exchangeRateSymbol = cashInPortfolioEntry.getKey() + "-" + baseCurrency;
+                    var exchangeRate = BigDecimal.ONE;
+                    portfolioReport.getExchangeRates().put(exchangeRateSymbol, exchangeRate);
+                });
+
+        // exchange rates between another currencies
         portfolioReport.getCashInPortfolio()
                 .entrySet()
                 .stream()
@@ -189,16 +211,10 @@ public class MarketPriceDownloader {
                                 .build();
                         product.setMarketPrice(marketPrice);
                     } else {
-                        Optional<Price> marketPrice;
-                        if (Objects.isNull(marketPriceAt)) {
-                            marketPrice = getMarketPrice(product.getSymbol());
-                            product.setMarketPrice(marketPrice.orElse(null));
-                        } else {
-                            marketPrice = getMarketPrice(
-                                    product.getSymbol(),
-                                    LocalDateTimes.toCalendar(marketPriceAt));
-                            product.setMarketPrice(marketPrice.orElse(null));
-                        }
+                        Optional<Price> marketPrice = Objects.isNull(marketPriceAt)
+                                ? getMarketPrice(product.getSymbol())
+                                : getMarketPrice(product.getSymbol(), LocalDateTimes.toCalendar(marketPriceAt));
+                        product.setMarketPrice(marketPrice.orElse(null));
                     }
                 })
         );
@@ -219,19 +235,20 @@ public class MarketPriceDownloader {
      * date in the past.
      *
      * @param symbol product name
-     * @param requestedTradeDate the date od the market price in the past
+     * @param tradeDate the date od the market price in the past
      * @return the market price
      */
-    public Optional<Price> getMarketPrice(final String symbol, final Calendar requestedTradeDate) {
-        var tradeDate = Objects.isNull(requestedTradeDate) ? Calendar.getInstance() : requestedTradeDate;
+    public Optional<Price> getMarketPrice(final String symbol, final Calendar tradeDate) {
+        var tradeDateCalendar = Objects.isNull(tradeDate) ? Calendar.getInstance() : tradeDate;
         var dataProviderConfiguration = getDataProviderConfiguration(symbol);
         var dataProvider = getDataProvider(dataProviderConfiguration);
         var realSymbol = getSymbolAlias(symbol, dataProviderConfiguration);
-        var price = getPriceFromHistory(realSymbol, tradeDate);
+        var price = getPriceFromHistory(realSymbol, tradeDateCalendar);
 
         if (price.isEmpty()) {
-            log.info("price does not exists in the history");
-            price = getPriceFromDataProvider(dataProvider, realSymbol, tradeDate);
+            log.info("price does not exists in the history, symbol: \"{}\", date: {}",
+                    symbol, Calendars.toString(tradeDateCalendar));
+            price = getPriceFromDataProvider(dataProvider, realSymbol, tradeDateCalendar);
         } else {
             log.info("price exists in the history: {}", price);
         }
@@ -251,7 +268,8 @@ public class MarketPriceDownloader {
         writer.setLanguage(language);
         writer.setDecimalFormat(decimalFormat);
         writer.setDateTimePattern(dateTimePattern);
-        writer.setZone(zone);
+        writer.setInputZone(inputZone);
+        writer.setOutputZone(outputZone);
         writer.setMultiplicity(multiplicity);
         writer.write(writeMode, priceHistoryFile, price);
     }
@@ -265,7 +283,7 @@ public class MarketPriceDownloader {
      */
     private Optional<Price> getPriceFromHistory(final String symbol, final Calendar requestedTradeDate) {
         var parser = new PriceParser();
-        parser.setZone(zone);
+        parser.setZone(inputZone);
 
         if (Objects.nonNull(priceHistoryFile)) {
             var prices = parser.parse(priceHistoryFile);

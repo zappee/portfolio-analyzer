@@ -3,6 +3,10 @@ package com.remal.portfolio.util;
 import com.remal.portfolio.model.FileType;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -42,6 +46,24 @@ public class Files {
             fileType = FileType.NOT_DEFINED;
         }
         return fileType;
+    }
+
+    /**
+     * Reads the first line of the file.
+     *
+     * @param file the file to read
+     * @return the first line of the file
+     */
+    public static String getFirstLine(File file) {
+        String firstLine = "";
+        try (FileReader fileReader = new FileReader(file)) {
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            firstLine = bufferedReader.readLine();
+        } catch (IOException e) {
+            Logger.logErrorAndExit("Error while reading the \"{}\" file: {}", e);
+        }
+
+        return firstLine;
     }
 
     /**

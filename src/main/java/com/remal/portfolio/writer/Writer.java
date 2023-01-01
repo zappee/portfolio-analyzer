@@ -46,6 +46,11 @@ public abstract class Writer<T> {
     protected static final String NEW_LINE = System.lineSeparator();
 
     /**
+     * Italic style for Markdown.
+     */
+    protected static final String MARKDOWN_ITALIC = "_";
+
+    /**
      * Log message at the end of the processing.
      */
     protected static final String ITEMS_HAS_BEEN_PROCESSED = "> {} items have been processed by the writer";
@@ -101,9 +106,14 @@ public abstract class Writer<T> {
     protected List<String> portfolioNameReplaces = new ArrayList<>();
 
     /**
-     * If not null then date/time conversions will perform.
+     * Time zone info use to parse the historical data.
      */
-    protected ZoneId zone;
+    protected ZoneId inputZone;
+
+    /**
+     * Time zone info used when writing out the report.
+     */
+    protected ZoneId outputZone;
 
     /**
      * Transaction date filter.
@@ -346,7 +356,8 @@ public abstract class Writer<T> {
             stringValue = Optional.of(x.name());
 
         } else if (value instanceof LocalDateTime x) {
-            stringValue = Optional.of(LocalDateTimes.toNullSafeString(zone, dateTimePattern, x));
+            var valueInOutTimezone = LocalDateTimes.convertBetweenTimezones(x, inputZone, outputZone);
+            stringValue = Optional.of(LocalDateTimes.toNullSafeString(null, dateTimePattern, valueInOutTimezone));
 
         } else if (value instanceof BigDecimal x) {
             stringValue = Optional.of(BigDecimals.toString(decimalFormat, decimalGroupingSeparator, x).trim());
@@ -374,7 +385,7 @@ public abstract class Writer<T> {
         TransactionParserInputArgGroup inputArgGroup = new TransactionParserInputArgGroup();
         inputArgGroup.setFile(filename);
         inputArgGroup.setDateTimePattern(dateTimePattern);
-        inputArgGroup.setZone(zone.getId());
+        inputArgGroup.setZone(inputZone.getId());
         inputArgGroup.setMissingColumns(columnsToHide);
         inputArgGroup.hasTitle(!hideTitle);
         inputArgGroup.hasHeader(!hideHeader);
@@ -426,7 +437,8 @@ public abstract class Writer<T> {
      * Show the writer configuration.
      */
     private void showConfiguration() {
-        log.debug("> time zone: '{}'", zone.getId());
+        log.debug("> input time zone: '{}'", inputZone.getId());
+        log.debug("> output time zone: '{}'", outputZone.getId());
         log.debug(hideTitle ? "< printing the report without title" : "< printing the report with title");
         log.debug(hideHeader ? "< skipping to print the table header" : "< printing table header");
     }

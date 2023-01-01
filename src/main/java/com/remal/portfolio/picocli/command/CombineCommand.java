@@ -8,6 +8,7 @@ import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.TransactionWriter;
 import com.remal.portfolio.writer.Writer;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,14 @@ public class CombineCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(quietMode);
+        log.info("executing the 'combine' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
+        Logger.logQuietMode(log, quietMode);
+        Logger.logInput(log, inputArgGroup);
+        Logger.logOutput(log, outputArgGroup);
 
         var overwrite = inputArgGroup.isOverwrite();
         log.debug("< overwrite mode: {}", overwrite ? "overwrite" : "skip if exist");
@@ -83,7 +92,8 @@ public class CombineCommand implements Callable<Integer> {
         var parser = TransactionParser.build(inputArgGroup);
         inputArgGroup.getFiles().forEach(filenameTemplate -> {
             var filename = LocalDateTimes.toString(zone, filenameTemplate, LocalDateTime.now());
-            combine(parser.parse(filename), transactions, overwrite);
+            var parsedTransactions = parser.parse(filename);
+            combine(parsedTransactions, transactions, overwrite);
         });
 
         // writer
@@ -108,7 +118,6 @@ public class CombineCommand implements Callable<Integer> {
             Optional<Transaction> found = target
                     .stream()
                     .filter(targetCurrent -> Filter.transactionIdFilter(sourceCurrent, targetCurrent))
-                    .filter(actual -> Filter.symbolFilter(inputArgGroup.getSymbols(), actual))
                     .findAny();
 
             if (found.isPresent() && overwrite) {
@@ -119,8 +128,9 @@ public class CombineCommand implements Callable<Integer> {
                 tr.setTradeDate(sourceCurrent.getTradeDate());
                 tr.setQuantity(sourceCurrent.getQuantity());
                 tr.setPrice(sourceCurrent.getPrice());
+                tr.setPriceCurrency(sourceCurrent.getPriceCurrency());
                 tr.setFee(sourceCurrent.getFee());
-                tr.setCurrency(sourceCurrent.getCurrency());
+                tr.setFeeCurrency(sourceCurrent.getFeeCurrency());
                 tr.setSymbol(sourceCurrent.getSymbol());
                 tr.setTransferId(sourceCurrent.getTransferId());
                 tr.setTradeId(sourceCurrent.getTradeId());

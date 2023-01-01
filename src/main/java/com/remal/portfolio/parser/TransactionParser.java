@@ -12,12 +12,12 @@ import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.Sorter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -73,28 +73,14 @@ public class TransactionParser extends Parser<Transaction> {
     /**
      * Process a Text/Markdown file.
      *
-     * @param fileName path to the data file
+     * @param file path to the data file
      * @return the list of the parsed items
      */
     @Override
-    protected List<Transaction> parseMarkdownFile(String fileName) {
-        List<Transaction> transactions = new ArrayList<>();
-        try {
-            var skipRows = getFirstDataRow(FileType.MARKDOWN);
-            var firstColumn = 1;
-            transactions.addAll(parseTextFile(skipRows, firstColumn, fileName, markdownSeparator));
-
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
-        } catch (IllegalArgumentException e) {
-            Logger.logErrorAndExit("An error occurs when trying to parse the {} file. "
-                    + "Consider using the combination of '--has-title' or '--has-header' options. Details: {}",
-                    fileName,
-                    e.getMessage());
-        } catch (Exception e) {
-            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
-        }
-
+    protected List<Transaction> parseMarkdownFile(String file) {
+        var skipRows = getFirstDataRow(FileType.MARKDOWN);
+        var firstColumn = 1;
+        List<Transaction> transactions = new ArrayList<>(parseTextFile(skipRows, firstColumn, file, markdownSeparator));
         return transactions
                 .stream()
                 .filter(t -> Filter.dateEqualOrAfterFilter(t.getTradeDate(), from))
@@ -111,16 +97,16 @@ public class TransactionParser extends Parser<Transaction> {
      * @param fileName the input file
      * @param separator separator char used in the input file
      * @return the list of the transactions
-     * @throws IOException in case of file not found
      */
-    private List<Transaction> parseTextFile(int skipRows, int startColumn, String fileName, String separator)
-            throws IOException {
-
+    private List<Transaction> parseTextFile(int skipRows, int startColumn, String fileName, String separator) {
+        showConfiguration(this.getClass().getSimpleName());
         List<Transaction> transactions = new ArrayList<>();
+        AtomicReference<String> currentLine = new AtomicReference<>();
         try (Stream<String> stream = Files.lines(Path.of(fileName))) {
             stream
                     .skip(skipRows)
                     .forEach(line -> {
+                        currentLine.set(line);
                         if (!line.isBlank()) {
                             var fields = line.split(Pattern.quote(separator), -1);
                             var index = new AtomicInteger(startColumn);
@@ -133,8 +119,9 @@ public class TransactionParser extends Parser<Transaction> {
                                     .tradeDate(getLocalDateTime(index, fields))
                                     .quantity(getBigDecimal(index, fields, Label.HEADER_QUANTITY))
                                     .price(getBigDecimal(index, fields, Label.HEADER_PRICE))
+                                    .priceCurrency(getCurrencyType(index, fields))
                                     .fee(getBigDecimal(index, fields, Label.HEADER_FEE))
-                                    .currency(getCurrencyType(index, fields))
+                                    .feeCurrency(getCurrencyType(index, fields))
                                     .orderId(getString(index, fields, Label.HEADER_ORDER_ID))
                                     .tradeId(getString(index, fields, Label.HEADER_TRADE_DATE))
                                     .transferId(getString(index, fields, Label.HEADER_TRANSFER_ID))
@@ -142,7 +129,17 @@ public class TransactionParser extends Parser<Transaction> {
                             transactions.add(t);
                         }
                     });
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Logger.logErrorAndExit(LOG_ERROR_ARRAY_INDEX, fileName, e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("An error has occurred while parsing the {} file.", fileName);
+            log.error("Consider using the '-e' or '-a' options.");
+            log.error("Details: {}", e.getMessage());
+            Logger.logErrorAndExit("Problematic line: {}", currentLine);
+        } catch (Exception e) {
+            Logger.logErrorAndExit(LOG_ERROR_GENERAL, fileName, e.toString());
         }
+
         return transactions;
     }
 
@@ -184,10 +181,11 @@ public class TransactionParser extends Parser<Transaction> {
      * @return next index value
      */
     private CurrencyType getCurrencyType(AtomicInteger index, String[] fields) {
-        if (missingColumns.contains(Label.HEADER_CURRENCY.name())) {
+        if (missingColumns.contains(Label.HEADER_PRICE_CURRENCY.name())) {
             return null;
         } else {
-            return CurrencyType.getEnum(fields[index.getAndIncrement()].trim());
+            var currencyAsString = fields[index.getAndIncrement()].trim();
+            return currencyAsString.isEmpty() ? null : CurrencyType.getEnum(currencyAsString);
         }
     }
 }

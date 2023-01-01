@@ -4,10 +4,10 @@ import com.remal.portfolio.Main;
 import com.remal.portfolio.parser.TransactionParser;
 import com.remal.portfolio.picocli.arggroup.OutputArgGroup;
 import com.remal.portfolio.picocli.arggroup.TransactionParserInputArgGroup;
-import com.remal.portfolio.util.Filter;
 import com.remal.portfolio.util.LocalDateTimes;
 import com.remal.portfolio.util.Logger;
 import com.remal.portfolio.util.PortfolioNameRenamer;
+import com.remal.portfolio.util.ZoneIds;
 import com.remal.portfolio.writer.TransactionWriter;
 import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine;
@@ -69,6 +69,13 @@ public class ShowCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         Logger.setSilentMode(silentMode);
+        log.info("executing the 'show' command...");
+
+        inputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(inputArgGroup.getZone()));
+        outputArgGroup.setZone(ZoneIds.getDefaultIfEmpty(outputArgGroup.getZone()));
+
+        Logger.logInput(log, inputArgGroup);
+        Logger.logOutput(log, outputArgGroup);
 
         // parser
         var parser = TransactionParser.build(inputArgGroup);
@@ -76,11 +83,6 @@ public class ShowCommand implements Callable<Integer> {
         var transactionsFile = LocalDateTimes.toString(inputZone, inputArgGroup.getFile(), LocalDateTime.now());
         var transactions = parser.parse(transactionsFile);
         PortfolioNameRenamer.rename(transactions, outputArgGroup.getReplaces());
-        transactions = transactions
-                .stream()
-                .filter(t -> Filter.portfolioNameFilter(inputArgGroup.getPortfolio(), t))
-                .filter(t -> Filter.symbolFilter(inputArgGroup.getSymbols(), t))
-                .toList();
 
         // writer
         var zone = ZoneId.of(outputArgGroup.getZone());

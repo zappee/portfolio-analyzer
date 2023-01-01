@@ -25,11 +25,6 @@ public enum Label {
     /**
      * A column header.
      */
-    HEADER_CURRENCY("header.currency"),
-
-    /**
-     * A column header.
-     */
     HEADER_DATA_PROVIDER("header.data-provider"),
 
     /**
@@ -46,6 +41,11 @@ public enum Label {
      * A column header.
      */
     HEADER_FEE("header.fee"),
+
+    /**
+     * A column header.
+     */
+    HEADER_FEE_CURRENCY("header.fee-currency"),
 
     /**
      * A column header.
@@ -76,6 +76,11 @@ public enum Label {
      * A column header.
      */
     HEADER_PRICE("header.price"),
+
+    /**
+     * A column header.
+     */
+    HEADER_PRICE_CURRENCY("header.price-currency"),
 
     /**
      * A column header.
@@ -131,11 +136,6 @@ public enum Label {
      * A column header.
      */
     HEADER_WITHDRAWALS("header.withdrawals"),
-
-    /**
-     * A simple text.
-     */
-    LABEL_PORTFOLIO_SUMMARY("label.portfolio-summary"),
 
     /**
      * A simple text.
@@ -204,19 +204,24 @@ public enum Label {
     LABEL_TOTAL_WITHDRAWAL_PER_CURRENCY("label.total.withdrawal-per-currency"),
 
     /**
-     * A simple text.
+     * A report title.
      */
-    LABEL_TRANSACTION_REPORT("label.transaction-report"),
+    TITLE_BASE_CURRENCY("title.base-currency"),
 
     /**
      * A report title.
      */
-    TITLE_SUMMARY_REPORT("title.summary-report"),
+    TITLE_GENERATED("title.generated"),
 
     /**
      * A report title.
      */
-    TITLE_TRANSACTIONS_REPORT("title.transactions-report");
+    TITLE_PORTFOLIO_SUMMARY("title.portfolio-summary"),
+
+    /**
+     * Banner at the top of the report.
+     */
+    TITLE_TRANSACTION_REPORT("title.transaction-report");
 
     /**
      * The key that identifies the translation in the I18N *.properties file.

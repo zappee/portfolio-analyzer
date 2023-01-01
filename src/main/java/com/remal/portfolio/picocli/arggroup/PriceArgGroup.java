@@ -24,6 +24,7 @@ public class PriceArgGroup {
      * Input configuration.
      */
     @Getter
+    @Setter
     public static class InputArgGroup {
 
         /**
@@ -58,6 +59,15 @@ public class PriceArgGroup {
                 description = "Pattern for parsing the provided date. Default: \"${DEFAULT-VALUE}\".",
                 defaultValue = "yyyy-MM-dd HH:mm:ss")
         private String dateTimePattern;
+
+        /**
+         * Set the timezone.
+         */
+        @CommandLine.Option(
+                names = {"-z", "--in-timezone"},
+                description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
+                        + "Default: the system default time-zone")
+        private String zone = ZoneId.systemDefault().getId();
     }
 
     /**
@@ -78,9 +88,9 @@ public class PriceArgGroup {
          * Set the data provider properties file.
          */
         @CommandLine.Option(
-                names = {"-p", "--data-provider-file"},
-                description = "Path to a *.properties file to get the data provider name "
-                        + " used to retrieve the market price.")
+                names = {"-l", "--data-provider-file"},
+                description = "Path to the data provider dictionary *.properties file that is used to download"
+                        + "the market prices.")
         private String dataProviderFile;
     }
 
@@ -96,8 +106,8 @@ public class PriceArgGroup {
          */
         @CommandLine.Option(
                 names = {"-U", "--multiplicity"},
-                description = "Controls the price export to file. Candidates: ${COMPLETION-CANDIDATES}. "
-                        + "Default: ONE_HOUR.",
+                description = "Controls the number of records in the output file. "
+                        + "Candidates: ${COMPLETION-CANDIDATES}. Default: ONE_HOUR.",
                 defaultValue = "ONE_HOUR",
                 required = true)
         private MultiplicityType multiplicity;
@@ -144,7 +154,7 @@ public class PriceArgGroup {
          * Set the timezone.
          */
         @CommandLine.Option(
-                names = {"-Z", "--timezone"},
+                names = {"-Z", "--out-timezone"},
                 description = "The timezone of the dates, e.g. \"GMT+2\", \"Europe/Budapest\" "
                         + "Default: the system default time-zone")
         private String zone = ZoneId.systemDefault().getId();
