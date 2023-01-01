@@ -3,11 +3,11 @@
 
 All notable changes to this project will be documented in this file.
 
-### [0.1.13] - 15 October 2022
+### [0.1.13] - 15 October, 2022
 #### Added
 - Initial version based on the requirements
 
-### [0.2.1] - xx November 2022
+### [0.2.1] - 31 December, 2022
 #### Modified
 - Improvement in documentation
 - Improve the title of the `portfolio` markdown report
@@ -32,3 +32,5 @@ All notable changes to this project will be documented in this file.
 - Transfer assets between brokerage companies, new transaction types: `TRANSFER_IN` and `TRANSFER_OUT`
 - The `*` symbol can be used to select the all portfolio in the `portfolio` command. The `--portfolio "*"` option has the same result as the parameter is not used. 
 - Sorted `price-history` list by `symbol` and then `trade-date`
+- Add a demo-portfolio
+- 
