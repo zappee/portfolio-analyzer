@@ -887,7 +887,7 @@ __Example transactions:__
 ## Appendix 4) Use in practice
 This is a step-by-step guide that shows you how to use this tool in practice.
 
-The [docs/demo-portfolio/pa.sh](docs/demo-portfolio/ps.sh) bash script automates the commands that you need to execute in order to have an up-to-date portfolio-report.
+The [docs/demo-portfolio/pa.sh](docs/demo-portfolio/pa.sh) bash script automates the commands that you need to execute in order to have an up-to-date portfolio-report.
 
 * step 1) Create your transaction Markdown files. Example files are available under the [docs/demo-portfolio/transactions](docs/demo-portfolio/transactions) directory.
 
