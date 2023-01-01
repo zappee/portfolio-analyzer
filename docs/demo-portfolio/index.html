@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Portfolio Reports</title>
+        <meta charset="UTF-8">
+        <meta name="keywords" content="Remal, Portfolio Analyzer, Stock, Market">
+        <meta name="author" content="Arnold Somogyi">
+        <meta name="email" content="arnold.somogyi@gmail.com">
+        <meta name="licence" content="Copyright (c) 2020-2022 Remal Software and Arnold Somogyi All rights reserved">
+        <style>
+            html *           { font-family: sans-serif; }
+            h1               { text-align: left; }
+            table            { margin: 10px; }
+            td               { padding: 5px; }
+            #title           { display: block; text-align: center; color: #ccc; padding: 10px 0; }
+            .label           { font-size: 14pt; font-variant: all-petite-caps; text-decoration: underline; }
+            .legend          { font-size: 10pt; font-variant: all-petite-caps; text-align: center; color: darkgoldenrod; }
+            .thumbnail       { border-radius: 5px; cursor: pointer; transition: 0.3s; max-width: 160px; }
+            .thumbnail:hover { filter: drop-shadow(0px 0px 2px cornflowerblue); }
+            .modal           { display: none; position: fixed; padding-top: 10px; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); }
+            .modal-image     { margin: auto; display: block; max-width: 750px; animation-name: zoom; animation-duration: 0.6s; }
+            @keyframes zoom  { from {transform:scale(0)} to {transform:scale(1)} }
+        </style>
+    </head>
+    <body>
+        <h1>Portfolio Reports</h1>
+        <table>
+            <!-- ---------- legend ---------- -->
+            <tr class="legend">
+                <td></td>
+                <td>1 week</td>
+                <td>1 month</td>
+                <td>3 months</td>
+                <td>6 months</td>
+                <td>1 year</td>
+                <td>2 years</td>
+                <td>5 years</td>
+            </tr>
+            <!-- ---------- performance comparison ---------- -->
+            <tr>
+                <td colspan="8" class="label">performance comparison</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-1-week.png" alt="1 week"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-1-month.png" alt="1 month"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-3-months.png" alt="3 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-6-months.png" alt="6 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-1-year.png" alt="1 year"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-2-years.png" alt="2 years"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/performance-comparison-5-years.png" alt="5 years"></td>
+            </tr>
+            <!-- ---------- overall report ---------- -->
+            <tr>
+                <td colspan="8" class="label">overall report</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-1-week.png" alt="1 week"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-1-month.png" alt="1 month"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-3-months.png" alt="3 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-6-months.png" alt="6 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-1-year.png" alt="1 year"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-2-years.png" alt="2 years"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-5-years.png" alt="5 years"></td>
+            </tr>
+            <!-- ---------- coinbase ---------- -->
+            <tr>
+                <td colspan="8" class="label">coinbase</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-1-week.png" alt="1 week"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-1-month.png" alt="1 month"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-3-months.png" alt="3 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-6-months.png" alt="6 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-1-year.png" alt="1 year"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-2-years.png" alt="2 years"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-coinbase-5-years.png" alt="5 years"></td>
+            </tr>
+            <!-- ---------- interactive-brokers ---------- -->
+            <tr>
+                <td colspan="8" class="label">interactive-brokers</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-1-week.png" alt="1 week"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-1-month.png" alt="1 month"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-3-months.png" alt="3 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-6-months.png" alt="6 months"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-1-year.png" alt="1 year"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-2-years.png" alt="2 years"></td>
+                <td><img class="thumbnail" onclick="showImage(this)" src="charts/portfolio-report-interactive-brokers-5-years.png" alt="5 years"></td>
+            </tr>
+            <!-- ---------- legend ---------- -->
+            <tr class="legend">
+                <td></td>
+                <td>1 week</td>
+                <td>1 month</td>
+                <td>3 months</td>
+                <td>6 months</td>
+                <td>1 year</td>
+                <td>2 years</td>
+                <td>5 years</td>
+            </tr>
+        </table>
+
+        <div class="modal" id="modalContainer">
+            <img class="modal-image" id="modalImage" src="" alt="chart">
+            <div id="title"></div>
+        </div>
+
+        <script>
+            let modal = document.getElementById("modalContainer");
+            modal.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            function showImage(srcElement) {
+                modal.style.display = "block";
+                document.getElementById("modalImage").src = srcElement.src;
+                document.getElementById("title").innerHTML = srcElement.alt;
+            }
+        </script>
+    </body>
+</html>

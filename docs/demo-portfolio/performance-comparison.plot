@@ -3,17 +3,13 @@
 #
 # Usage: gnuplot -e "series_1='a.csv'" \
 #                -e "series_2='b.csv'" \
-#                -e "series_3='a.csv'" \
-#                -e "series_4='d.csv'" \
-#                -e "series_5='e.csv'" \
-#                -e "series_6='f.csv'" \
 #                -e "output_file='report.png'" \
 #                -e "range_in_days=365" \
 #                -e "range_label='1 year'" \
 #                -e "resolution_x=2880" \
 #                -e "resolution_y=1200" \
 #                -e "base_currency='EUR'" \
-#                performance-comparsion.plot
+#                performance-comparison.plot
 #
 #
 # Recommended resolutions: https://en.wikipedia.org/wiki/Ultrawide_formats
@@ -133,10 +129,5 @@ get_label(x) = sprintf("%'.0f", column(x))
 
 plot series_1 using 1:(column(column_name))                          with linespoints linestyle 1 title "coinbase", \
      ''       using x:(column(column_name)):(get_label(column_name)) every 2::0 with labels textcolor linestyle 1 center offset 0, 1 notitle, \
-     series_2 using 1:(column(column_name))                          with linespoints linestyle 2 title "erste", \
+     series_2 using 1:(column(column_name))                          with linespoints linestyle 2 title "interactive brokers", \
      ''       using x:(column(column_name)):(get_label(column_name)) every 2::0 with labels textcolor linestyle 2 center offset 0, 1 notitle, \
-     series_3 using 1:(column(column_name))                          with linespoints linestyle 5 title "interactive-brokers", \
-     ''       using x:(column(column_name)):(get_label(column_name)) every 2::0 with labels textcolor linestyle 5 center offset 0, 1 notitle, \
-     series_4 using 1:(column(column_name))                          with linespoints linestyle 4 title "randomcapital", \
-     ''       using x:(column(column_name)):(get_label(column_name)) every 2::0 with labels textcolor linestyle 4 center offset 0, 1 notitle
-

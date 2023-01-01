@@ -346,48 +346,41 @@ function portfolio_summary_chart {
 #  Arguments:
 #       1: data series 1 (*.csv file)
 #       2: data series 2 (*.csv file)
-#       3: data series 3 (*.csv file)
-#       4: data series 4 (*.csv file)
-#       5: output file
-#       6: diagram range in days
-#       7: range label
-#       8: image X resolution
-#       9: image Y resolution
-#      10: base currency
+#       3: output file
+#       4: diagram range in days
+#       5: range label
+#       6: image X resolution
+#       7: image Y resolution
+#       8: base currency
 # ------------------------------------------------------------------------------
 function performance_comparison_chart {
-    local series_1 series_2 series_3 series_4
+    local series_1 series_2
     local output_file range_in_days range_label resolution_x resolution_y base_currency
     series_1="$1"
     series_2="$2"
-    series_3="$3"
-    series_4="$4"
-    output_file="$5"
-    range_in_days="$6"
-    range_label="$7"
-    resolution_x="$8"
-    resolution_y="$9"
-    base_currency="${10}"
+    output_file="$3"
+    range_in_days="$4"
+    range_label="$5"
+    resolution_x="$6"
+    resolution_y="$7"
+    base_currency="$8"
 
     printf "\n--> generating the portfolio-summary PNG chart..."
     printf "\n    series 1:           %s" "$series_1"
     printf "\n    series 2:           %s" "$series_2"
-    printf "\n    series 3:           %s" "$series_3"
-    printf "\n    series 4:           %s" "$series_4"
     printf "\n    output file:        %s" "$output_file"
-    printf "\n    diagram range:      %s days" "$range_in_days"
-    printf "\n    range label:        %s days" "$range_label"
+    printf "\n    range in days:      %s" "$range_in_days"
+    printf "\n    range label:        %s" "$range_label"
     printf "\n    image X resolution: %s" "$resolution_x"
     printf "\n    image Y resolution: %s" "$resolution_y"
     printf "\n    base currency:      %s" "$base_currency"
     printf "\n"
 
     mkdir -p "$workspace/charts"
+
     gnuplot \
         -e "series_1='$series_1'" \
         -e "series_2='$series_2'" \
-        -e "series_3='$series_3'" \
-        -e "series_4='$series_4'" \
         -e "output_file='$output_file'" \
         -e "range_in_days=$range_in_days" \
         -e "range_label='$range_label'" \
@@ -556,6 +549,7 @@ if [[ "$tasks" == *d* ]]; then
 
             start="$(increase_timestamp "$start" "$step_in_sec")"
             if ! "$quiet_mode" ; then read -r -p "Press enter to continue"; fi
+            sleep 10 # yahoo api does not support unlimited access
         done
     done
 fi
@@ -586,9 +580,7 @@ fi
 if [[ "$tasks" == *f* ]]; then
     csv_files=(
         "$workspace/reports/portfolio-report/portfolio-report-${portfolios[0]}.csv"
-        "$workspace/reports/portfolio-report/portfolio-report-${portfolios[1]}.csv"
-        "$workspace/reports/portfolio-report/portfolio-report-${portfolios[2]}.csv"
-        "$workspace/reports/portfolio-report/portfolio-report-${portfolios[3]}.csv" )
+        "$workspace/reports/portfolio-report/portfolio-report-${portfolios[1]}.csv" )
 
     for range_index in "${!diagram_ranges[@]}"; do
         range_label=${diagram_range_labels[$range_index]}
@@ -596,8 +588,6 @@ if [[ "$tasks" == *f* ]]; then
         performance_comparison_chart \
             "${csv_files[0]}" \
             "${csv_files[1]}" \
-            "${csv_files[2]}" \
-            "${csv_files[3]}" \
             "$workspace/charts/performance-comparison-${range_label}.png" \
             "${diagram_ranges[$range_index]}" \
             "${diagram_range_labels[$range_index]}" \
