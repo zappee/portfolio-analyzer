@@ -18,7 +18,7 @@
     * [3.6.2) Portfolio report](#362-portfolio-report)
 * [4) Generating your daily portfolio summary after the market closed](#4-generating-your-daily-portfolio-summary-after-the-market-closed)
 * [5) Generating historical portfolio summaries](#5-generating-historical-portfolio-summaries)
-* [6) Generating a portfolio summary diagram](#6-generating-a-portfolio-summary-diagram)
+* [6) Generating a portfolio-comparison and portfolio-report diagrams](#6-generating-a-portfolio-comparison-and-portfolio-report-diagrams)
 * [7) Installation and system requirements](#7-installation-and-system-requirements)
 * [8) Troubleshooting](#8-troubleshooting)
 * [9) How to Contribute](#9-how-to-contribute)
@@ -500,7 +500,7 @@ USD-EUR=YAHOO;EUR=X
 USD-HUF=YAHOO;HUF=X
 ```
 
-You can download a ready for use dictionary file here: [docs/sample-portfolio/market-data-providers.properties](docs/sample-portfolio/market-data-providers.properties)
+You can download a ready for use dictionary file here: [docs/demo-portfolio/market-data-providers.properties](docs/demo-portfolio/market-data-providers.properties)
 
 The following example shows you how to define the path to a dictionary file:
 ```
@@ -717,15 +717,15 @@ The `Remal Portfolio Analyzer` is able to generate your historical portfolio per
 For example if you decided that you will use this nice tool from now, but you would like to have historical reports as well that shows your previous portfolio performance, then you can use the (generate-historical-portfolio-reports.sh)[docs/sample-portfolio/generate-historical-portfolio-reports.sh] script.
 That script will generate historical data that you can use to generate your portfolio performance charts.
 
-## 6) Generating a portfolio summary diagram
-In this project I use [gnuplot][gnuplot] to draw charts, but you can use any other tool like the embedded chart of [Libre Office Calc][libreoffice] or Excel.
+## 6) Generating a portfolio-comparison and portfolio-report diagrams
+In this project I use [gnuplot][gnuplot] to draw charts, but you can use any other tool like the embedded chart of [LibreOffice Calc][libreoffice] or Excel.
 Gnuplot is a great tool, it is a swiss knife. The benefits of using this tool are
 * Portable command-line driven graphing utility for Linux, OS/2, MS Windows, OSX, VMS, and other platforms
 * Powerful and excellent graphic tool
 * The source code is copyrighted but freely distributed (i.e., you don't have to pay for it)
 * Simple to use
 
-The sample `gnuplot` file that generates a portfolio performance report based on the sample [portfolio report CSV file](docs/sample-portfolio/reports/portfolio-report/portfolio-report.csv) is available here: [summary-chart.plot](docs/sample-portfolio/summary-chart.plot) 
+The sample `gnuplot` files that generates the charts based on the sample [CSV files](docs/demo-portfolio/reports/portfolio-report) are available here: [*.plot files](docs/demo-portfolio) 
 This is an example, how a generated chart can look like:
 
 <p align="center"><img src="docs/demo-portfolio/charts/performance-comparison-5-years.png" alt="portfolio performance-comparison" /></p>
